@@ -6,7 +6,9 @@ import { createUser } from "@/db/data-access/users";
 import { NewUserDto } from "@/db/data-access/dto/users/types";
 import { ServerResponseMessage } from "@/lib/types";
 
-export async function signUpUser(data: FormData): Promise<ServerResponseMessage> {
+export async function signUpUser(
+  data: FormData
+): Promise<ServerResponseMessage> {
   const hashedPassword = await bcrypt.hash(data.get("password") as string, 10);
 
   const newUser: NewUserDto = {
