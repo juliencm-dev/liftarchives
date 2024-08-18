@@ -3,58 +3,52 @@ import {
   pgTable,
   text,
   integer,
-  primaryKey,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
-import type { AdapterAccount } from "@auth/core/adapters";
 import { createId } from "@paralleldrive/cuid2";
 import { InferResultType } from "@/db/schema";
+import { lifts } from "./lifts";
 
-export const users = pgTable("user", {
+export const users = pgTable("users", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => createId()),
-  name: text("name"),
   email: text("email").notNull(),
+  password: text("password").notNull(),
+  firstName: text("firstName"),
+  lastName: text("lastName"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 });
 
-export const accounts = pgTable(
-  "account",
-  {
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount>().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  })
-);
-
-export const sessions = pgTable("session", {
-  sessionToken: text("sessionToken").primaryKey(),
+export const usersInformations = pgTable("usersInformations", {
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
+  age: integer("age").notNull(),
+  height: text("height").notNull(),
+  weight: text("weight").notNull(),
+  liftsUnit: text("liftsUnits").notNull(),
+});
+
+export const usersLifts = pgTable("usersLifts", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  liftId: text("liftId")
+    .notNull()
+    .references(() => lifts.id, { onDelete: "cascade" }),
+  oneRepMax: doublePrecision("oneRepMax").notNull(),
+  oneRepMaxDate: timestamp("oneRepMaxDate", { mode: "date" }).notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 
 export type UserWithRelations = InferResultType<
   "users",
-  { absences: true; availability: true }
+  { usersInformations: true; usersLifts: true }
 >;

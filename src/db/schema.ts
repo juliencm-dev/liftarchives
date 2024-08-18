@@ -5,6 +5,8 @@ import {
 } from "drizzle-orm";
 
 export * from "@/db/schemas/users";
+export * from "@/db/schemas/lifts";
+export * from "@/db/schemas/relations";
 
 import * as schema from "@/db/schema";
 

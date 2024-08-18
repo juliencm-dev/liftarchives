@@ -6,12 +6,12 @@ import type {
   NextApiResponse,
 } from "next";
 import { AuthOptions, DefaultSession, getServerSession } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
-// import AppleProvider from "next-auth/providers/apple";
 
 import { unstable_noStore } from "next/cache";
 import { Adapter } from "next-auth/adapters";
+import CredentialProvider from "next-auth/providers/credentials";
+
+import bcrypt from "bcryptjs";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -34,21 +34,32 @@ export const authConfig = {
     debug: console.log,
   },
   secret: process.env.AUTH_SECRET as string,
-  pages: {
-    signIn: "/",
-  },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    }),
-    // AppleProvider({
-    //   clientId: process.env.APPLE_CLIENT_ID as string,
-    //   clientSecret: process.env.APPLE_CLIENT_SECRET as string,
-    // }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID as string,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+    CredentialProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials) return null;
+
+        const user = await db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.email, credentials.email),
+        });
+
+        if (!user) return null;
+
+        // const hashedPassword = await bcrypt.hash(credentials.password, 10);
+        // const isPasswordCorrect = await bcrypt.compare(
+        //   hashedPassword,
+        //   user.password
+        // );
+
+        // if (!isPasswordCorrect) return null;
+
+        return user;
+      },
     }),
   ],
   callbacks: {
@@ -61,14 +72,12 @@ export const authConfig = {
         throw new Error("no user with email found");
       }
 
-      // Add refresh token strategy to the web token. This is used to be able to invalidate a user's session.
+      token.id = dbUser.id;
+      token.email = dbUser.email;
+      token.name = dbUser.firstName + " " + dbUser.lastName;
+      token.picture = dbUser.image;
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        picture: dbUser.image,
-      };
+      return token;
     },
     async session({ token, session }) {
       if (token) {
