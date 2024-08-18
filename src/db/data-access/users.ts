@@ -2,10 +2,8 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db/db";
-import { users } from "@/db/schema";
-import {
-  UserDto,
-} from "@/db/data-access/dto/users/types";
+import { User, users } from "@/db/schema";
+import { NewUserDto, UserDto } from "@/db/data-access/dto/users/types";
 import { auth } from "@/auth";
 import { cache } from "react";
 import { toUserDtoMapper } from "@/db/data-access/dto-mapper/users";
@@ -31,10 +29,6 @@ export const getCurrentUser = cache(async (): Promise<UserDto> => {
 
   const foundUser = await db.query.users.findFirst({
     where: eq(users.id, userId),
-    with: {
-      availability: true,
-      absences: true,
-    },
   });
 
   if (!foundUser) {
@@ -44,16 +38,39 @@ export const getCurrentUser = cache(async (): Promise<UserDto> => {
   return (await toUserDtoMapper([foundUser]))[0];
 });
 
-export async function updateUserAvatar({ avatarKey }: { avatarKey: string }) {
-  try {
-    const userId = await getAuthenticatedUserId();
-    await db
-      .update(users)
-      .set({
-        image: avatarKey,
-      })
-      .where(eq(users.id, userId));
-  } catch (error) {
-    throw new Error("Failed to update user's avatar");
+/**
+ *
+ * Creates a new user.
+ * @param user
+ * @returns
+ */
+
+export const createUser = async (user: NewUserDto): Promise<User> => {
+  const existingUser = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.email, user.email),
+  });
+
+  if (existingUser) {
+    throw new Error("User with that email already exists");
   }
-}
+
+  try {
+    const createdUser: User[] = await db
+      .insert(users)
+      .values({
+        email: user.email,
+        password: user.password,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      })
+      .returning();
+
+    if (!createdUser) {
+      throw new Error("Could not create user");
+    }
+
+    return createdUser[0];
+  } catch (error) {
+    throw new Error("Something went wrong");
+  }
+};

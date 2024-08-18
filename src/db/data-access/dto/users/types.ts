@@ -1,7 +1,13 @@
 export type UserDto = {
   id: string;
-  name: string;
-  createdAt: Date;
   email: string;
-  image: string;
+  firstName: string;
+  lastName: string;
+};
+
+export type NewUserDto = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 };
