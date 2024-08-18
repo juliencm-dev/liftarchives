@@ -56,13 +56,13 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token }) {
       const dbUser = await db.query.users.findFirst({
         where: (users, { eq }) => eq(users.email, token.email!),
       });
 
       if (!dbUser) {
-        throw new Error("no user with email found");
+        throw new Error("No user with email found");
       }
 
       token.id = dbUser.id;

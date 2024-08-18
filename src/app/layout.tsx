@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "LiftArchives",
   description: "Your personnal weightlifting journal",
+  manifest: "/manifest.json",
+  icons: { apple: "/apple-touch-icon.png" },
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -18,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <html lang='en'>
+      <html lang="en">
         <body className={cn(inter.className)}>
           {children}
           <Footer />
