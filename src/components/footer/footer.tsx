@@ -16,7 +16,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className='fixed bottom-0 py-3 w-full flex items-center justify-around px-2 text-sm text-muted-foreground border-t border-border'>
+    <footer className='fixed flex bg-background bottom-0 py-3 w-full  items-center justify-around text-sm text-muted-foreground border-t border-border'>
       {navigationOptions.map((option) => (
         <Link
           href={option.href}

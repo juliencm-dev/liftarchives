@@ -40,57 +40,57 @@ export function SignInForm() {
     }
   };
   return (
-    <Card className='mx-auto max-w-sm'>
-      <CardHeader>
-        <CardTitle className='text-2xl'>Sign In</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form
-          className='grid gap-4'
-          action={handleSignIn}>
-          <div className='grid gap-2'>
-            <Label htmlFor='email'>Email</Label>
-            <Input
-              name='email'
-              type='email'
-              placeholder='m@example.com'
-              required
-            />
-          </div>
-          <div className='grid gap-2'>
-            <div className='flex items-center'>
-              <Label htmlFor='password'>Password</Label>
-              <Link
-                href='/password-reset'
-                className='ml-auto inline-block text-sm underline'>
-                Forgot your password?
-              </Link>
+    <form action={handleSignIn}>
+      <Card className='mx-auto max-w-sm'>
+        <CardHeader>
+          <CardTitle className='text-2xl'>Sign In</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className='grid gap-4'>
+            <div className='grid gap-2'>
+              <Label htmlFor='email'>Email</Label>
+              <Input
+                name='email'
+                type='email'
+                placeholder='m@example.com'
+                required
+              />
             </div>
-            <Input
-              name='password'
-              type='password'
-              required
-            />
+            <div className='grid gap-2'>
+              <div className='flex items-center'>
+                <Label htmlFor='password'>Password</Label>
+                <Link
+                  href='/password-reset'
+                  className='ml-auto inline-block text-sm underline'>
+                  Forgot your password?
+                </Link>
+              </div>
+              <Input
+                name='password'
+                type='password'
+                required
+              />
+            </div>
+            <Button
+              type='submit'
+              className='w-full'
+              disabled={isPending}>
+              {isPending ? <PulseLoader size={4} /> : "Sign In"}
+            </Button>
           </div>
-          <Button
-            type='submit'
-            className='w-full'
-            disabled={isPending}>
-            {isPending ? <PulseLoader size={4} /> : "Sign In"}
-          </Button>
-        </form>
-        <div className='mt-4 text-center text-sm'>
-          Don&apos;t have an account?{" "}
-          <Link
-            href='/signup'
-            className='underline'>
-            Sign up
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+          <div className='mt-4 text-center text-sm'>
+            Don&apos;t have an account?{" "}
+            <Link
+              href='/signup'
+              className='underline'>
+              Sign up
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </form>
   );
 }
