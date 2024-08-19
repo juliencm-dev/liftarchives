@@ -25,6 +25,7 @@ interface LiftListProps {
   category: string;
   title: string;
   weightPreference: string;
+  userId: string;
 }
 
 export default function LiftList(props: LiftListProps) {
@@ -84,15 +85,17 @@ export default function LiftList(props: LiftListProps) {
                 <DrawerHeader>
                   <DrawerTitle>{benchmarkLift.lift.name}</DrawerTitle>
                   <DrawerDescription>
-                    <PBCard
-                      lift={benchmarkLift}
-                      weightPreference={props.weightPreference}
-                    />
-                    <PBHistoryCard
-                      userLifts={benchmarkLift.history}
-                      weightPreference={props.weightPreference}
-                    />
+                    {benchmarkLift.lift.description}
                   </DrawerDescription>
+                  <PBCard
+                    lift={benchmarkLift}
+                    userId={props.userId}
+                    weightPreference={props.weightPreference}
+                  />
+                  <PBHistoryCard
+                    userLifts={benchmarkLift.history}
+                    weightPreference={props.weightPreference}
+                  />
                 </DrawerHeader>
               </DrawerContent>
             </Drawer>

@@ -25,10 +25,9 @@ export async function toBenchmarkLiftsDtoMapper(
   return Promise.all(
     userLifts.map(async (userLiftArray) => {
       const lift: LiftDto = (await getLiftById(userLiftArray[0].liftId))[0];
-      let history: BenchmarkHistoryDto[] | null = null;
+      let history: BenchmarkHistoryDto[] = [];
 
       if (userLiftArray.length > 1) {
-        history = [];
         const sortedUserLifts = userLiftArray.sort(
           (a, b) =>
             new Date(b.oneRepMaxDate!).getTime() -
@@ -37,10 +36,12 @@ export async function toBenchmarkLiftsDtoMapper(
 
         for (let i = 1; i < clamp(sortedUserLifts.length, 1, 5); i++) {
           const currentLift = sortedUserLifts[i];
-          history.push({
-            date: currentLift.oneRepMaxDate,
-            weight: currentLift.oneRepMax,
-          } as unknown as BenchmarkHistoryDto);
+          if (currentLift.oneRepMax != null) {
+            history.push({
+              date: currentLift.oneRepMaxDate,
+              weight: currentLift.oneRepMax,
+            } as unknown as BenchmarkHistoryDto);
+          }
         }
       }
       // Return the final DTO for this lift

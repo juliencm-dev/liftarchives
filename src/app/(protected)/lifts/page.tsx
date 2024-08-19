@@ -31,12 +31,14 @@ export default async function LiftsPage() {
           lifts={benchmarkLifts}
           category='Main Lift'
           title='Main Lifts'
+          userId={user.id}
           weightPreference={userInformations.liftsUnit}
         />
         <LiftList
           lifts={benchmarkLifts}
           category='Accessory Lift'
           title='Accessory Lifts'
+          userId={user.id}
           weightPreference={userInformations.liftsUnit}
         />
       </div>
