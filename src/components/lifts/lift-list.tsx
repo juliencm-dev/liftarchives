@@ -8,6 +8,7 @@ interface LiftListProps {
   lifts: BenchmarkLiftsDto[];
   category: string;
   title: string;
+  weightPreference?: string;
 }
 
 export default function LiftList(props: LiftListProps) {
@@ -22,7 +23,7 @@ export default function LiftList(props: LiftListProps) {
           .filter((benchmarkLift: BenchmarkLiftsDto) => benchmarkLift.lift.category === props.category)
           .sort((a, b) => a.lift.name.localeCompare(b.lift.name))
           .map(benchmarkLift => (
-            <LiftCard key={benchmarkLift.lift.id} lift={benchmarkLift} />
+            <LiftCard key={benchmarkLift.lift.id} lift={benchmarkLift} weightPreference={props.weightPreference} />
           ))}
       </div>
     </div>

@@ -12,3 +12,9 @@ export type NewUserDto = {
   firstName: string;
   lastName: string;
 };
+
+export type UserInformationDto = {
+  age: number;
+  weight: number;
+  liftsUnit: string;
+};

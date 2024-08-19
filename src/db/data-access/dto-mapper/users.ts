@@ -1,5 +1,5 @@
-import { User } from "@/db/schema";
-import { UserDto } from "@/db/data-access/dto/users/types";
+import { User, UserInformation } from "@/db/schema";
+import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
 
 /**
  * Maps an array of UserWithRelations objects to an array of UserDto objects.
@@ -16,4 +16,12 @@ export async function toUserDtoMapper(users: User[]): Promise<UserDto[]> {
       createdAt: user.createdAt?.toDateString() ?? "",
     } as UserDto;
   });
+}
+
+export async function toUserInformationDtoMapper(userInformation: UserInformation): Promise<UserInformationDto> {
+  return {
+    age: userInformation.age,
+    weight: Number(userInformation.weight),
+    liftsUnit: userInformation.liftsUnit,
+  };
 }

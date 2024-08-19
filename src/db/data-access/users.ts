@@ -2,11 +2,11 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db/db";
-import { User, UserLift, users, usersLifts } from "@/db/schema";
-import { NewUserDto, UserDto } from "@/db/data-access/dto/users/types";
+import { User, UserInformation, UserLift, users, usersLifts } from "@/db/schema";
+import { NewUserDto, UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
 import { auth } from "@/auth";
 import { cache } from "react";
-import { toUserDtoMapper } from "@/db/data-access/dto-mapper/users";
+import { toUserDtoMapper, toUserInformationDtoMapper } from "@/db/data-access/dto-mapper/users";
 import { getBenchmarkLifts } from "./lifts";
 
 export const getAuthenticatedUserId = cache(async (): Promise<string> => {
@@ -37,6 +37,13 @@ export const getCurrentUser = cache(async (): Promise<UserDto> => {
   }
 
   return (await toUserDtoMapper([foundUser]))[0];
+});
+
+export const getUserInformation = cache(async (userId: string): Promise<UserInformationDto> => {
+  const userInformation: UserInformation = (await db.query.usersInformations.findFirst({
+    where: (userInfo, { eq }) => eq(userInfo.userId, userId),
+  })) as UserInformation;
+  return toUserInformationDtoMapper(userInformation);
 });
 
 /**
