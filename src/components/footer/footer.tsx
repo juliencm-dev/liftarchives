@@ -2,7 +2,12 @@
 
 import { usePathname } from "next/navigation";
 
-import { BookOpenText, CircleUserRound, Dumbbell, HouseIcon } from "lucide-react";
+import {
+  BookOpenText,
+  CircleUserRound,
+  Dumbbell,
+  HouseIcon,
+} from "lucide-react";
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -18,9 +23,15 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="fixed flex bg-neutral-800 bottom-0 py-3 w-full  items-center justify-around text-sm text-muted-foreground border-t border-muted">
-      {navigationOptions.map(option => (
-        <Link href={option.href} key={option.name} className={cn("flex flex-col gap-1 justify-center items-center hover:text-primary transition-all duration-200", currentActivePath(pathname, option.href))}>
+    <footer className='fixed flex bg-neutral-800 bottom-0 py-3 w-full  items-center justify-around text-sm text-muted-foreground border-t border-muted md:px-48'>
+      {navigationOptions.map((option) => (
+        <Link
+          href={option.href}
+          key={option.name}
+          className={cn(
+            "flex flex-col gap-1 justify-center items-center hover:text-primary transition-all duration-200",
+            currentActivePath(pathname, option.href)
+          )}>
           {option.icon}
           {option.name}
         </Link>
@@ -30,5 +41,7 @@ export default function Footer() {
 }
 
 const currentActivePath = (pathname: string, href: string): string => {
-  return pathname === href ? "text-violet-300 hover:text-violet-300" : "text-muted-foreground";
+  return pathname === href
+    ? "text-violet-300 hover:text-violet-300"
+    : "text-muted-foreground";
 };
