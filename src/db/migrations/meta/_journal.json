@@ -22,6 +22,20 @@
       "when": 1724014341147,
       "tag": "0002_panoramic_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1724033080161,
+      "tag": "0003_striped_ares",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1724035294853,
+      "tag": "0004_famous_the_order",
+      "breakpoints": true
     }
   ]
 }

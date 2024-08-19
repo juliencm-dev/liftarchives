@@ -1,16 +1,7 @@
 import { db } from "./db/db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import type {
-  GetServerSidePropsContext,
-  NextApiRequest,
-  NextApiResponse,
-} from "next";
-import {
-  AuthOptions,
-  DefaultSession,
-  getServerSession,
-  unstable_getServerSession,
-} from "next-auth";
+import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
+import { AuthOptions, DefaultSession, getServerSession, unstable_getServerSession } from "next-auth";
 
 import { unstable_noStore } from "next/cache";
 import { Adapter } from "next-auth/adapters";
@@ -58,10 +49,7 @@ export const authConfig = {
 
         if (!user) return null;
 
-        const isPasswordCorrect = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
 
         if (!isPasswordCorrect) return null;
 
@@ -100,12 +88,7 @@ export const authConfig = {
 } satisfies AuthOptions;
 
 // Use it in server contexts
-export async function auth(
-  ...args:
-    | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
-    | [NextApiRequest, NextApiResponse]
-    | []
-) {
+export async function auth(...args: [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]] | [NextApiRequest, NextApiResponse] | []) {
   unstable_noStore();
   const session = await getServerSession(...args, authConfig);
 

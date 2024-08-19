@@ -1,10 +1,4 @@
-import {
-  timestamp,
-  pgTable,
-  text,
-  integer,
-  doublePrecision,
-} from "drizzle-orm/pg-core";
+import { timestamp, pgTable, text, integer, doublePrecision } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 import { InferResultType } from "@/db/schema";
 import { lifts } from "./lifts";
@@ -18,8 +12,9 @@ export const users = pgTable("users", {
   firstName: text("firstName"),
   lastName: text("lastName"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
-  image: text("image"),
+  accountIsSetup: timestamp("accountIsSetup", { mode: "date" }),
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  image: text("image"),
 });
 
 export const usersInformations = pgTable("usersInformations", {
@@ -27,7 +22,6 @@ export const usersInformations = pgTable("usersInformations", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   age: integer("age").notNull(),
-  height: text("height").notNull(),
   weight: text("weight").notNull(),
   liftsUnit: text("liftsUnits").notNull(),
 });
@@ -42,13 +36,12 @@ export const usersLifts = pgTable("usersLifts", {
   liftId: text("liftId")
     .notNull()
     .references(() => lifts.id, { onDelete: "cascade" }),
-  oneRepMax: doublePrecision("oneRepMax").notNull(),
-  oneRepMaxDate: timestamp("oneRepMaxDate", { mode: "date" }).notNull(),
+  oneRepMax: doublePrecision("oneRepMax"),
+  oneRepMaxDate: timestamp("oneRepMaxDate", { mode: "date" }),
 });
 
 export type User = typeof users.$inferSelect;
+export type UserInformation = typeof usersInformations.$inferSelect;
+export type UserLift = typeof usersLifts.$inferSelect;
 
-export type UserWithRelations = InferResultType<
-  "users",
-  { usersInformations: true; usersLifts: true }
->;
+export type UserWithRelations = InferResultType<"users", { usersInformations: true; usersLifts: true }>;
