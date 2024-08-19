@@ -7,7 +7,8 @@ export default function SignOutButton() {
   return (
     <Button
       variant={"destructive"}
-      onClick={() => signOut({ callbackUrl: "/" })}>
+      onClick={() => signOut({ callbackUrl: "/" })}
+      className='w-full rounded-xl'>
       Sign out
     </Button>
   );
