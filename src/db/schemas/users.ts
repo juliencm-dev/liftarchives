@@ -20,6 +20,7 @@ export const users = pgTable("users", {
 export const usersInformations = pgTable("usersInformations", {
   userId: text("userId")
     .notNull()
+    .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   age: integer("age").notNull(),
   weight: text("weight").notNull(),

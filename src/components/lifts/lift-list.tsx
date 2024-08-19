@@ -8,7 +8,7 @@ interface LiftListProps {
   lifts: BenchmarkLiftsDto[];
   category: string;
   title: string;
-  weightPreference?: string;
+  weightPreference: string;
 }
 
 export default function LiftList(props: LiftListProps) {

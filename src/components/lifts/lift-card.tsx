@@ -2,7 +2,7 @@ import { BenchmarkLiftsDto, LiftDto } from "@/db/data-access/dto/lifts/types";
 
 interface LiftCardProps {
   lift: BenchmarkLiftsDto;
-  weightPreference?: string;
+  weightPreference: string;
 }
 
 export default function LiftCard(props: LiftCardProps) {
@@ -14,9 +14,16 @@ export default function LiftCard(props: LiftCardProps) {
       </div>
       <div className="flex flex-col gap-2 text-right w-[38%]">
         <p className="text-2xl font-bold text-violet-200">
-          {props.lift.weight === null ? "--" : props.lift.weight} {props.weightPreference}
+          {props.lift.weight === null ? "--" : convertWeightToLbs(props.lift.weight, props.weightPreference)} {props.weightPreference}
         </p>
       </div>
     </div>
   );
 }
+
+const convertWeightToLbs = (weight: number, weightPreference: string): string => {
+  if (weightPreference === "lbs") {
+    return (weight * 2.20462).toFixed(2);
+  }
+  return weight.toFixed(2);
+};
