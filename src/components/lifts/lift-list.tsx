@@ -1,11 +1,24 @@
 "use client";
 
-import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
-import { ChevronDown } from "lucide-react";
-import LiftCard from "./lift-card";
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { is } from "drizzle-orm";
+
+import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
+
+import { ChevronDown } from "lucide-react";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+
+import LiftCard from "@/components/lifts/lift-card";
+import PBCard from "@/components/lifts/pb-card";
+import PBHistoryCard from "@/components/lifts/pb-history-card";
 
 interface LiftListProps {
   lifts: BenchmarkLiftsDto[];
@@ -25,9 +38,10 @@ export default function LiftList(props: LiftListProps) {
         isOpen
           ? "bg-gradient-to-b from-neutral-700/50"
           : "hover:bg-gradient-to-b hover:from-neutral-700/50 transition-colors"
-      )}
-      onClick={() => setIsOpen(!isOpen)}>
-      <div className='flex justify-between'>
+      )}>
+      <div
+        className='flex justify-between'
+        onClick={() => setIsOpen(!isOpen)}>
         <h2 className='text-2xl font-semibold'>{props.title}</h2>
         <ChevronDown
           className={cn(
@@ -58,11 +72,30 @@ export default function LiftList(props: LiftListProps) {
           )
           .sort((a, b) => a.lift.name.localeCompare(b.lift.name))
           .map((benchmarkLift) => (
-            <LiftCard
-              key={benchmarkLift.lift.id}
-              lift={benchmarkLift}
-              weightPreference={props.weightPreference}
-            />
+            <Drawer key={benchmarkLift.lift.id}>
+              <DrawerTrigger>
+                <LiftCard
+                  lift={benchmarkLift}
+                  weightPreference={props.weightPreference}
+                />
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerClose />
+                <DrawerHeader>
+                  <DrawerTitle>{benchmarkLift.lift.name}</DrawerTitle>
+                  <DrawerDescription>
+                    <PBCard
+                      lift={benchmarkLift}
+                      weightPreference={props.weightPreference}
+                    />
+                    <PBHistoryCard
+                      userLifts={benchmarkLift.history}
+                      weightPreference={props.weightPreference}
+                    />
+                  </DrawerDescription>
+                </DrawerHeader>
+              </DrawerContent>
+            </Drawer>
           ))}
       </div>
     </div>
