@@ -54,10 +54,10 @@ export default async function DashboardPage() {
             </Select>
             <div className="grid grid-cols-2 gap-2">
               <p>50%</p>
-              <p>60%</p>
-              <p>70%</p>
               <p>80%</p>
+              <p>60%</p>
               <p>90%</p>
+              <p>70%</p>
               <p>95%</p>
             </div>
             <div className="flex gap-4 items-center justify-between">
