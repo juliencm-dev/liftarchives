@@ -1,8 +1,20 @@
-import { auth } from "@/auth";
-import SignOutButton from "@/components/auth/signout-button";
 import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
 import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
-import { convertWeightToLbs } from "@/lib/utils";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+import SignOutButton from "@/components/auth/signout-button";
+import UnitRadioGroup from "@/components/account/unit-radio-group";
+import { Label } from "@/components/ui/label";
+import {
+  ChevronRight,
+  CircleHelp,
+  Database,
+  LockKeyhole,
+  Mail,
+  ReceiptText,
+  ShieldCheck,
+} from "lucide-react";
 
 export default async function AccountPage() {
   const currentUser: UserDto = await getCurrentUser();
@@ -16,36 +28,103 @@ export default async function AccountPage() {
   return (
     <div className='container mx-auto pt-8 pb-24'>
       <div className='grid gap-8'>
-        <div className='grid gap-2'>
+        <div className='grid gap-4'>
           <h1 className='text-4xl font-bold text-violet-300'>Account</h1>
-          <p className='text-base text-muted-foreground'>
-            On this page you can view your account information. You may also
-            update your weight preferences as well as your password.
-          </p>
-        </div>
-        <div className='flex gap-4'>
-          <div className='flex flex-col gap-2 border border-muted rounded-xl p-4 bg-neutral-800 min-w-20 items-center justify-center'>
-            <div className='text-xs text-muted-foreground'>Age</div>
-            <div className='text-xl font-semibold text-foreground'>
-              {userInformations.age}
-            </div>
-          </div>
-          <div className='flex flex-col gap-2 border border-muted rounded-xl p-4 bg-neutral-800 min-w-20 items-center justify-center'>
-            <div className='text-xs text-muted-foreground'>Weight</div>
-            <div className='text-xl font-semibold text-foreground'>
-              {Number(
-                convertWeightToLbs(
-                  userInformations.weight,
-                  userInformations.liftsUnit
-                )
-              ).toFixed(1)}{" "}
-              {userInformations.liftsUnit}
+          <div className='flex gap-4 items-center '>
+            <Avatar className='h-12 w-12'>
+              <AvatarFallback>
+                {currentUser.firstName[0]}
+                {currentUser.lastName[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className='font-semibold'>
+                {currentUser.firstName} {currentUser.lastName}
+              </h2>
+              <h3 className='text-sm text-muted-foreground'>
+                Member since {new Date(currentUser.createdAt).toDateString()}
+              </h3>
             </div>
           </div>
         </div>
 
-        <div className='w-[150px]'>
-          <SignOutButton />
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-lg font-bold'>General</h2>
+          <div className='flex flex-col gap-3 bg-gradient-to-b from-neutral-800 p-4 rounded-xl w-full'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6'>
+                <Mail />
+                <Label className='text-base text-muted-foreground'>Email</Label>
+              </div>
+              <ChevronRight />
+            </div>
+            <div className='w-full border-b border-muted ' />
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6'>
+                <Database />
+                <Label className='text-base text-muted-foreground'>
+                  Data & Privacy
+                </Label>
+              </div>
+              <ChevronRight />
+            </div>
+            <div className='w-full border-b border-muted ' />
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6'>
+                <LockKeyhole />
+                <Label className='text-base text-muted-foreground'>
+                  Password
+                </Label>
+              </div>
+              <ChevronRight />
+            </div>
+            <div className='w-full border-b border-muted ' />
+            <SignOutButton />
+          </div>
+        </div>
+
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-lg font-bold'>Weight Units</h2>
+          <UnitRadioGroup
+            value={userInformations.liftsUnit}
+            labels={[
+              ["lbs", "Pounds"],
+              ["kg", "Kilograms"],
+            ]}
+          />
+        </div>
+
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-lg font-bold'>Policies</h2>
+          <div className='flex flex-col gap-3 bg-gradient-to-b from-neutral-800 p-4 rounded-xl w-full'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6 '>
+                <ReceiptText />
+                <Label className='text-base text-muted-foreground'>
+                  Terms of Service
+                </Label>
+              </div>
+              <ChevronRight />
+            </div>
+            <div className='w-full border-b border-muted ' />
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6'>
+                <ShieldCheck />
+                <Label className='text-base text-muted-foreground'>
+                  Privacy Policy
+                </Label>
+              </div>
+              <ChevronRight />
+            </div>
+            <div className='w-full border-b border-muted ' />
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-6'>
+                <CircleHelp />
+                <Label className='text-base text-muted-foreground'>About</Label>
+              </div>
+              <ChevronRight />
+            </div>
+          </div>
         </div>
       </div>
     </div>

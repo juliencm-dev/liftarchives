@@ -7,7 +7,7 @@ import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
  * @returns An array of UserDto objects.
  */
 export async function toUserDtoMapper(users: User[]): Promise<UserDto[]> {
-  return users.map(user => {
+  return users.map((user) => {
     return {
       id: user.id,
       email: user.email,
@@ -18,7 +18,9 @@ export async function toUserDtoMapper(users: User[]): Promise<UserDto[]> {
   });
 }
 
-export async function toUserInformationDtoMapper(userInformation: UserInformation): Promise<UserInformationDto> {
+export async function toUserInformationDtoMapper(
+  userInformation: UserInformation
+): Promise<UserInformationDto> {
   return {
     age: userInformation.age,
     weight: Number(userInformation.weight),

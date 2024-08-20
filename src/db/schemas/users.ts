@@ -1,4 +1,10 @@
-import { timestamp, pgTable, text, integer, doublePrecision } from "drizzle-orm/pg-core";
+import {
+  timestamp,
+  pgTable,
+  text,
+  integer,
+  doublePrecision,
+} from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 import { InferResultType } from "@/db/schema";
 import { lifts } from "./lifts";
@@ -45,4 +51,7 @@ export type User = typeof users.$inferSelect;
 export type UserInformation = typeof usersInformations.$inferSelect;
 export type UserLift = typeof usersLifts.$inferSelect;
 
-export type UserWithRelations = InferResultType<"users", { usersInformations: true; usersLifts: true }>;
+export type UserWithRelations = InferResultType<
+  "users",
+  { usersInformations: true; usersLifts: true }
+>;

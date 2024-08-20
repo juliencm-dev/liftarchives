@@ -2,11 +2,25 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db/db";
-import { User, UserInformation, UserLift, users, usersLifts } from "@/db/schema";
-import { NewUserDto, UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
+import {
+  User,
+  UserInformation,
+  UserLift,
+  users,
+  usersInformations,
+  usersLifts,
+} from "@/db/schema";
+import {
+  NewUserDto,
+  UserDto,
+  UserInformationDto,
+} from "@/db/data-access/dto/users/types";
 import { auth } from "@/auth";
 import { cache } from "react";
-import { toUserDtoMapper, toUserInformationDtoMapper } from "@/db/data-access/dto-mapper/users";
+import {
+  toUserDtoMapper,
+  toUserInformationDtoMapper,
+} from "@/db/data-access/dto-mapper/users";
 import { getBenchmarkLifts } from "./lifts";
 
 export const getAuthenticatedUserId = cache(async (): Promise<string> => {
@@ -39,12 +53,15 @@ export const getCurrentUser = cache(async (): Promise<UserDto> => {
   return (await toUserDtoMapper([foundUser]))[0];
 });
 
-export const getUserInformation = cache(async (userId: string): Promise<UserInformationDto> => {
-  const userInformation: UserInformation = (await db.query.usersInformations.findFirst({
-    where: (userInfo, { eq }) => eq(userInfo.userId, userId),
-  })) as UserInformation;
-  return toUserInformationDtoMapper(userInformation);
-});
+export const getUserInformation = cache(
+  async (userId: string): Promise<UserInformationDto> => {
+    const userInformation: UserInformation =
+      (await db.query.usersInformations.findFirst({
+        where: (userInfo, { eq }) => eq(userInfo.userId, userId),
+      })) as UserInformation;
+    return toUserInformationDtoMapper(userInformation);
+  }
+);
 
 /**
  *
@@ -79,7 +96,7 @@ export const createUser = async (user: NewUserDto): Promise<User> => {
 
     const benchmarkLifts = await getBenchmarkLifts();
 
-    benchmarkLifts.forEach(async lift => {
+    benchmarkLifts.forEach(async (lift) => {
       await db.insert(usersLifts).values({
         userId: createdUser[0].id,
         liftId: lift.id,
@@ -92,4 +109,25 @@ export const createUser = async (user: NewUserDto): Promise<User> => {
   } catch (error) {
     throw new Error("Something went wrong");
   }
+};
+
+export const updateUserInformation = async ({
+  liftsUnit,
+}: {
+  liftsUnit: "lbs" | "kg";
+}) => {
+  const userId = await getAuthenticatedUserId();
+
+  const userInformation: UserInformation =
+    (await db.query.usersInformations.findFirst({
+      where: (userInfo, { eq }) => eq(userInfo.userId, userId),
+    })) as UserInformation;
+  const updatedUserInformation: UserInformation = {
+    ...userInformation,
+    liftsUnit: liftsUnit != undefined ? liftsUnit : userInformation.liftsUnit,
+  };
+  await db
+    .update(usersInformations)
+    .set(updatedUserInformation)
+    .where(eq(usersInformations.userId, userId));
 };

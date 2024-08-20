@@ -36,6 +36,20 @@
       "when": 1724035294853,
       "tag": "0004_famous_the_order",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1724117735428,
+      "tag": "0005_brainy_screwball",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1724119700469,
+      "tag": "0006_unknown_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }
