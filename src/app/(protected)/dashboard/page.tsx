@@ -12,7 +12,7 @@ export default async function DashboardPage() {
       <div className='flex flex-col gap-8'>
         <div className='text-4xl font-bold text-violet-300'>Dashboard</div>
         <div className='text-base text-muted-foreground'>
-          Welcome {currentUser.firstName}
+          Welcome {currentUser.firstName} {currentUser.lastName}
         </div>
       </div>
     </div>
