@@ -2,10 +2,11 @@ import { Lift } from "@/db/schemas/lifts";
 import {
   BenchmarkHistoryDto,
   BenchmarkLiftsDto,
+  EstimationLiftDto,
   LiftDto,
 } from "@/db/data-access/dto/lifts/types";
 import { UserLift } from "@/db/schema";
-import { getLiftById } from "../lifts";
+import { getEstimationLift, getLiftById } from "../lifts";
 import { clamp } from "@/lib/utils";
 
 export async function toLiftDtoMapper(lifts: Lift[]): Promise<LiftDto[]> {
@@ -25,7 +26,11 @@ export async function toBenchmarkLiftsDtoMapper(
   return Promise.all(
     userLifts.map(async (userLiftArray) => {
       const lift: LiftDto = (await getLiftById(userLiftArray[0].liftId))[0];
-      let history: BenchmarkHistoryDto[] = [];
+
+      const liftEstimation: EstimationLiftDto | undefined =
+        await getEstimationLift(lift.id as string);
+
+      const history: BenchmarkHistoryDto[] = [];
 
       if (userLiftArray.length > 1) {
         const sortedUserLifts = userLiftArray.sort(
@@ -44,12 +49,14 @@ export async function toBenchmarkLiftsDtoMapper(
           }
         }
       }
-      // Return the final DTO for this lift
+
       return {
         weight: userLiftArray[0].oneRepMax,
         date: userLiftArray[0].oneRepMaxDate,
         lift: lift,
         history: history,
+        liftForEstimation:
+          liftEstimation !== undefined ? liftEstimation : undefined,
       } as BenchmarkLiftsDto;
     })
   );

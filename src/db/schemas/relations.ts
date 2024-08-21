@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { users, usersInformations, usersLifts } from "./users";
-import { lifts } from "./lifts";
+import { lifts, liftsEstimates } from "./lifts";
 
 export const usersInformationsRelations = relations(
   usersInformations,
@@ -19,6 +19,17 @@ export const usersLiftsRelations = relations(usersLifts, ({ one }) => ({
   }),
   lift: one(lifts, {
     fields: [usersLifts.liftId],
+    references: [lifts.id],
+  }),
+}));
+
+export const liftsEstimatesRelations = relations(liftsEstimates, ({ one }) => ({
+  lift: one(lifts, {
+    fields: [liftsEstimates.liftId],
+    references: [lifts.id],
+  }),
+  liftForCalculation: one(lifts, {
+    fields: [liftsEstimates.liftForCalculationId],
     references: [lifts.id],
   }),
 }));
