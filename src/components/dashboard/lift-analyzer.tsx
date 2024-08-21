@@ -17,7 +17,7 @@ import {
 import { ArrowBigRight, CircleAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { convertWeightToLbs } from "@/lib/utils";
 import PerformanceChart from "./performance-chart";
 
@@ -28,7 +28,10 @@ export default function LiftAnalyzer({
   lifts: BenchmarkLiftsDto[];
   userInformations: UserInformationDto;
 }) {
-  const liftDetailsRecord = buildLiftDetailsRecord(lifts);
+  const liftDetailsRecord = useMemo(
+    () => buildLiftDetailsRecord(lifts),
+    [lifts]
+  );
 
   const percentageValue = [50, 70, 60, 90, 70, 95];
   const [selectedLift, setSelectedLift] = useState<string>(
