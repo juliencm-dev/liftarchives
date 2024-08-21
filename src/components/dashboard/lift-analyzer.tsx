@@ -28,6 +28,8 @@ export default function LiftAnalyzer({
   lifts: BenchmarkLiftsDto[];
   userInformations: UserInformationDto;
 }) {
+  const liftDetailsRecord = buildLiftDetailsRecord(lifts);
+
   const percentageValue = [50, 70, 60, 90, 70, 95];
   const [selectedLift, setSelectedLift] = useState<string>(
     lifts[0].lift.id as string
@@ -161,17 +163,12 @@ export default function LiftAnalyzer({
                 <h4 className='text-base font-semibold'>Current Max: </h4>
                 <div className='flex gap-2 items-center justify-between text-red-400 font-bold'>
                   <p className='text-xl'>
-                    {lifts
-                      .filter((lift) => lift.lift.id === selectedLift)
-                      .map((lift) =>
-                        Number(
-                          convertWeightToLbs(
-                            Number(lift.weight),
-                            userInformations.liftsUnit
-                          )
-                        )
-                      )[0]
-                      .toFixed(2)}{" "}
+                    {Number(
+                      convertWeightToLbs(
+                        Number(liftDetailsRecord[selectedLift][0].currentMax),
+                        userInformations.liftsUnit
+                      )
+                    ).toFixed(2)}{" "}
                     {userInformations.liftsUnit}
                   </p>
                   <CircleAlert />
@@ -180,17 +177,12 @@ export default function LiftAnalyzer({
               <div>
                 <h4 className='text-base font-semibold'>Potential Max :</h4>
                 <span className='text-xl text-violet-300 font-bold'>
-                  {lifts
-                    .filter((lift) => lift.lift.id === selectedLift)
-                    .map((lift) =>
-                      Number(
-                        convertWeightToLbs(
-                          estimateLiftPotential(lift),
-                          userInformations.liftsUnit
-                        )
-                      )
-                    )[0]
-                    .toFixed(2)}{" "}
+                  {Number(
+                    convertWeightToLbs(
+                      Number(liftDetailsRecord[selectedLift][0].potentialMax),
+                      userInformations.liftsUnit
+                    )
+                  ).toFixed(2)}{" "}
                   {userInformations.liftsUnit}
                 </span>
               </div>
@@ -201,6 +193,32 @@ export default function LiftAnalyzer({
     </>
   );
 }
+
+type LiftDetailsRecord = {
+  currentMax: number;
+  potentialMax: number;
+};
+
+const buildLiftDetailsRecord = (
+  lifts: BenchmarkLiftsDto[]
+): Record<string, LiftDetailsRecord[]> => {
+  const liftRecord: Record<string, LiftDetailsRecord[]> = {};
+
+  lifts.forEach((lift: BenchmarkLiftsDto) => {
+    if (lift.lift.category === "Main Lift") {
+      if (!liftRecord[lift.lift.id!]) {
+        liftRecord[lift.lift.id!] = [];
+      }
+
+      liftRecord[lift.lift.id!].push({
+        currentMax: lift.weight ?? 0,
+        potentialMax: estimateLiftPotential(lift),
+      });
+    }
+  });
+
+  return liftRecord;
+};
 
 const estimateLiftPotential = (lift: BenchmarkLiftsDto): number => {
   const liftForEstimation: EstimationLiftDto = lift.liftForEstimation!;
