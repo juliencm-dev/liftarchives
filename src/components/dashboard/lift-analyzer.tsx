@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BenchmarkHistoryDto,
   BenchmarkLiftsDto,
   EstimationLiftDto,
 } from "@/db/data-access/dto/lifts/types";
@@ -34,6 +35,7 @@ export default function LiftAnalyzer({
   );
 
   const percentageValue = [50, 70, 60, 90, 70, 95];
+
   const [selectedLift, setSelectedLift] = useState<string>(
     lifts[0].lift.id as string
   );
@@ -159,7 +161,9 @@ export default function LiftAnalyzer({
           </div>
           <div className='flex gap-4 items-center justify-between h-[150px]'>
             <div className='flex flex-col gap-2 w-[60%] bg-neutral-700/50 p-2 rounded-xl h-full'>
-              <PerformanceChart data={data} />
+              <PerformanceChart
+                data={liftDetailsRecord[selectedLift][0].chartData}
+              />
             </div>
             <div className='flex flex-col w-[40%] justify-around bg-neutral-700/50 p-2 rounded-xl h-full'>
               <div>
@@ -168,7 +172,7 @@ export default function LiftAnalyzer({
                   <p className='text-xl'>
                     {Number(
                       convertWeightToLbs(
-                        Number(liftDetailsRecord[selectedLift][0].currentMax),
+                        Number(liftDetailsRecord[selectedLift][0].current),
                         userInformations.liftsUnit
                       )
                     ).toFixed(2)}{" "}
@@ -182,7 +186,7 @@ export default function LiftAnalyzer({
                 <span className='text-xl text-violet-300 font-bold'>
                   {Number(
                     convertWeightToLbs(
-                      Number(liftDetailsRecord[selectedLift][0].potentialMax),
+                      Number(liftDetailsRecord[selectedLift][0].potential),
                       userInformations.liftsUnit
                     )
                   ).toFixed(2)}{" "}
@@ -198,8 +202,15 @@ export default function LiftAnalyzer({
 }
 
 type LiftDetailsRecord = {
-  currentMax: number;
-  potentialMax: number;
+  current: number;
+  potential: number;
+  chartData: LiftChartHistoryData[];
+};
+
+type LiftChartHistoryData = {
+  date: string;
+  current: number;
+  potential: number;
 };
 
 const buildLiftDetailsRecord = (
@@ -213,9 +224,38 @@ const buildLiftDetailsRecord = (
         liftRecord[lift.lift.id!] = [];
       }
 
+      const potential = estimateLiftPotential(lift);
+
+      const chartData: LiftChartHistoryData[] = [];
+
+      chartData.push({
+        date: lift.date ?? "",
+        current: lift.weight ?? 0,
+        potential: potential,
+      });
+
+      if (lift.history.length === 0) {
+        chartData.push({
+          date: lift.date ?? "",
+          current: lift.weight ?? 0,
+          potential: potential,
+        });
+      }
+
+      lift.history.forEach((history: BenchmarkHistoryDto) => {
+        chartData.push({
+          date: history.date,
+          current: history.weight,
+          potential: potential,
+        });
+      });
+
       liftRecord[lift.lift.id!].push({
-        currentMax: lift.weight ?? 0,
-        potentialMax: estimateLiftPotential(lift),
+        current: lift.weight ?? 0,
+        potential: potential,
+        chartData: chartData.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        ),
       });
     }
   });
