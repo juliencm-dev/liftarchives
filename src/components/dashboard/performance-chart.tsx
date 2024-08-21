@@ -7,26 +7,31 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/chart";
+import { LiftDetailsRecord } from "./lift-analyzer";
 
-const chartConfig = {
-  potential: {
-    label: "Potential Max",
-    color: "#c4b5fd",
-  },
-  current: {
-    label: "Current Max",
-    color: "#f87171",
-  },
-} satisfies ChartConfig;
+export default function PerformanceChart({
+  data,
+}: {
+  data: LiftDetailsRecord;
+}) {
+  const chartConfig = {
+    potential: {
+      label: "Potential Max",
+      color: "#c4b5fd",
+    },
+    current: {
+      label: "Current Max",
+      color: !data.isGreater ? "#f87171" : "#22c55e",
+    },
+  } satisfies ChartConfig;
 
-export default function PerformanceChart({ data }: { data: any }) {
   return (
     <ChartContainer
       config={chartConfig}
       className='w-full'>
       <LineChart
         accessibilityLayer
-        data={data}>
+        data={data.chartData}>
         <CartesianGrid strokeDasharray='3 3' />
         <XAxis
           dataKey='date'

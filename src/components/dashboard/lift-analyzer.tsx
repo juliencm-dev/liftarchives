@@ -19,7 +19,7 @@ import { ArrowBigRight, CircleAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
-import { convertWeightToLbs } from "@/lib/utils";
+import { cn, convertWeightToLbs } from "@/lib/utils";
 import PerformanceChart from "./performance-chart";
 
 export default function LiftAnalyzer({
@@ -161,14 +161,18 @@ export default function LiftAnalyzer({
           </div>
           <div className='flex gap-4 items-center justify-between h-[150px]'>
             <div className='flex flex-col gap-2 w-[60%] bg-neutral-700/50 p-2 rounded-xl h-full'>
-              <PerformanceChart
-                data={liftDetailsRecord[selectedLift][0].chartData}
-              />
+              <PerformanceChart data={liftDetailsRecord[selectedLift][0]} />
             </div>
             <div className='flex flex-col w-[40%] justify-around bg-neutral-700/50 p-2 rounded-xl h-full'>
               <div>
                 <h4 className='text-base font-semibold'>Current Max: </h4>
-                <div className='flex gap-2 items-center justify-between text-red-400 font-bold'>
+                <div
+                  className={cn(
+                    liftDetailsRecord[selectedLift][0].isGreater
+                      ? "text-green-400"
+                      : "text-red-400",
+                    "flex gap-2 items-center justify-between font-bold"
+                  )}>
                   <p className='text-xl'>
                     {Number(
                       convertWeightToLbs(
@@ -178,7 +182,9 @@ export default function LiftAnalyzer({
                     ).toFixed(2)}{" "}
                     {userInformations.liftsUnit}
                   </p>
-                  <CircleAlert />
+                  {!liftDetailsRecord[selectedLift][0].isGreater && (
+                    <CircleAlert className='text-red-400' />
+                  )}
                 </div>
               </div>
               <div>
@@ -201,9 +207,10 @@ export default function LiftAnalyzer({
   );
 }
 
-type LiftDetailsRecord = {
+export type LiftDetailsRecord = {
   current: number;
   potential: number;
+  isGreater: boolean;
   chartData: LiftChartHistoryData[];
 };
 
@@ -253,6 +260,7 @@ const buildLiftDetailsRecord = (
       liftRecord[lift.lift.id!].push({
         current: lift.weight ?? 0,
         potential: potential,
+        isGreater: (lift.weight || 0) > potential,
         chartData: chartData.sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         ),

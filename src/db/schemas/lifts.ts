@@ -27,6 +27,7 @@ export const liftsEstimates = pgTable(
       .notNull()
       .references(() => lifts.id, { onDelete: "cascade" }),
     percentage: doublePrecision("percentage").notNull(),
+    description: text("description").notNull(),
   },
   (table) => {
     return {
