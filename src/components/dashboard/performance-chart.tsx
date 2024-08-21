@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  LineChart,
-  Tooltip,
-} from "recharts";
+import { Line, CartesianGrid, XAxis, YAxis, LineChart } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -40,7 +33,7 @@ export default function PerformanceChart({ data }: { data: any }) {
           hide={true}
         />
         <YAxis hide={true} />
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartTooltip content={<ChartTooltipContent indicator='dashed' />} />
         <Line
           dataKey='potential'
           stroke='var(--color-potential)'

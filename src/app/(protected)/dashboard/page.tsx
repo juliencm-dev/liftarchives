@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import LiftCalculator from "@/components/dashboard/lift-calculator";
 import PerformanceChart from "@/components/dashboard/performance-chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserDto } from "@/db/data-access/dto/users/types";
-import { getCurrentUser } from "@/db/data-access/users";
+import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
+import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
+import { getBenchmarkLiftsByUserId } from "@/db/data-access/lifts";
+import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
 import { ArrowBigRight, CircleAlert, TriangleAlert } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -40,8 +42,14 @@ export default async function DashboardPage() {
   ];
 
   const currentUser: UserDto = await getCurrentUser();
-
   if (!currentUser) return <div>User is not authenticated</div>;
+
+  const benchmarkLifts: BenchmarkLiftsDto[] = await getBenchmarkLiftsByUserId(
+    currentUser.id
+  );
+  const userInformations: UserInformationDto = await getUserInformation(
+    currentUser.id
+  );
 
   return (
     <div className='container mx-auto pt-8 pb-24'>
@@ -65,63 +73,10 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* LIFT PERCENTAGE CALCULATOR */}
-
-        <div className='flex flex-col gap-4'>
-          <Label className='text-lg font-bold'> Lift Calculator</Label>
-          <div className='flex flex-col gap-4 bg-gradient-to-b from-neutral-800 rounded-xl p-4'>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder='Select a lift' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value='clean'>Clean</SelectItem>
-                  <SelectItem value='snatch'>Snatch</SelectItem>
-                  <SelectItem value='jerk'>Jerk</SelectItem>
-                  <SelectItem value='cleanAndJerk'>Clean & Jerk</SelectItem>
-                  <SelectItem value='powerClean'>Power Clean</SelectItem>
-                  <SelectItem value='powerSnatch'>Power Snatch</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <div className='grid grid-cols-2 gap-2'>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>50%</p>
-              </div>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>70%</p>
-              </div>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>60%</p>
-              </div>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>90%</p>
-              </div>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>70%</p>
-              </div>
-              <div className='flex gap-2'>
-                <ArrowBigRight />
-                <p>95%</p>
-              </div>
-            </div>
-            <div className='flex gap-4 items-center justify-between'>
-              <p className=''>Custom</p>
-              <Input
-                className=''
-                type='number'
-              />
-              <p>%</p>
-              <Button className='rounded-xl'>Calculate</Button>
-            </div>
-          </div>
-        </div>
+        <LiftCalculator
+          lifts={benchmarkLifts}
+          userInformations={userInformations}
+        />
 
         {/* PERFORMANCE ANALYZER */}
 
@@ -134,12 +89,15 @@ export default async function DashboardPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value='clean'>Clean</SelectItem>
-                  <SelectItem value='snatch'>Snatch</SelectItem>
-                  <SelectItem value='jerk'>Jerk</SelectItem>
-                  <SelectItem value='cleanAndJerk'>Clean & Jerk</SelectItem>
-                  <SelectItem value='powerClean'>Power Clean</SelectItem>
-                  <SelectItem value='powerSnatch'>Power Snatch</SelectItem>
+                  {benchmarkLifts
+                    .filter((lift) => lift.lift.category === "Main Lift")
+                    .map((lift, index) => (
+                      <SelectItem
+                        value={lift.lift.id as string}
+                        key={index}>
+                        {lift.lift.name}
+                      </SelectItem>
+                    ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -155,14 +113,16 @@ export default async function DashboardPage() {
                 <div>
                   <h4 className='text-base font-semibold'>Current Max: </h4>
                   <div className='flex gap-2 items-center justify-between text-red-400 font-bold'>
-                    <p className='text-2xl'>97.5 kg</p>
+                    <p className='text-2xl'>
+                      97.5 {userInformations.liftsUnit}
+                    </p>
                     <CircleAlert />
                   </div>
                 </div>
                 <div>
                   <h4 className='text-base font-semibold'>Potential Max :</h4>
                   <span className='text-2xl text-violet-300 font-bold'>
-                    108 kg
+                    108 {userInformations.liftsUnit}
                   </span>
                 </div>
               </div>
@@ -175,7 +135,9 @@ export default async function DashboardPage() {
         <div className='flex flex-col gap-4'>
           <Label className='text-lg font-bold'>Competition Details</Label>
           <div className='flex flex-col gap-4 bg-gradient-to-b from-neutral-800 rounded-xl p-4'>
-            <h3 className='text-base font-semibold'>Men Master (35) -81kg</h3>
+            <h3 className='text-base font-semibold'>
+              IWF Men Master (35) -81kg
+            </h3>
             <p className='text-sm text-muted-foreground'>
               This category is selected based on your date of birth and current
               weight.
@@ -188,14 +150,16 @@ export default async function DashboardPage() {
                 <div>
                   <h4 className='text-base font-semibold'>Current Total: </h4>
                   <div className='flex gap-2 items-center justify-between text-red-400 font-bold'>
-                    <p className='text-2xl'>162.5 kg</p>
+                    <p className='text-2xl'>
+                      162.5 {userInformations.liftsUnit}
+                    </p>
                     <CircleAlert />
                   </div>
                 </div>
                 <div>
                   <h4 className='text-base font-semibold'>Required Total :</h4>
                   <span className='text-2xl text-violet-300 font-bold'>
-                    208 kg
+                    208 {userInformations.liftsUnit}
                   </span>
                 </div>
               </div>
