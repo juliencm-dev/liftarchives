@@ -110,6 +110,7 @@ export const getEstimationLift = async (
   const liftEstimationDto: EstimationLiftDto = {
     weight: liftEstimateLatestMax,
     percentage: liftEstimate.percentage,
+    description: liftEstimate.description,
   };
 
   return liftEstimationDto;

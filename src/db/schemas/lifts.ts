@@ -1,11 +1,13 @@
 import {
   boolean,
+  date,
   doublePrecision,
   pgTable,
   primaryKey,
   text,
 } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
+import { max, min } from "drizzle-orm";
 
 export const lifts = pgTable("lifts", {
   id: text("id")
@@ -33,6 +35,21 @@ export const liftsEstimates = pgTable(
     return {
       pk: primaryKey({ columns: [table.liftId, table.liftForCalculationId] }),
     };
+  }
+);
+
+export const competitionCategoriesDetails = pgTable(
+  "competitionCategoriesDetails",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    name: text("name").notNull(),
+    total: text("description").notNull(),
+    minBirthDate: date("minBirthDate").notNull(),
+    maxBirthDate: date("maxBirthDate").notNull(),
+    minWeight: doublePrecision("minWeight").notNull(),
+    maxWeight: doublePrecision("maxWeight").notNull(),
   }
 );
 

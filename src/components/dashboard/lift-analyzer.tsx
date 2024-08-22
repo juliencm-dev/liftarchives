@@ -21,6 +21,12 @@ import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { cn, convertWeightToLbs } from "@/lib/utils";
 import PerformanceChart from "./performance-chart";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function LiftAnalyzer({
   lifts,
@@ -183,7 +189,21 @@ export default function LiftAnalyzer({
                     {userInformations.liftsUnit}
                   </p>
                   {!liftDetailsRecord[selectedLift][0].isGreater && (
-                    <CircleAlert className='text-red-400' />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <CircleAlert className='text-red-400' />
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side='left'
+                          sideOffset={6}
+                          className='text-red-400 border-red-400 font-semibold'>
+                          <p>
+                            {liftDetailsRecord[selectedLift][0].description}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
               </div>
@@ -210,6 +230,7 @@ export default function LiftAnalyzer({
 export type LiftDetailsRecord = {
   current: number;
   potential: number;
+  description: string;
   isGreater: boolean;
   chartData: LiftChartHistoryData[];
 };
@@ -236,14 +257,14 @@ const buildLiftDetailsRecord = (
       const chartData: LiftChartHistoryData[] = [];
 
       chartData.push({
-        date: lift.date ?? "",
+        date: new Date(lift.date!).toDateString() ?? "",
         current: lift.weight ?? 0,
         potential: potential,
       });
 
       if (lift.history.length === 0) {
         chartData.push({
-          date: lift.date ?? "",
+          date: new Date(lift.date!).toDateString() ?? "",
           current: lift.weight ?? 0,
           potential: potential,
         });
@@ -251,7 +272,7 @@ const buildLiftDetailsRecord = (
 
       lift.history.forEach((history: BenchmarkHistoryDto) => {
         chartData.push({
-          date: history.date,
+          date: new Date(history.date).toDateString(),
           current: history.weight,
           potential: potential,
         });
@@ -260,6 +281,7 @@ const buildLiftDetailsRecord = (
       liftRecord[lift.lift.id!].push({
         current: lift.weight ?? 0,
         potential: potential,
+        description: lift.liftForEstimation!.description,
         isGreater: (lift.weight || 0) > potential,
         chartData: chartData.sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()

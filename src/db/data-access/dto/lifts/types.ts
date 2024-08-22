@@ -21,4 +21,5 @@ export type BenchmarkHistoryDto = {
 export type EstimationLiftDto = {
   weight: number | null;
   percentage: number;
+  description: string;
 };
