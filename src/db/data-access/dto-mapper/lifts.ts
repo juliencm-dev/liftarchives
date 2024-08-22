@@ -1,7 +1,8 @@
-import { Lift } from "@/db/schemas/lifts";
+import { CompetitionCategoryDetails, Lift } from "@/db/schemas/lifts";
 import {
   BenchmarkHistoryDto,
   BenchmarkLiftsDto,
+  CompetitionCategoryDetailsDto,
   EstimationLiftDto,
   LiftDto,
 } from "@/db/data-access/dto/lifts/types";
@@ -60,4 +61,19 @@ export async function toBenchmarkLiftsDtoMapper(
       } as BenchmarkLiftsDto;
     })
   );
+}
+
+export async function toCompetitionCategoryDetailsMapper(
+  competitionCategoryDetails: CompetitionCategoryDetails[]
+): Promise<CompetitionCategoryDetailsDto[]> {
+  return competitionCategoryDetails.map((competitionCategoryDetails) => {
+    return {
+      name: competitionCategoryDetails.name,
+      total: competitionCategoryDetails.total,
+      minBirthYear: competitionCategoryDetails.minBirthYear,
+      maxBirthYear: competitionCategoryDetails.maxBirthYear,
+      minWeight: competitionCategoryDetails.minWeight,
+      maxWeight: competitionCategoryDetails.maxWeight,
+    } as CompetitionCategoryDetailsDto;
+  });
 }

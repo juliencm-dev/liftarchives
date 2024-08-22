@@ -23,3 +23,13 @@ export type EstimationLiftDto = {
   percentage: number;
   description: string;
 };
+
+export type CompetitionCategoryDetailsDto = {
+  name: string;
+  total: number | null;
+  minBirthYear: number;
+  maxBirthYear: number | null;
+  minWeight: number;
+  maxWeight: number | null;
+  gender: string;
+};

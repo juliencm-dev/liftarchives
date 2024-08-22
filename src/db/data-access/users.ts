@@ -111,7 +111,7 @@ export const createUser = async (user: NewUserDto): Promise<User> => {
   }
 };
 
-export const updateUserInformation = async ({
+export const updateUserLiftUnitInformation = async ({
   liftsUnit,
 }: {
   liftsUnit: "lbs" | "kg";
@@ -125,6 +125,27 @@ export const updateUserInformation = async ({
   const updatedUserInformation: UserInformation = {
     ...userInformation,
     liftsUnit: liftsUnit != undefined ? liftsUnit : userInformation.liftsUnit,
+  };
+  await db
+    .update(usersInformations)
+    .set(updatedUserInformation)
+    .where(eq(usersInformations.userId, userId));
+};
+
+export const updateUserDivisionInformation = async ({
+  division,
+}: {
+  division: "senior" | "master";
+}) => {
+  const userId = await getAuthenticatedUserId();
+
+  const userInformation: UserInformation =
+    (await db.query.usersInformations.findFirst({
+      where: (userInfo, { eq }) => eq(userInfo.userId, userId),
+    })) as UserInformation;
+  const updatedUserInformation: UserInformation = {
+    ...userInformation,
+    division: division != undefined ? division : userInformation.division,
   };
   await db
     .update(usersInformations)

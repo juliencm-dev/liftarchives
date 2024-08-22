@@ -28,9 +28,11 @@ export const usersInformations = pgTable("usersInformations", {
     .notNull()
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
-  age: integer("age").notNull(),
-  weight: text("weight").notNull(),
+  birthYear: integer("birthYear").notNull(),
+  weight: doublePrecision("weight").notNull(),
   liftsUnit: text("liftsUnits").notNull(),
+  gender: text("gender").notNull(),
+  division: text("division").notNull(),
 });
 
 export const usersLifts = pgTable("usersLifts", {

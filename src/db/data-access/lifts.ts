@@ -1,16 +1,31 @@
 import { db } from "@/db/db";
-import { LiftEstimate, lifts, liftsEstimates } from "@/db/schemas/lifts";
+import {
+  competitionCategoriesDetails,
+  CompetitionCategoryDetails,
+  LiftEstimate,
+  lifts,
+  liftsEstimates,
+} from "@/db/schemas/lifts";
 import { UserLift, usersLifts } from "@/db/schemas/users";
 import {
-  BenchmarkHistoryDto,
-  BenchmarkLiftsDto,
+  CompetitionCategoryDetailsDto,
   EstimationLiftDto,
   LiftDto,
 } from "@/db/data-access/dto/lifts/types";
-import { toBenchmarkLiftsDtoMapper, toLiftDtoMapper } from "./dto-mapper/lifts";
+import {
+  toBenchmarkLiftsDtoMapper,
+  toCompetitionCategoryDetailsMapper,
+  toLiftDtoMapper,
+} from "@/db/data-access/dto-mapper/lifts";
+import {
+  getAuthenticatedUserId,
+  getCurrentUser,
+  getUserInformation,
+} from "@/db/data-access/users";
+
 import { asc, eq } from "drizzle-orm";
 import { cache } from "react";
-import { getAuthenticatedUserId } from "./users";
+import { UserDto, UserInformationDto } from "./dto/users/types";
 
 export const addLift = async (lift: LiftDto) => {
   try {
@@ -115,3 +130,101 @@ export const getEstimationLift = async (
 
   return liftEstimationDto;
 };
+
+export const addCompetitionCategoryDetails = async (
+  competitionCategoryDetails: CompetitionCategoryDetailsDto
+) => {
+  try {
+    await db
+      .insert(competitionCategoriesDetails)
+      .values(competitionCategoryDetails as CompetitionCategoryDetails);
+  } catch (error) {
+    throw new Error("Failed to add competition category details");
+  }
+};
+
+export const getCompetitionCategoryDetails = cache(async () => {
+  const currentUser: UserDto = await getCurrentUser();
+  if (!currentUser) throw new Error("User not authenticated");
+
+  const currentUserInformation: UserInformationDto = await getUserInformation(
+    currentUser.id
+  );
+
+  const competitionCategoryDetails: CompetitionCategoryDetails[] =
+    await db.query.competitionCategoriesDetails.findMany({
+      where: eq(
+        competitionCategoriesDetails.gender,
+        currentUserInformation.gender
+      ),
+    });
+
+  const filteredCompetitionCategoryDetailsByAge: CompetitionCategoryDetails[] =
+    competitionCategoryDetails.filter(
+      (competitionCategoryDetail: CompetitionCategoryDetails) => {
+        if (
+          competitionCategoryDetail.maxBirthYear === null &&
+          currentUserInformation.birthYear <
+            competitionCategoryDetail.minBirthYear
+        )
+          return true;
+
+        if (
+          currentUserInformation.birthYear <=
+          competitionCategoryDetail.minBirthYear
+        ) {
+          if (
+            currentUserInformation.birthYear >
+            competitionCategoryDetail.maxBirthYear!
+          ) {
+            return true;
+          }
+        }
+      }
+    );
+
+  const filteredCompetitionCategoryDetailsByWeight: CompetitionCategoryDetails[] =
+    filteredCompetitionCategoryDetailsByAge.filter(
+      (competitionCategoryDetail: CompetitionCategoryDetails) => {
+        if (
+          competitionCategoryDetail.maxWeight === null &&
+          currentUserInformation.weight > competitionCategoryDetail.minWeight
+        )
+          return true;
+
+        if (
+          currentUserInformation.weight > competitionCategoryDetail.minWeight
+        ) {
+          if (
+            currentUserInformation.weight <=
+            competitionCategoryDetail.maxWeight!
+          ) {
+            return true;
+          }
+        }
+      }
+    );
+
+  const filteredCompetitionCategoryDetailsByDivision: CompetitionCategoryDetails[] =
+    filteredCompetitionCategoryDetailsByWeight.filter(
+      (competitionCategoryDetail: CompetitionCategoryDetails) => {
+        if (
+          competitionCategoryDetail.division === currentUserInformation.division
+        ) {
+          return true;
+        }
+      }
+    );
+
+  return toCompetitionCategoryDetailsMapper(
+    filteredCompetitionCategoryDetailsByDivision
+  );
+});
+
+// export const getCompetitionCategoryDetailsById = cache(async (id: string) => {
+//   return toCompetitionCategoryDetailsMapper(
+//     await db.query.competitionCategoriesDetails.findMany({
+//       where: eq(competitionCategoriesDetails.id, id),
+//     })
+//   );
+// });

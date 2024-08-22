@@ -67,29 +67,6 @@ export default function LiftAnalyzer({
     setCalculatedPercentage(calculatedPercentage);
   };
 
-  const data = [
-    {
-      date: "2024-01-01",
-      potential: 100,
-      current: 70,
-    },
-    {
-      date: "2024-03-02",
-      potential: 105,
-      current: 75,
-    },
-    {
-      date: "2024-04-03",
-      potential: 110,
-      current: 97.5,
-    },
-    {
-      date: "2024-05-04",
-      potential: 115,
-      current: 100,
-    },
-  ];
-
   return (
     <>
       <div className='flex flex-col gap-4'>
@@ -120,9 +97,9 @@ export default function LiftAnalyzer({
               <div
                 className='flex gap-2 items-center'
                 key={index}>
-                <p className='text-muted-foreground'>{value}%</p>
+                <p className='text-xs text-muted-foreground '>{value}%</p>
                 <ArrowBigRight className='text-violet-300 h-4 w-4' />
-                <p className='text-lg font-bold'>
+                <p className='text-sm font-bold'>
                   {selectedLift === ""
                     ? "--"
                     : lifts
@@ -144,7 +121,7 @@ export default function LiftAnalyzer({
               </div>
             ))}
           </div>
-          <div className='flex gap-4 items-center justify-between'>
+          <div className='flex gap-2 items-center justify-between'>
             <Input
               defaultValue={customValue}
               onChange={(e) => setCustomValue(Number(e.target.value))}
@@ -156,22 +133,19 @@ export default function LiftAnalyzer({
               onClick={calculateCustomPercentage}>
               Calculate
             </Button>
-            <div className='rounded-xl px-3 py-2.5 bg-neutral-700/50 text-violet-300 font-semibold min-w-[28%] text-center'>
+            <div className='rounded-xl px-3 py-2.5 bg-neutral-700/50 text-violet-300 font-semibold min-w-[32%] text-center text-sm'>
               {calculatedPercentage} {userInformations.liftsUnit}
             </div>
           </div>
 
-          <div className='text-sm text-muted-foreground'>
+          <div className='text-xs text-muted-foreground'>
             All lifts potential estimates are based on the weights entered as
             max in your benchmark lifts.
           </div>
-          <div className='flex gap-4 items-center justify-between h-[150px]'>
-            <div className='flex flex-col gap-2 w-[60%] bg-neutral-700/50 p-2 rounded-xl h-full'>
-              <PerformanceChart data={liftDetailsRecord[selectedLift][0]} />
-            </div>
-            <div className='flex flex-col w-[40%] justify-around bg-neutral-700/50 p-2 rounded-xl h-full'>
+          <div className='flex flex-col gap-4 items-center justify-between'>
+            <div className='flex justify-around bg-neutral-700/50 p-2 rounded-xl w-full'>
               <div>
-                <h4 className='text-base font-semibold'>Current Max: </h4>
+                <h4 className='text-sm font-semibold'>Current Max: </h4>
                 <div
                   className={cn(
                     liftDetailsRecord[selectedLift][0].isGreater
@@ -208,7 +182,7 @@ export default function LiftAnalyzer({
                 </div>
               </div>
               <div>
-                <h4 className='text-base font-semibold'>Potential Max :</h4>
+                <h4 className='text-sm font-semibold'>Potential Max :</h4>
                 <span className='text-xl text-violet-300 font-bold'>
                   {Number(
                     convertWeightToLbs(
@@ -219,6 +193,9 @@ export default function LiftAnalyzer({
                   {userInformations.liftsUnit}
                 </span>
               </div>
+            </div>
+            <div className='flex flex-col gap-2  bg-neutral-700/50 p-2 rounded-xl h-[150px] w-full'>
+              <PerformanceChart data={liftDetailsRecord[selectedLift][0]} />
             </div>
           </div>
         </div>

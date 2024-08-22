@@ -22,8 +22,10 @@ export async function toUserInformationDtoMapper(
   userInformation: UserInformation
 ): Promise<UserInformationDto> {
   return {
-    age: userInformation.age,
+    birthYear: userInformation.birthYear,
     weight: Number(userInformation.weight),
     liftsUnit: userInformation.liftsUnit,
+    gender: userInformation.gender,
+    division: userInformation.division,
   };
 }

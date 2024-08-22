@@ -3,22 +3,24 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { updateUserLiftUnitAction } from "@/actions/account/update-user-lift-unit";
+import { updateUserDivisionAction } from "@/actions/account/update-user-division";
 
-interface UnitRadioGroupProps {
+interface DivisionRadioGroupProps {
   value: string;
   labels: string[][];
 }
 
-export default function UnitRadioGroup(props: UnitRadioGroupProps) {
+export default function DivisionRadioGroup(props: DivisionRadioGroupProps) {
   const [value, setValue] = useState<string>(props.value);
 
   const handleUpdateUserInformation = async (value: string) => {
     setValue(value);
-    updateUserLiftUnitAction({
-      liftsUnit: value as "lbs" | "kg",
+    updateUserDivisionAction({
+      division: value as "senior" | "master",
     });
   };
+
+  console.log(value);
 
   return (
     <RadioGroup

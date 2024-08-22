@@ -1,13 +1,13 @@
 import {
   boolean,
-  date,
+  unique,
   doublePrecision,
+  integer,
   pgTable,
   primaryKey,
   text,
 } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
-import { max, min } from "drizzle-orm";
 
 export const lifts = pgTable("lifts", {
   id: text("id")
@@ -44,14 +44,18 @@ export const competitionCategoriesDetails = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    name: text("name").notNull(),
-    total: text("description").notNull(),
-    minBirthDate: date("minBirthDate").notNull(),
-    maxBirthDate: date("maxBirthDate").notNull(),
-    minWeight: doublePrecision("minWeight").notNull(),
-    maxWeight: doublePrecision("maxWeight").notNull(),
+    name: text("name").notNull().unique(),
+    total: doublePrecision("total"),
+    minBirthYear: integer("minBirthDate").notNull(),
+    maxBirthYear: integer("maxBirthDate"),
+    minWeight: integer("minWeight").notNull(),
+    maxWeight: integer("maxWeight"),
+    gender: text("gender").notNull(),
+    division: text("division").notNull(),
   }
 );
 
 export type Lift = typeof lifts.$inferSelect;
 export type LiftEstimate = typeof liftsEstimates.$inferSelect;
+export type CompetitionCategoryDetails =
+  typeof competitionCategoriesDetails.$inferSelect;

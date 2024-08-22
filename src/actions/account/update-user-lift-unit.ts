@@ -1,16 +1,16 @@
 "use server";
 
-import { updateUserInformation } from "@/db/data-access/users";
+import { updateUserLiftUnitInformation } from "@/db/data-access/users";
 import { ServerResponseMessage } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
-export async function updateUserInformationAction({
+export async function updateUserLiftUnitAction({
   liftsUnit,
 }: {
   liftsUnit: "lbs" | "kg";
 }): Promise<ServerResponseMessage> {
   try {
-    await updateUserInformation({
+    await updateUserLiftUnitInformation({
       liftsUnit,
     });
 
