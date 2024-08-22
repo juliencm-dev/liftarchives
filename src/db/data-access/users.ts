@@ -138,18 +138,9 @@ export const updateUserLiftUnitInformation = async ({
   liftsUnit: "lbs" | "kg";
 }) => {
   const userId = await getAuthenticatedUserId();
-
-  const userInformation: UserInformation =
-    (await db.query.usersInformations.findFirst({
-      where: (userInfo, { eq }) => eq(userInfo.userId, userId),
-    })) as UserInformation;
-  const updatedUserInformation: UserInformation = {
-    ...userInformation,
-    liftsUnit: liftsUnit != undefined ? liftsUnit : userInformation.liftsUnit,
-  };
   await db
     .update(usersInformations)
-    .set(updatedUserInformation)
+    .set({ liftsUnit: liftsUnit })
     .where(eq(usersInformations.userId, userId));
 };
 
@@ -160,16 +151,19 @@ export const updateUserDivisionInformation = async ({
 }) => {
   const userId = await getAuthenticatedUserId();
 
-  const userInformation: UserInformation =
-    (await db.query.usersInformations.findFirst({
-      where: (userInfo, { eq }) => eq(userInfo.userId, userId),
-    })) as UserInformation;
-  const updatedUserInformation: UserInformation = {
-    ...userInformation,
-    division: division != undefined ? division : userInformation.division,
-  };
   await db
     .update(usersInformations)
-    .set(updatedUserInformation)
+    .set({
+      division: division,
+    })
     .where(eq(usersInformations.userId, userId));
+};
+
+export const updateAccountSetupAt = async () => {
+  const userId = await getAuthenticatedUserId();
+
+  await db
+    .update(users)
+    .set({ accountIsSetup: new Date() })
+    .where(eq(users.id, userId));
 };

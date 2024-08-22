@@ -1,7 +1,10 @@
 "use server";
 
 import { UserInformationDto } from "@/db/data-access/dto/users/types";
-import { addUserInformation } from "@/db/data-access/users";
+import {
+  addUserInformation,
+  updateAccountSetupAt,
+} from "@/db/data-access/users";
 import { ServerResponseMessage } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
@@ -11,7 +14,8 @@ export async function userAccountSetupAction({
   userInformations: UserInformationDto;
 }): Promise<ServerResponseMessage> {
   try {
-    await addUserInformation(userInformations);
+    addUserInformation(userInformations);
+    updateAccountSetupAt();
 
     revalidatePath("/account");
     revalidatePath("/lifts");

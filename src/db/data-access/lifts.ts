@@ -2,6 +2,7 @@ import { db } from "@/db/db";
 import {
   competitionCategoriesDetails,
   CompetitionCategoryDetails,
+  Lift,
   LiftEstimate,
   lifts,
   liftsEstimates,
@@ -219,6 +220,17 @@ export const getCompetitionCategoryDetails = cache(async () => {
   return toCompetitionCategoryDetailsMapper(
     filteredCompetitionCategoryDetailsByDivision
   );
+});
+
+export const getDefaultLiftId = cache(async () => {
+  const currentUser: UserDto = await getCurrentUser();
+  if (!currentUser) throw new Error("User not authenticated");
+
+  const defaultLiftId: Lift = (await db.query.lifts.findFirst({
+    where: eq(lifts.name, "Clean"),
+  })) as Lift;
+
+  return defaultLiftId.id;
 });
 
 // export const getCompetitionCategoryDetailsById = cache(async (id: string) => {

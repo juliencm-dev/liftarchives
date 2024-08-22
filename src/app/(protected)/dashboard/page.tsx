@@ -12,17 +12,14 @@ import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
 import {
   getBenchmarkLiftsByUserId,
   getCompetitionCategoryDetails,
+  getDefaultLiftId,
 } from "@/db/data-access/lifts";
 import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
 import { TriangleAlert } from "lucide-react";
 
 async function DashboardPage() {
   const currentUser: UserDto = await getCurrentUser();
-  //   if (!currentUser) return redirect("/signin");
-
-  //   if (currentUser.accountSetupAt === "") {
-  //     return redirect("/account/setup");
-  //   }
+  const defaultLiftId = await getDefaultLiftId();
 
   const competitionCategoryDetails: CompetitionCategoryDetailsDto[] =
     await getCompetitionCategoryDetails();
@@ -63,6 +60,7 @@ async function DashboardPage() {
         <LiftAnalyzer
           lifts={benchmarkLifts}
           userInformations={userInformations}
+          defaultLiftId={defaultLiftId}
         />
 
         <CompetitionDetails

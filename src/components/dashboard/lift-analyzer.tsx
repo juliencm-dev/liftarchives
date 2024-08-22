@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BenchmarkHistoryDto,
   BenchmarkLiftsDto,
   EstimationLiftDto,
 } from "@/db/data-access/dto/lifts/types";
@@ -30,9 +29,11 @@ import {
 export default function LiftAnalyzer({
   lifts,
   userInformations,
+  defaultLiftId,
 }: {
   lifts: BenchmarkLiftsDto[];
   userInformations: UserInformationDto;
+  defaultLiftId: string;
 }) {
   const liftDetailsRecord = useMemo(
     () => buildLiftDetailsRecord(lifts),
@@ -41,9 +42,7 @@ export default function LiftAnalyzer({
 
   const percentageValue = [50, 70, 60, 90, 70, 95];
 
-  const [selectedLift, setSelectedLift] = useState<string>(
-    lifts[0].lift.id as string
-  );
+  const [selectedLift, setSelectedLift] = useState<string>(defaultLiftId);
   const [customValue, setCustomValue] = useState<number>(0);
   const [calculatedPercentage, setCalculatedPercentage] =
     useState<string>("0.00");
@@ -221,7 +220,7 @@ const buildLiftDetailsRecord = (
       const potential = estimateLiftPotential(lift);
 
       liftRecord[lift.lift.id!].push({
-        current: lift.weight ?? 0,
+        current: lift.weight || 0,
         potential: potential,
         description: lift.liftForEstimation!.description,
         isGreater: (lift.weight || 0) > potential,
