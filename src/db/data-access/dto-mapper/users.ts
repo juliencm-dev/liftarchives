@@ -14,6 +14,7 @@ export async function toUserDtoMapper(users: User[]): Promise<UserDto[]> {
       firstName: user.firstName,
       lastName: user.lastName,
       createdAt: user.createdAt?.toDateString() ?? "",
+      accountSetupAt: user.accountIsSetup?.toDateString() ?? "",
     } as UserDto;
   });
 }

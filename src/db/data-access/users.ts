@@ -111,6 +111,27 @@ export const createUser = async (user: NewUserDto): Promise<User> => {
   }
 };
 
+export const addUserInformation = async (
+  userInformation: UserInformationDto
+) => {
+  const userId = await getAuthenticatedUserId();
+
+  const newUserInformations: UserInformation = {
+    userId: userId,
+    birthYear: userInformation.birthYear,
+    weight: userInformation.weight,
+    liftsUnit: userInformation.liftsUnit,
+    gender: userInformation.gender,
+    division: userInformation.division,
+  };
+
+  try {
+    await db.insert(usersInformations).values(newUserInformations);
+  } catch (error) {
+    throw new Error("Failed to add user information");
+  }
+};
+
 export const updateUserLiftUnitInformation = async ({
   liftsUnit,
 }: {

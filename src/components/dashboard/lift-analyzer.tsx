@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { cn, convertWeightToLbs } from "@/lib/utils";
-import PerformanceChart from "./performance-chart";
 import {
   Tooltip,
   TooltipContent,
@@ -194,9 +193,6 @@ export default function LiftAnalyzer({
                 </span>
               </div>
             </div>
-            <div className='flex flex-col gap-2  bg-neutral-700/50 p-2 rounded-xl h-[150px] w-full'>
-              <PerformanceChart data={liftDetailsRecord[selectedLift][0]} />
-            </div>
           </div>
         </div>
       </div>
@@ -209,13 +205,6 @@ export type LiftDetailsRecord = {
   potential: number;
   description: string;
   isGreater: boolean;
-  chartData: LiftChartHistoryData[];
-};
-
-type LiftChartHistoryData = {
-  date: string;
-  current: number;
-  potential: number;
 };
 
 const buildLiftDetailsRecord = (
@@ -231,38 +220,11 @@ const buildLiftDetailsRecord = (
 
       const potential = estimateLiftPotential(lift);
 
-      const chartData: LiftChartHistoryData[] = [];
-
-      chartData.push({
-        date: new Date(lift.date!).toDateString() ?? "",
-        current: lift.weight ?? 0,
-        potential: potential,
-      });
-
-      if (lift.history.length === 0) {
-        chartData.push({
-          date: new Date(lift.date!).toDateString() ?? "",
-          current: lift.weight ?? 0,
-          potential: potential,
-        });
-      }
-
-      lift.history.forEach((history: BenchmarkHistoryDto) => {
-        chartData.push({
-          date: new Date(history.date).toDateString(),
-          current: history.weight,
-          potential: potential,
-        });
-      });
-
       liftRecord[lift.lift.id!].push({
         current: lift.weight ?? 0,
         potential: potential,
         description: lift.liftForEstimation!.description,
         isGreater: (lift.weight || 0) > potential,
-        chartData: chartData.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        ),
       });
     }
   });

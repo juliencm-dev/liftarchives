@@ -1,22 +1,21 @@
 import { auth } from "@/auth";
+import { withAuth } from "@/components/auth/withAuth";
 import LiftList from "@/components/lifts/lift-list";
 import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
 import { UserInformationDto } from "@/db/data-access/dto/users/types";
 import { getBenchmarkLiftsByUserId } from "@/db/data-access/lifts";
-import { getUserInformation } from "@/db/data-access/users";
+import {
+  getAuthenticatedUserId,
+  getUserInformation,
+} from "@/db/data-access/users";
 
-export default async function LiftsPage() {
-  const { getUser } = await auth();
-  const user = getUser();
-
-  if (!user) return <div>User is not authenticated</div>;
+async function LiftsPage() {
+  const userId = await getAuthenticatedUserId();
 
   const benchmarkLifts: BenchmarkLiftsDto[] = await getBenchmarkLiftsByUserId(
-    user.id
+    userId
   );
-  const userInformations: UserInformationDto = await getUserInformation(
-    user.id
-  );
+  const userInformations: UserInformationDto = await getUserInformation(userId);
 
   return (
     <section className='container mx-auto pt-8 pb-24'>
@@ -31,7 +30,7 @@ export default async function LiftsPage() {
           lifts={benchmarkLifts}
           category='Main Lift'
           title='Main Lifts'
-          userId={user.id}
+          userId={userId}
           isOpen={true}
           weightPreference={userInformations.liftsUnit}
         />
@@ -39,10 +38,12 @@ export default async function LiftsPage() {
           lifts={benchmarkLifts}
           category='Accessory Lift'
           title='Accessory Lifts'
-          userId={user.id}
+          userId={userId}
           weightPreference={userInformations.liftsUnit}
         />
       </div>
     </section>
   );
 }
+
+export default withAuth(LiftsPage);

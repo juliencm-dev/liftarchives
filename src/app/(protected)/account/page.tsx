@@ -19,8 +19,9 @@ import {
 } from "lucide-react";
 import DivisionRadioGroup from "@/components/account/division-radio-group";
 import { MINIMUM_MASTER_BIRTH_YEAR } from "@/lib/constant";
+import { withAuth } from "@/components/auth/withAuth";
 
-export default async function AccountPage() {
+async function AccountPage() {
   const currentUser: UserDto = await getCurrentUser();
 
   if (!currentUser) return <div>User is not authenticated</div>;
@@ -152,3 +153,5 @@ export default async function AccountPage() {
     </div>
   );
 }
+
+export default withAuth(AccountPage);

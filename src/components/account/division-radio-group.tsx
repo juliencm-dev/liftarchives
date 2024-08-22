@@ -20,8 +20,6 @@ export default function DivisionRadioGroup(props: DivisionRadioGroupProps) {
     });
   };
 
-  console.log(value);
-
   return (
     <RadioGroup
       defaultValue={value}

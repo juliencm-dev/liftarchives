@@ -4,6 +4,7 @@ export type UserDto = {
   firstName: string;
   lastName: string;
   createdAt: string;
+  accountSetupAt: string;
 };
 
 export type NewUserDto = {

@@ -1,12 +1,7 @@
-import { auth } from "@/auth";
+import { withAuth } from "@/components/auth/withAuth";
 import { Construction } from "lucide-react";
 
-export default async function ProgramsPage() {
-  const { getUser } = await auth();
-  const user = getUser();
-
-  if (!user) return <div>User is not authenticated</div>;
-
+async function ProgramsPage() {
   return (
     <div className='grid place-items-center h-screen'>
       <div className='flex flex-col items-center gap-8'>
@@ -19,3 +14,5 @@ export default async function ProgramsPage() {
     </div>
   );
 }
+
+export default withAuth(ProgramsPage);

@@ -1,3 +1,4 @@
+import { withAuth } from "@/components/auth/withAuth";
 import CompetitionDetails from "@/components/dashboard/competition-details";
 import LiftAnalyzer from "@/components/dashboard/lift-analyzer";
 
@@ -14,11 +15,14 @@ import {
 } from "@/db/data-access/lifts";
 import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
 import { TriangleAlert } from "lucide-react";
-import { redirect } from "next/navigation";
 
-export default async function DashboardPage() {
+async function DashboardPage() {
   const currentUser: UserDto = await getCurrentUser();
-  if (!currentUser) return redirect("/signin");
+  //   if (!currentUser) return redirect("/signin");
+
+  //   if (currentUser.accountSetupAt === "") {
+  //     return redirect("/account/setup");
+  //   }
 
   const competitionCategoryDetails: CompetitionCategoryDetailsDto[] =
     await getCompetitionCategoryDetails();
@@ -70,6 +74,8 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
+export default withAuth(DashboardPage);
 
 const calculateCurrentTotal = (lifts: BenchmarkLiftsDto[]) => {
   const currentTotal = lifts
