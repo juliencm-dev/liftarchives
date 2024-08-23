@@ -3,13 +3,6 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
@@ -18,7 +11,11 @@ import { PulseLoader } from "react-spinners";
 import { signIn } from "next-auth/react";
 import { useToast } from "../ui/use-toast";
 
-export function SignInForm() {
+export function SignInForm({
+  setOpen,
+}: {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [isPending, setIsPending] = useState<boolean>(false);
   const { toast } = useToast();
 
@@ -30,6 +27,7 @@ export function SignInForm() {
         password: formData.get("password") as string,
         callbackUrl: "/dashboard",
       });
+      setOpen(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -40,57 +38,41 @@ export function SignInForm() {
     }
   };
   return (
-    <form action={handleSignIn}>
-      <Card className='mx-auto max-w-sm'>
-        <CardHeader>
-          <CardTitle className='text-2xl'>Sign In</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='grid gap-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                name='email'
-                type='email'
-                placeholder='m@example.com'
-                required
-              />
-            </div>
-            <div className='grid gap-2'>
-              <div className='flex items-center'>
-                <Label htmlFor='password'>Password</Label>
-                <Link
-                  href='/password-reset'
-                  className='ml-auto inline-block text-sm underline'>
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input
-                name='password'
-                type='password'
-                required
-              />
-            </div>
-            <Button
-              type='submit'
-              className='w-full'
-              disabled={isPending}>
-              {isPending ? <PulseLoader size={4} /> : "Sign In"}
-            </Button>
-          </div>
-          <div className='mt-4 text-center text-sm'>
-            Don&apos;t have an account?{" "}
+    <form
+      className='container mx-auto mb-24 mt-6 w-[90%]'
+      action={handleSignIn}>
+      <div className='grid gap-4'>
+        <div className='grid gap-2'>
+          <Label htmlFor='email'>Email</Label>
+          <Input
+            name='email'
+            type='email'
+            placeholder='m@example.com'
+            required
+          />
+        </div>
+        <div className='grid gap-2'>
+          <div className='flex items-center'>
+            <Label htmlFor='password'>Password</Label>
             <Link
-              href='/signup'
-              className='underline'>
-              Sign up
+              href='/password-reset'
+              className='ml-auto inline-block text-sm underline'>
+              Forgot your password?
             </Link>
           </div>
-        </CardContent>
-      </Card>
+          <Input
+            name='password'
+            type='password'
+            required
+          />
+        </div>
+        <Button
+          type='submit'
+          className='w-full mt-6 rounded-xl'
+          disabled={isPending}>
+          {isPending ? <PulseLoader size={4} /> : "Sign In"}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -1,4 +1,5 @@
 import { withAuth } from "@/components/auth/withAuth";
+
 import CompetitionDetails from "@/components/dashboard/competition-details";
 import LiftAnalyzer from "@/components/dashboard/lift-analyzer";
 
@@ -8,6 +9,7 @@ import {
   BenchmarkLiftsDto,
   CompetitionCategoryDetailsDto,
 } from "@/db/data-access/dto/lifts/types";
+
 import { UserDto, UserInformationDto } from "@/db/data-access/dto/users/types";
 import {
   getBenchmarkLiftsByUserId,
