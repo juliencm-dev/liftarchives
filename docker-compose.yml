@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  lift-archives:
+    container_name: lift-archives
+    image: ghcr.io/juliencm-dev/lift-archives:latest
+    restart: always
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+

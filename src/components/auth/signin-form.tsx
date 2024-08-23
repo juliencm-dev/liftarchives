@@ -5,18 +5,17 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { PulseLoader } from "react-spinners";
 
 import { signIn } from "next-auth/react";
 import { useToast } from "../ui/use-toast";
 
 export function SignInForm({
   setOpen,
+  setIsPending,
 }: {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsPending: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [isPending, setIsPending] = useState<boolean>(false);
   const { toast } = useToast();
 
   const handleSignIn = async (formData: FormData) => {
@@ -68,9 +67,8 @@ export function SignInForm({
         </div>
         <Button
           type='submit'
-          className='w-full mt-6 rounded-xl'
-          disabled={isPending}>
-          {isPending ? <PulseLoader size={4} /> : "Sign In"}
+          className='w-full mt-6 rounded-xl'>
+          Sign In
         </Button>
       </div>
     </form>
