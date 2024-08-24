@@ -29,7 +29,7 @@ interface LiftListProps {
   isOpen?: boolean;
 }
 
-export default function LiftList(props: LiftListProps) {
+export default function SavedLiftList(props: LiftListProps) {
   const [isOpen, setIsOpen] = useState<boolean>(props.isOpen ?? false);
   const contentRef = useRef<HTMLDivElement>(null);
 

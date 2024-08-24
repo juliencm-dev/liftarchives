@@ -1,8 +1,12 @@
 import { withAuth } from "@/components/auth/withAuth";
-import LiftList from "@/components/lifts/lift-list";
-import { SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
+import SavedLiftList from "@/components/lifts/saved-lift-list";
+import UserTrackedLiftList from "@/components/lifts/user-tracked-lift-list";
+import { LiftDto, SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
 import { UserInformationDto } from "@/db/data-access/dto/users/types";
-import { getBenchmarkLiftsByUserId } from "@/db/data-access/lifts";
+import {
+  getBenchmarkLiftsByUserId,
+  getNoneBenchmarkLifts,
+} from "@/db/data-access/lifts";
 import {
   getAuthenticatedUserId,
   getUserInformation,
@@ -14,6 +18,13 @@ async function LiftsPage() {
   const benchmarkLifts: SavedLiftsDto[] = await getBenchmarkLiftsByUserId(
     userId
   );
+
+  const userTrackedLifts: SavedLiftsDto[] = await getBenchmarkLiftsByUserId(
+    userId
+  );
+
+  const lifts: LiftDto[] = await getNoneBenchmarkLifts();
+
   const userInformations: UserInformationDto = await getUserInformation(userId);
 
   return (
@@ -27,7 +38,7 @@ async function LiftsPage() {
             percentages when following along your weightlifting programs.
           </p>
         </div>
-        <LiftList
+        <SavedLiftList
           lifts={benchmarkLifts}
           category='Main Lift'
           title='Main Lifts'
@@ -35,24 +46,17 @@ async function LiftsPage() {
           isOpen={true}
           weightPreference={userInformations.liftsUnit}
         />
-        <LiftList
+        <SavedLiftList
           lifts={benchmarkLifts}
           category='Accessory Lift'
           title='Accessory Lifts'
           userId={userId}
           weightPreference={userInformations.liftsUnit}
         />
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-lg font-bold'>Additionnal Lifts</h2>
-          <p className='text-xs text-muted-foreground '>
-            Here you can track additional lifts that may be useful for your
-            personnal progression and goals.
-          </p>
-        </div>
-        <LiftList
-          lifts={benchmarkLifts}
-          category='Tracked Lift'
-          title='Tracked Lifts'
+        <UserTrackedLiftList
+          userLifts={userTrackedLifts}
+          lifts={lifts}
+          title='Lifts'
           userId={userId}
           weightPreference={userInformations.liftsUnit}
         />

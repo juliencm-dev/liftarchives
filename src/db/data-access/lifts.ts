@@ -72,6 +72,12 @@ export const getBenchmarkLifts = cache(async () => {
   );
 });
 
+export const getNoneBenchmarkLifts = cache(async () => {
+  return toLiftDtoMapper(
+    await db.query.lifts.findMany({ where: eq(lifts.benchmark, false) })
+  );
+});
+
 export const getLifts = cache(async () => {
   return toLiftDtoMapper(await db.query.lifts.findMany());
 });
