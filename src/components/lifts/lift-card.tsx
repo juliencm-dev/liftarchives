@@ -1,8 +1,8 @@
-import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
+import { SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
 import { convertWeightToLbs } from "@/lib/utils";
 
 interface LiftCardProps {
-  lift: BenchmarkLiftsDto;
+  lift: SavedLiftsDto;
   weightPreference: string;
 }
 

@@ -5,15 +5,16 @@ export type LiftDto = {
   category: string;
 };
 
-export type BenchmarkLiftsDto = {
+export type SavedLiftsDto = {
   lift: LiftDto;
   liftForEstimation?: EstimationLiftDto;
   weight: number | null;
   date: string | null;
-  history: BenchmarkHistoryDto[];
+  history: LiftHistoryDto[];
 };
 
-export type BenchmarkHistoryDto = {
+export type LiftHistoryDto = {
+  id: string;
   date: string;
   weight: number;
 };

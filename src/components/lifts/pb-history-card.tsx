@@ -1,4 +1,4 @@
-import { BenchmarkHistoryDto } from "@/db/data-access/dto/lifts/types";
+import { LiftHistoryDto } from "@/db/data-access/dto/lifts/types";
 import { convertWeightToLbs } from "@/lib/utils";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { TriangleAlert } from "lucide-react";
@@ -7,7 +7,7 @@ export default function PBHistoryCard({
   userLifts,
   weightPreference,
 }: {
-  userLifts: BenchmarkHistoryDto[];
+  userLifts: LiftHistoryDto[];
   weightPreference: string;
 }) {
   return (
@@ -36,7 +36,7 @@ export default function PBHistoryCard({
                   )
                   .map((lift) => (
                     <div
-                      key={lift.date}
+                      key={lift.id}
                       className='flex justify-between items-center gap-2 w-full'>
                       <p className='text-xs text-muted-foreground'>
                         {new Date(lift.date).toDateString()}

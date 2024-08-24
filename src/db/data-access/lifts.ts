@@ -14,7 +14,7 @@ import {
   LiftDto,
 } from "@/db/data-access/dto/lifts/types";
 import {
-  toBenchmarkLiftsDtoMapper,
+  toSavedLiftsDtoMapper,
   toCompetitionCategoryDetailsMapper,
   toLiftDtoMapper,
 } from "@/db/data-access/dto-mapper/lifts";
@@ -57,7 +57,7 @@ export const getBenchmarkLiftsByUserId = cache(async (userId: string) => {
   const userBenchmarkLiftsArray: UserLift[][] =
     Object.values(liftsGroupedByLiftID);
 
-  return toBenchmarkLiftsDtoMapper(userBenchmarkLiftsArray);
+  return toSavedLiftsDtoMapper(userBenchmarkLiftsArray);
 });
 
 export const getLiftById = async (id: string) => {

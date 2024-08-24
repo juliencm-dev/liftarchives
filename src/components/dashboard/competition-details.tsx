@@ -3,6 +3,7 @@ import { UserInformationDto } from "@/db/data-access/dto/users/types";
 import { Label } from "../ui/label";
 import { CircleAlert } from "lucide-react";
 import { convertWeightToLbs } from "@/lib/utils";
+import { PopoverContent, PopoverTrigger, Popover } from "../ui/popover";
 
 interface CompetitionDetailsProps {
   currentTotal: number | null;
@@ -37,7 +38,14 @@ export default function CompetitionDetails(props: CompetitionDetailsProps) {
                     ).toFixed(2)}{" "}
                 {props.userInformations.liftsUnit}
               </p>
-              <CircleAlert />
+              <Popover>
+                <PopoverTrigger>
+                  <CircleAlert className='text-red-400 h-5 w-5' />
+                </PopoverTrigger>
+                <PopoverContent
+                  side='top'
+                  className='text-red-400 border-red-400 font-semibold text-xs'></PopoverContent>
+              </Popover>
             </div>
           </div>
           <div>

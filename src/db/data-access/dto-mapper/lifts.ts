@@ -1,7 +1,7 @@
 import { CompetitionCategoryDetails, Lift } from "@/db/schemas/lifts";
 import {
-  BenchmarkHistoryDto,
-  BenchmarkLiftsDto,
+  LiftHistoryDto,
+  SavedLiftsDto,
   CompetitionCategoryDetailsDto,
   EstimationLiftDto,
   LiftDto,
@@ -21,9 +21,9 @@ export async function toLiftDtoMapper(lifts: Lift[]): Promise<LiftDto[]> {
   });
 }
 
-export async function toBenchmarkLiftsDtoMapper(
+export async function toSavedLiftsDtoMapper(
   userLifts: UserLift[][]
-): Promise<BenchmarkLiftsDto[]> {
+): Promise<SavedLiftsDto[]> {
   return Promise.all(
     userLifts.map(async (userLiftArray) => {
       const lift: LiftDto = (await getLiftById(userLiftArray[0].liftId))[0];
@@ -31,7 +31,7 @@ export async function toBenchmarkLiftsDtoMapper(
       const liftEstimation: EstimationLiftDto | undefined =
         await getEstimationLift(lift.id as string);
 
-      const history: BenchmarkHistoryDto[] = [];
+      const history: LiftHistoryDto[] = [];
 
       if (userLiftArray.length > 1) {
         const sortedUserLifts = userLiftArray.sort(
@@ -44,9 +44,10 @@ export async function toBenchmarkLiftsDtoMapper(
           const currentLift = sortedUserLifts[i];
           if (currentLift.oneRepMax != null) {
             history.push({
+              id: currentLift.id,
               date: currentLift.oneRepMaxDate,
               weight: currentLift.oneRepMax,
-            } as unknown as BenchmarkHistoryDto);
+            } as unknown as LiftHistoryDto);
           }
         }
       }
@@ -60,7 +61,7 @@ export async function toBenchmarkLiftsDtoMapper(
         history: history,
         liftForEstimation:
           liftEstimation !== undefined ? liftEstimation : undefined,
-      } as BenchmarkLiftsDto;
+      } as SavedLiftsDto;
     })
   );
 }

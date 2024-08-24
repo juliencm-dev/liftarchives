@@ -1,11 +1,10 @@
 "use client";
 
-import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
+import { SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
 import { cn, convertWeightToLbs } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
   DrawerClose,
   DrawerContent,
   DrawerDescription,
@@ -24,7 +23,7 @@ import { PulseLoader } from "react-spinners";
 import { useState } from "react";
 
 interface PBCardProps {
-  lift: BenchmarkLiftsDto;
+  lift: SavedLiftsDto;
   userId: string;
   weightPreference: string;
 }
@@ -104,8 +103,8 @@ export default function PBCard(props: PBCardProps) {
           <DrawerHeader>
             <DrawerTitle>New Lift Entry</DrawerTitle>
             <DrawerDescription className='mt-2'>
-              Enter the value of your latest lift entry for the{" "}
-              {props.lift.lift.name}.
+              Enter the value of your latest lift for the {props.lift.lift.name}
+              .
             </DrawerDescription>
             <form action={handleAddPersonnalBest}>
               <div className='flex flex-col gap-4 p-4 mt-6 bg-neutral-900 rounded-xl w-full'>

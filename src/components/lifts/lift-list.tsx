@@ -3,12 +3,11 @@
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-import { BenchmarkLiftsDto } from "@/db/data-access/dto/lifts/types";
+import { SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
 
 import { ChevronDown } from "lucide-react";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -22,7 +21,7 @@ import PBHistoryCard from "@/components/lifts/pb-history-card";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 interface LiftListProps {
-  lifts: BenchmarkLiftsDto[];
+  lifts: SavedLiftsDto[];
   category: string;
   title: string;
   weightPreference: string;
@@ -45,7 +44,7 @@ export default function LiftList(props: LiftListProps) {
       <div
         className='flex justify-between'
         onClick={() => setIsOpen(!isOpen)}>
-        <h2 className='text-xl font-semibold'>{props.title}</h2>
+        <h2 className='text-lg font-semibold'>{props.title}</h2>
         <ChevronDown
           className={cn(
             isOpen ? "rotate-180" : "",
@@ -70,7 +69,7 @@ export default function LiftList(props: LiftListProps) {
         }}>
         {props.lifts
           .filter(
-            (benchmarkLift: BenchmarkLiftsDto) =>
+            (benchmarkLift: SavedLiftsDto) =>
               benchmarkLift.lift.category === props.category
           )
           .sort((a, b) => a.lift.name.localeCompare(b.lift.name))

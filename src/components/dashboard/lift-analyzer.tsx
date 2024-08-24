@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BenchmarkLiftsDto,
+  SavedLiftsDto,
   EstimationLiftDto,
 } from "@/db/data-access/dto/lifts/types";
 import { UserInformationDto } from "@/db/data-access/dto/users/types";
@@ -17,21 +17,17 @@ import {
 import { ArrowBigRight, CircleAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { cn, convertWeightToLbs } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 export default function LiftAnalyzer({
   lifts,
   userInformations,
   defaultLiftId,
 }: {
-  lifts: BenchmarkLiftsDto[];
+  lifts: SavedLiftsDto[];
   userInformations: UserInformationDto;
   defaultLiftId: string;
 }) {
@@ -46,6 +42,11 @@ export default function LiftAnalyzer({
   const [customValue, setCustomValue] = useState<number>(0);
   const [calculatedPercentage, setCalculatedPercentage] =
     useState<string>("0.00");
+
+  useEffect(() => {
+    if (customValue > 100) setCustomValue(100);
+    if (customValue < 0) setCustomValue(0);
+  }, [customValue]);
 
   const calculateCustomPercentage = () => {
     if (selectedLift === "") return;
@@ -122,16 +123,17 @@ export default function LiftAnalyzer({
           <div className='flex gap-2 items-center justify-between'>
             <Input
               defaultValue={customValue}
+              max={100}
               onChange={(e) => setCustomValue(Number(e.target.value))}
               type='number'
             />
             <p>%</p>
             <Button
-              className='rounded-xl'
+              className='rounded-xl text-xs'
               onClick={calculateCustomPercentage}>
               Calculate
             </Button>
-            <div className='rounded-xl px-3 py-2.5 bg-neutral-700/50 text-violet-300 font-semibold min-w-[32%] text-center text-sm'>
+            <div className='rounded-xl px-3 py-2.5 bg-neutral-700/50 text-violet-300 font-semibold min-w-[32%] text-center text-xs'>
               {calculatedPercentage} {userInformations.liftsUnit}
             </div>
           </div>
@@ -161,21 +163,18 @@ export default function LiftAnalyzer({
                     {userInformations.liftsUnit}
                   </p>
                   {!liftDetailsRecord[selectedLift][0].isGreater && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <CircleAlert className='text-red-400' />
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side='left'
-                          sideOffset={6}
-                          className='text-red-400 border-red-400 font-semibold'>
-                          <p>
-                            {liftDetailsRecord[selectedLift][0].description}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Popover>
+                      <PopoverTrigger>
+                        <CircleAlert className='text-red-400 h-5 w-5' />
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side='top'
+                        align='center'
+                        sideOffset={8}
+                        className='text-red-400 border-red-400 font-semibold text-xs'>
+                        <p>{liftDetailsRecord[selectedLift][0].description}</p>
+                      </PopoverContent>
+                    </Popover>
                   )}
                 </div>
               </div>
@@ -207,11 +206,11 @@ export type LiftDetailsRecord = {
 };
 
 const buildLiftDetailsRecord = (
-  lifts: BenchmarkLiftsDto[]
+  lifts: SavedLiftsDto[]
 ): Record<string, LiftDetailsRecord[]> => {
   const liftRecord: Record<string, LiftDetailsRecord[]> = {};
 
-  lifts.forEach((lift: BenchmarkLiftsDto) => {
+  lifts.forEach((lift: SavedLiftsDto) => {
     if (lift.lift.category === "Main Lift") {
       if (!liftRecord[lift.lift.id!]) {
         liftRecord[lift.lift.id!] = [];
@@ -231,7 +230,7 @@ const buildLiftDetailsRecord = (
   return liftRecord;
 };
 
-const estimateLiftPotential = (lift: BenchmarkLiftsDto): number => {
+const estimateLiftPotential = (lift: SavedLiftsDto): number => {
   const liftForEstimation: EstimationLiftDto = lift.liftForEstimation!;
 
   const calculatedWeight =

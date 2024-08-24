@@ -6,7 +6,7 @@ import LiftAnalyzer from "@/components/dashboard/lift-analyzer";
 import { Label } from "@/components/ui/label";
 
 import {
-  BenchmarkLiftsDto,
+  SavedLiftsDto,
   CompetitionCategoryDetailsDto,
 } from "@/db/data-access/dto/lifts/types";
 
@@ -26,7 +26,7 @@ async function DashboardPage() {
   const competitionCategoryDetails: CompetitionCategoryDetailsDto[] =
     await getCompetitionCategoryDetails();
 
-  const benchmarkLifts: BenchmarkLiftsDto[] = await getBenchmarkLiftsByUserId(
+  const benchmarkLifts: SavedLiftsDto[] = await getBenchmarkLiftsByUserId(
     currentUser.id
   );
   const userInformations: UserInformationDto = await getUserInformation(
@@ -77,7 +77,7 @@ async function DashboardPage() {
 
 export default withAuth(DashboardPage);
 
-const calculateCurrentTotal = (lifts: BenchmarkLiftsDto[]) => {
+const calculateCurrentTotal = (lifts: SavedLiftsDto[]) => {
   const currentTotal = lifts
     .filter((lift) => {
       return lift.lift.name === "Clean & Jerk" || lift.lift.name === "Snatch";
