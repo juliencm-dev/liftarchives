@@ -96,8 +96,8 @@ export default function LiftAnalyzer({
                 className='flex gap-2 items-center'
                 key={index}>
                 <p className='text-xs text-muted-foreground '>{value}%</p>
-                <ArrowBigRight className='text-violet-300 h-4 w-4' />
-                <p className='text-sm font-bold'>
+                <ArrowBigRight className='text-violet-300 h-3 w-3' />
+                <p className='text-xs font-bold'>
                   {selectedLift === ""
                     ? "--"
                     : lifts

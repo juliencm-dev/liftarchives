@@ -232,11 +232,3 @@ export const getDefaultLiftId = cache(async () => {
 
   return defaultLiftId.id;
 });
-
-// export const getCompetitionCategoryDetailsById = cache(async (id: string) => {
-//   return toCompetitionCategoryDetailsMapper(
-//     await db.query.competitionCategoriesDetails.findMany({
-//       where: eq(competitionCategoriesDetails.id, id),
-//     })
-//   );
-// });

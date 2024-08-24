@@ -10,6 +10,7 @@ import {
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
+  DrawerNestedRoot,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
@@ -67,10 +68,10 @@ export default function PBCard(props: PBCardProps) {
     <div className='flex justify-between bg-neutral-900 p-4 rounded-xl w-full mt-4 shadow-sm'>
       <div className='flex flex-col gap-4 text-left bg-neutral-800/50 p-8 w-[70%] rounded-xl shadow-sm'>
         <div className='flex flex-col gap-2'>
-          <p className='text-xl font-semibold text-foreground'>
+          <p className='text-lg font-semibold text-foreground'>
             Personnal Best
           </p>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-xs text-muted-foreground'>
             {props.lift.date === null
               ? "No data found"
               : "Achieved on " + new Date(props.lift.date).toDateString()}
@@ -90,7 +91,7 @@ export default function PBCard(props: PBCardProps) {
           {props.lift.weight !== null && props.weightPreference}
         </p>
       </div>
-      <Drawer
+      <DrawerNestedRoot
         open={open}
         onOpenChange={setOpen}>
         <DrawerTrigger asChild>
@@ -101,9 +102,10 @@ export default function PBCard(props: PBCardProps) {
         <DrawerContent>
           <DrawerClose />
           <DrawerHeader>
-            <DrawerTitle>Personnal Best</DrawerTitle>
-            <DrawerDescription className='text-sm text-muted-foreground mt-1'>
-              Enter the value of your new personal best for this lift.
+            <DrawerTitle>New Lift Entry</DrawerTitle>
+            <DrawerDescription className='mt-2'>
+              Enter the value of your latest lift entry for the{" "}
+              {props.lift.lift.name}.
             </DrawerDescription>
             <form action={handleAddPersonnalBest}>
               <div className='flex flex-col gap-4 p-4 mt-6 bg-neutral-900 rounded-xl w-full'>
@@ -125,7 +127,7 @@ export default function PBCard(props: PBCardProps) {
             </form>
           </DrawerHeader>
         </DrawerContent>
-      </Drawer>
+      </DrawerNestedRoot>
     </div>
   );
 }

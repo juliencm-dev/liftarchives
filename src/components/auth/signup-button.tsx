@@ -7,10 +7,12 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerDescription,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 
 import { SignUpForm } from "./signup-form";
 import { useState } from "react";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function SignUpButton() {
   const [open, setOpen] = useState<boolean>(false);
@@ -24,13 +26,15 @@ export default function SignUpButton() {
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <DrawerHeader>
-          <h2 className='text-xl font-bold'>Sign Up</h2>
-          <DrawerDescription className='text-sm text-muted-foreground'>
-            Enter your information to create an account
-          </DrawerDescription>
-        </DrawerHeader>
-        <SignUpForm setOpen={setOpen} />
+        <ScrollArea className='overflow-y-auto'>
+          <DrawerHeader>
+            <DrawerTitle>Sign Up</DrawerTitle>
+            <DrawerDescription className='mt-2'>
+              Enter your information to create an account
+            </DrawerDescription>
+          </DrawerHeader>
+          <SignUpForm setOpen={setOpen} />
+        </ScrollArea>
       </DrawerContent>
     </Drawer>
   );

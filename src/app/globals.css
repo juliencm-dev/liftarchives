@@ -33,7 +33,7 @@
 
 @layer base {
   * {
-    @apply border-border scrollbar-hidden select-none;
+    @apply border-border scrollbar-hidden select-none focus:outline-none;
 
 
   }

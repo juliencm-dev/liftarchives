@@ -6,6 +6,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerDescription,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { SignInForm } from "./signin-form";
@@ -29,8 +30,8 @@ export default function SignInButton() {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <h2 className='text-xl font-bold'>Sign In</h2>
-          <DrawerDescription className='text-sm text-muted-foreground'>
+          <DrawerTitle>Sign In</DrawerTitle>
+          <DrawerDescription className='mt-2'>
             Enter your email and password to sign in.
           </DrawerDescription>
         </DrawerHeader>

@@ -22,7 +22,7 @@ export default function LiftCard(props: LiftCardProps) {
         </p>
       </div>
       <div className='flex flex-col gap-2 text-right w-[calc(45%-1rem)]'>
-        <p className='text-lg sm:text-2xl font-bold text-violet-200'>
+        <p className='text-sm sm:text-xl font-bold text-violet-200'>
           {props.lift.weight === null
             ? "--"
             : convertWeightToLbs(

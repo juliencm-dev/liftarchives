@@ -40,7 +40,7 @@ export async function toBenchmarkLiftsDtoMapper(
             new Date(a.oneRepMaxDate!).getTime()
         );
 
-        for (let i = 1; i < clamp(sortedUserLifts.length, 1, 5); i++) {
+        for (let i = 1; i < sortedUserLifts.length; i++) {
           const currentLift = sortedUserLifts[i];
           if (currentLift.oneRepMax != null) {
             history.push({
@@ -52,8 +52,10 @@ export async function toBenchmarkLiftsDtoMapper(
       }
 
       return {
-        weight: userLiftArray[0].oneRepMax,
-        date: userLiftArray[0].oneRepMaxDate,
+        weight: userLiftArray.sort((a, b) => b.oneRepMax! - a.oneRepMax!)[0]
+          .oneRepMax,
+        date: userLiftArray.sort((a, b) => b.oneRepMax! - a.oneRepMax!)[0]
+          .oneRepMaxDate,
         lift: lift,
         history: history,
         liftForEstimation:

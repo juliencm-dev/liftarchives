@@ -4,13 +4,16 @@ import { redirect } from "next/navigation";
 
 export function withAuth(Component: React.ComponentType) {
   return async function WithAuth(props: any) {
-    const currentUser: UserDto = await getCurrentUser();
-    if (!currentUser) return redirect("/");
+    try {
+      const currentUser: UserDto = await getCurrentUser();
 
-    if (currentUser.accountSetupAt === "") {
-      return redirect("/account/setup");
+      if (currentUser.accountSetupAt === "") {
+        return redirect("/account/setup");
+      }
+
+      return <Component {...props} />;
+    } catch (error) {
+      return redirect("/");
     }
-
-    return <Component {...props} />;
   };
 }

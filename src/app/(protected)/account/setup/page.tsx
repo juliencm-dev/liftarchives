@@ -95,7 +95,7 @@ export default function AccountSetupPage() {
               asked to enter some details to help us properly setup your
               account. These informations can be changed at any time by visiting
               your account page and updating the informations under the
-              "Profile" section.
+              &quot;Profile&quot; section.
             </p>
           </div>
         </div>

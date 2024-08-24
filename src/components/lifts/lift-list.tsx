@@ -19,6 +19,7 @@ import {
 import LiftCard from "@/components/lifts/lift-card";
 import PBCard from "@/components/lifts/pb-card";
 import PBHistoryCard from "@/components/lifts/pb-history-card";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 interface LiftListProps {
   lifts: BenchmarkLiftsDto[];
@@ -82,22 +83,23 @@ export default function LiftList(props: LiftListProps) {
                 />
               </DrawerTrigger>
               <DrawerContent>
-                <DrawerClose />
-                <DrawerHeader>
-                  <DrawerTitle>{benchmarkLift.lift.name}</DrawerTitle>
-                  <DrawerDescription className='mt-2'>
-                    {benchmarkLift.lift.description}
-                  </DrawerDescription>
-                  <PBCard
-                    lift={benchmarkLift}
-                    userId={props.userId}
-                    weightPreference={props.weightPreference}
-                  />
-                  <PBHistoryCard
-                    userLifts={benchmarkLift.history}
-                    weightPreference={props.weightPreference}
-                  />
-                </DrawerHeader>
+                <ScrollArea className='overflow-y-auto'>
+                  <DrawerHeader>
+                    <DrawerTitle>{benchmarkLift.lift.name}</DrawerTitle>
+                    <DrawerDescription className='mt-2'>
+                      {benchmarkLift.lift.description}
+                    </DrawerDescription>
+                    <PBCard
+                      lift={benchmarkLift}
+                      userId={props.userId}
+                      weightPreference={props.weightPreference}
+                    />
+                    <PBHistoryCard
+                      userLifts={benchmarkLift.history}
+                      weightPreference={props.weightPreference}
+                    />
+                  </DrawerHeader>
+                </ScrollArea>
               </DrawerContent>
             </Drawer>
           ))}

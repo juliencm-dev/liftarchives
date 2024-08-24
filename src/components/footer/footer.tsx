@@ -23,7 +23,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className='fixed flex bg-neutral-800 bottom-0 py-3 w-full  items-center justify-around text-sm text-muted-foreground border-t border-muted md:px-48'>
+    <footer className='fixed flex bg-neutral-800 bottom-0 pt-3 pb-6 w-full  items-center justify-around text-sm text-muted-foreground border-t border-muted md:px-48'>
       {navigationOptions.map((option) => (
         <Link
           href={option.href}
