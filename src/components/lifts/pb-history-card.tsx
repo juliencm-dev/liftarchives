@@ -43,7 +43,9 @@ export default function PBHistoryCard({
                       </p>
                       <p className='text-base font-semibold text-foreground'>
                         {convertWeightToLbs(lift.weight, weightPreference)}{" "}
-                        {weightPreference}
+                        <span className='text-muted-foreground font-normal text-sm'>
+                          {weightPreference}
+                        </span>
                       </p>
                     </div>
                   ))
