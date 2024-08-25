@@ -1,6 +1,9 @@
 "use client";
 
-import { SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
+import {
+  SavedLiftsDto,
+  UserTrackedLiftDto,
+} from "@/db/data-access/dto/lifts/types";
 import { cn, convertWeightToLbs } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -21,10 +24,10 @@ import { addUserLiftAction } from "@/actions/lifts/add-user-lift";
 import { useToast } from "@/components/ui/use-toast";
 import { PulseLoader } from "react-spinners";
 import { useState } from "react";
+import { addUserTrackedLiftEntryAction } from "@/actions/lifts/add-user-tracked-lift-entry";
 
 interface PBCardProps {
-  lift: SavedLiftsDto;
-  userId: string;
+  lift: SavedLiftsDto | UserTrackedLiftDto;
   weightPreference: string;
 }
 
@@ -38,29 +41,49 @@ export default function PBCard(props: PBCardProps) {
 
     const newLiftFormData = new FormData();
 
-    newLiftFormData.append("userId", props.userId);
     newLiftFormData.append("liftId", props.lift.lift.id as string);
     newLiftFormData.append("weightPreference", props.weightPreference);
     newLiftFormData.append("weight", formData.get("weight") as string);
 
-    addUserLiftAction(newLiftFormData).then(
-      (response: ServerResponseMessage) => {
-        if (response.status !== 500) {
-          toast({
-            title: "Success",
-            description: response.message,
-          });
-          setIsPending(false);
-          setOpen(false);
-        } else {
-          toast({
-            title: "Error",
-            variant: "destructive",
-            description: response.message,
-          });
+    if (props.lift.isBenchmark) {
+      addUserLiftAction(newLiftFormData).then(
+        (response: ServerResponseMessage) => {
+          if (response.status !== 500) {
+            toast({
+              title: "Success",
+              description: response.message,
+            });
+            setIsPending(false);
+            setOpen(false);
+          } else {
+            toast({
+              title: "Error",
+              variant: "destructive",
+              description: response.message,
+            });
+          }
         }
-      }
-    );
+      );
+    } else {
+      addUserTrackedLiftEntryAction(newLiftFormData).then(
+        (response: ServerResponseMessage) => {
+          if (response.status !== 500) {
+            toast({
+              title: "Success",
+              description: response.message,
+            });
+            setIsPending(false);
+            setOpen(false);
+          } else {
+            toast({
+              title: "Error",
+              variant: "destructive",
+              description: response.message,
+            });
+          }
+        }
+      );
+    }
   };
 
   return (

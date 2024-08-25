@@ -49,11 +49,26 @@ export const usersLifts = pgTable("usersLifts", {
   oneRepMaxDate: timestamp("oneRepMaxDate", { mode: "date" }),
 });
 
+export const userTrackedLifts = pgTable("userTrackedLifts", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  liftId: text("liftId")
+    .notNull()
+    .references(() => lifts.id, { onDelete: "cascade" }),
+  oneRepMax: doublePrecision("oneRepMax"),
+  oneRepMaxDate: timestamp("oneRepMaxDate", { mode: "date" }),
+});
+
 export type User = typeof users.$inferSelect;
 export type UserInformation = typeof usersInformations.$inferSelect;
 export type UserLift = typeof usersLifts.$inferSelect;
+export type UserTrackedLift = typeof userTrackedLifts.$inferSelect;
 
 export type UserWithRelations = InferResultType<
   "users",
-  { usersInformations: true; usersLifts: true }
+  { usersInformations: true; usersLifts: true; userTrackedLifts: true }
 >;

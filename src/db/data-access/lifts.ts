@@ -7,7 +7,12 @@ import {
   lifts,
   liftsEstimates,
 } from "@/db/schemas/lifts";
-import { UserLift, usersLifts } from "@/db/schemas/users";
+import {
+  UserLift,
+  usersLifts,
+  UserTrackedLift,
+  userTrackedLifts,
+} from "@/db/schemas/users";
 import {
   CompetitionCategoryDetailsDto,
   EstimationLiftDto,
@@ -17,6 +22,7 @@ import {
   toSavedLiftsDtoMapper,
   toCompetitionCategoryDetailsMapper,
   toLiftDtoMapper,
+  toSavedUserTrackedLiftsDtoMapper,
 } from "@/db/data-access/dto-mapper/lifts";
 import {
   getAuthenticatedUserId,
@@ -24,7 +30,7 @@ import {
   getUserInformation,
 } from "@/db/data-access/users";
 
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, ne } from "drizzle-orm";
 import { cache } from "react";
 import { UserDto, UserInformationDto } from "./dto/users/types";
 
@@ -237,4 +243,45 @@ export const getDefaultLiftId = cache(async () => {
   })) as Lift;
 
   return defaultLiftId.id;
+});
+
+export const addUserTrackedLift = async (
+  newUserTrackedLift: UserTrackedLift
+) => {
+  const userId: string = await getAuthenticatedUserId();
+  try {
+    newUserTrackedLift.userId = userId;
+    await db.insert(userTrackedLifts).values(newUserTrackedLift);
+  } catch (error) {
+    throw new Error("Failed to add user tracked lift");
+  }
+};
+
+export const getUserTrackedLiftsByUserId = cache(async (userId: string) => {
+  try {
+    const userTrackedLift: UserTrackedLift[] =
+      await db.query.userTrackedLifts.findMany({
+        where: eq(userTrackedLifts.userId, userId),
+        orderBy: asc(userTrackedLifts.oneRepMaxDate),
+      });
+
+    const liftsGroupedByLiftID: Record<string, UserLift[]> = {};
+
+    // Group the lifts by liftId, placing each in its own array inside a main array
+    userTrackedLift.forEach((lift) => {
+      if (!liftsGroupedByLiftID[lift.liftId]) {
+        liftsGroupedByLiftID[lift.liftId] = [];
+      }
+      // Add each lift to the corresponding group
+      liftsGroupedByLiftID[lift.liftId].push(lift);
+    });
+
+    // Convert the object into an array of arrays, each representing a liftId
+    const userTrackedLiftArray: UserTrackedLift[][] =
+      Object.values(liftsGroupedByLiftID);
+
+    return toSavedUserTrackedLiftsDtoMapper(userTrackedLiftArray);
+  } catch (error) {
+    throw new Error("Failed to get user tracked lifts");
+  }
 });

@@ -1,5 +1,10 @@
 import { relations } from "drizzle-orm";
-import { users, usersInformations, usersLifts } from "./users";
+import {
+  users,
+  usersInformations,
+  usersLifts,
+  userTrackedLifts,
+} from "./users";
 import { lifts, liftsEstimates } from "./lifts";
 
 export const usersInformationsRelations = relations(
@@ -22,6 +27,20 @@ export const usersLiftsRelations = relations(usersLifts, ({ one }) => ({
     references: [lifts.id],
   }),
 }));
+
+export const userTrackedLiftsRelations = relations(
+  userTrackedLifts,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userTrackedLifts.userId],
+      references: [users.id],
+    }),
+    lift: one(lifts, {
+      fields: [userTrackedLifts.liftId],
+      references: [lifts.id],
+    }),
+  })
+);
 
 export const liftsEstimatesRelations = relations(liftsEstimates, ({ one }) => ({
   lift: one(lifts, {

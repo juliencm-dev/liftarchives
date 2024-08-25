@@ -88,7 +88,7 @@ export default function AccountSetupComponent() {
     <div className='container mx-auto pt-8 pb-24'>
       <div className='grid gap-6'>
         <div className='grid gap-6'>
-          <h1 className='text-4xl font-bold text-violet-300'>Account Setup</h1>
+          <h1 className='text-3xl font-bold text-violet-300'>Account Setup</h1>
           <div className='flex gap-4 items-center'>
             <p className='text-sm text-muted-foreground'>
               This is a one time process to setup your account. You will be

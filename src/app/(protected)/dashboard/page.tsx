@@ -1,5 +1,4 @@
 import { withAuth } from "@/components/auth/withAuth";
-
 import CompetitionDetails from "@/components/dashboard/competition-details";
 import LiftAnalyzer from "@/components/dashboard/lift-analyzer";
 
@@ -18,14 +17,10 @@ import {
 } from "@/db/data-access/lifts";
 import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
 import { TriangleAlert } from "lucide-react";
-import { redirect } from "next/navigation";
 
 async function DashboardPage() {
   const currentUser: UserDto = await getCurrentUser();
 
-  if (currentUser.accountSetupAt === "") {
-    return redirect("/account/setup");
-  }
   const defaultLiftId = await getDefaultLiftId();
 
   const competitionCategoryDetails: CompetitionCategoryDetailsDto[] =
@@ -44,11 +39,15 @@ async function DashboardPage() {
     <div className='container mx-auto pt-8 pb-24'>
       <div className='flex flex-col gap-6'>
         <h1 className='text-3xl font-bold text-violet-300'>Dashboard</h1>
-        <p className='text-sm text-muted-foreground'>
-          Hello {currentUser.firstName} {currentUser.lastName} 👋 Welcome to
-          your dashboard. Here you can view your lifts progression, competition
-          details and programming information.
-        </p>
+        <div className='flex flex-col gap-2'>
+          <p className='text-base text-muted-foreground'>
+            Hello {currentUser.firstName} 👋
+          </p>
+          <p className='text-sm text-muted-foreground'>
+            Welcome to your dashboard. Here you can view your lifts progression,
+            competition details and programming information.
+          </p>
+        </div>
 
         {/* PROGRAMMING */}
 

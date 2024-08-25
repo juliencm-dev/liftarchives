@@ -11,6 +11,15 @@ export type SavedLiftsDto = {
   weight: number | null;
   date: string | null;
   history: LiftHistoryDto[];
+  isBenchmark: boolean;
+};
+
+export type UserTrackedLiftDto = {
+  lift: LiftDto;
+  weight: number | null;
+  date: string | null;
+  history: LiftHistoryDto[];
+  isBenchmark: boolean;
 };
 
 export type LiftHistoryDto = {

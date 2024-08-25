@@ -3,7 +3,11 @@
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-import { LiftDto, SavedLiftsDto } from "@/db/data-access/dto/lifts/types";
+import {
+  LiftDto,
+  SavedLiftsDto,
+  UserTrackedLiftDto,
+} from "@/db/data-access/dto/lifts/types";
 
 import { ChevronDown, PlusCircle } from "lucide-react";
 import {
@@ -31,9 +35,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { addUserTrackedLiftAction } from "@/actions/lifts/add-user-tracked-lift";
+import { useToast } from "../ui/use-toast";
+import { ServerResponseMessage } from "@/lib/types";
 
 interface LiftListProps {
-  userLifts: SavedLiftsDto[];
+  userLifts: UserTrackedLiftDto[];
   lifts: LiftDto[];
   title: string;
   weightPreference: string;
@@ -42,6 +49,8 @@ interface LiftListProps {
 }
 
 export default function UserTrackedLiftList(props: LiftListProps) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(props.isOpen ?? false);
   const [isPending, setIsPending] = useState<boolean>(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -50,10 +59,26 @@ export default function UserTrackedLiftList(props: LiftListProps) {
     setIsPending(true);
 
     const newLiftFormData = new FormData();
-    newLiftFormData.append("userId", props.userId);
     newLiftFormData.append("liftId", formData.get("liftId") as string);
 
-    setIsPending(false);
+    addUserTrackedLiftAction(newLiftFormData).then(
+      (response: ServerResponseMessage) => {
+        if (response.status !== 500) {
+          toast({
+            title: "Success",
+            description: response.message,
+          });
+          setIsPending(false);
+          setOpen(false);
+        } else {
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: response.message,
+          });
+        }
+      }
+    );
   };
 
   return (
@@ -61,7 +86,9 @@ export default function UserTrackedLiftList(props: LiftListProps) {
       <div className='flex flex-col gap-2'>
         <div className='flex gap-4 items-center justify-between'>
           <h2 className='text-lg font-bold'>User Tracked Lifts</h2>
-          <Drawer>
+          <Drawer
+            open={open}
+            onOpenChange={setOpen}>
             <DrawerTrigger>
               <PlusCircle className='text-violet-300' />
             </DrawerTrigger>
@@ -82,13 +109,20 @@ export default function UserTrackedLiftList(props: LiftListProps) {
                           </SelectTrigger>
                           <SelectContent className='z-[1100]'>
                             <SelectGroup>
-                              {props.lifts.map((lift, index) => (
-                                <SelectItem
-                                  value={lift.id as string}
-                                  key={index}>
-                                  {lift.name}
-                                </SelectItem>
-                              ))}
+                              {props.lifts
+                                .filter(
+                                  (lift) =>
+                                    props.userLifts.findIndex(
+                                      (userLift) => userLift.lift.id === lift.id
+                                    ) === -1
+                                )
+                                .map((lift, index) => (
+                                  <SelectItem
+                                    value={lift.id as string}
+                                    key={index}>
+                                    {lift.name}
+                                  </SelectItem>
+                                ))}
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -163,7 +197,6 @@ export default function UserTrackedLiftList(props: LiftListProps) {
                       </DrawerDescription>
                       <PBCard
                         lift={userTrackedLift}
-                        userId={props.userId}
                         weightPreference={props.weightPreference}
                       />
                       <PBHistoryCard

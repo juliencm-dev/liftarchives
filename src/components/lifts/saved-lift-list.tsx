@@ -44,7 +44,13 @@ export default function SavedLiftList(props: LiftListProps) {
       <div
         className='flex justify-between'
         onClick={() => setIsOpen(!isOpen)}>
-        <h2 className='text-lg font-semibold'>{props.title}</h2>
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-lg font-semibold'>{props.title}</h2>
+          <p className='text-xs text-muted-foreground '>
+            Filling out this section will allow you to easily calculate your
+            percentages when following along your weightlifting programs.
+          </p>
+        </div>
         <ChevronDown
           className={cn(
             isOpen ? "rotate-180" : "",
@@ -68,10 +74,6 @@ export default function SavedLiftList(props: LiftListProps) {
             : 0,
         }}>
         {props.lifts
-          .filter(
-            (benchmarkLift: SavedLiftsDto) =>
-              benchmarkLift.lift.category === props.category
-          )
           .sort((a, b) => a.lift.name.localeCompare(b.lift.name))
           .map((benchmarkLift) => (
             <Drawer key={benchmarkLift.lift.id}>
@@ -90,7 +92,6 @@ export default function SavedLiftList(props: LiftListProps) {
                     </DrawerDescription>
                     <PBCard
                       lift={benchmarkLift}
-                      userId={props.userId}
                       weightPreference={props.weightPreference}
                     />
                     <PBHistoryCard

@@ -12,7 +12,6 @@ import {
   CreditCard,
   Database,
   LockKeyhole,
-  Mail,
   ReceiptText,
   ShieldCheck,
   User,

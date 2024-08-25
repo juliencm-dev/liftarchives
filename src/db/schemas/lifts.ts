@@ -6,8 +6,10 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
+import { users } from "./users";
 
 export const lifts = pgTable("lifts", {
   id: text("id")
