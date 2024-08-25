@@ -7,13 +7,11 @@ export function withAuth(Component: React.ComponentType) {
     try {
       const currentUser: UserDto = await getCurrentUser();
 
-      if (currentUser.accountSetupAt === "") {
-        return redirect("/account/setup");
-      }
+      console.log(currentUser);
 
       return <Component {...props} />;
     } catch (error) {
-      return redirect("/");
+      redirect("/");
     }
   };
 }

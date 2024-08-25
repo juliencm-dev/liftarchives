@@ -18,9 +18,14 @@ import {
 } from "@/db/data-access/lifts";
 import { getCurrentUser, getUserInformation } from "@/db/data-access/users";
 import { TriangleAlert } from "lucide-react";
+import { redirect } from "next/navigation";
 
 async function DashboardPage() {
   const currentUser: UserDto = await getCurrentUser();
+
+  if (currentUser.accountSetupAt === "") {
+    return redirect("/account/setup");
+  }
   const defaultLiftId = await getDefaultLiftId();
 
   const competitionCategoryDetails: CompetitionCategoryDetailsDto[] =

@@ -53,15 +53,13 @@ export default function UserTrackedLiftList(props: LiftListProps) {
     newLiftFormData.append("userId", props.userId);
     newLiftFormData.append("liftId", formData.get("liftId") as string);
 
-    console.log(formData.get("liftId") as string);
-
     setIsPending(false);
   };
 
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex flex-col gap-2'>
-        <div className='flex gap-4 items-center'>
+        <div className='flex gap-4 items-center justify-between'>
           <h2 className='text-lg font-bold'>User Tracked Lifts</h2>
           <Drawer>
             <DrawerTrigger>

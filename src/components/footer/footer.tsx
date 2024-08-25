@@ -22,6 +22,8 @@ export default function Footer() {
     { name: "Account", icon: <CircleUserRound />, href: "/account" },
   ];
 
+  if (pathname === "/account/setup") return null;
+
   return (
     <footer className='fixed flex bg-neutral-800 bottom-0 pt-3 pb-6 w-full items-center justify-around text-xs text-muted-foreground border-t border-muted md:px-48'>
       {navigationOptions.map((option) => (

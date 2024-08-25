@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "../ui/use-toast";
 import { ServerResponseMessage } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 export function SignUpForm({
   setOpen,
@@ -16,6 +18,12 @@ export function SignUpForm({
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [isValid, setIsValid] = useState<Boolean>(false);
+  const [passwordIsConfirmed, setPasswordIsConfirmed] =
+    useState<Boolean>(false);
+
+  const [passwordInputType, setPasswordInputType] =
+    useState<string>("password");
+
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -43,7 +51,13 @@ export function SignUpForm({
   };
 
   const handleIsValid = () => {
-    if (firstName && lastName && email && password === confirmPassword) {
+    if (
+      firstName &&
+      lastName &&
+      email &&
+      passwordIsConfirmed &&
+      password !== ""
+    ) {
       setIsValid(true);
     } else {
       setIsValid(false);
@@ -52,7 +66,23 @@ export function SignUpForm({
 
   useEffect(() => {
     handleIsValid();
-  }, [firstName, lastName, email, password, confirmPassword]);
+  }, [firstName, lastName, email, passwordIsConfirmed]);
+
+  useEffect(() => {
+    if (password === confirmPassword) {
+      setPasswordIsConfirmed(true);
+    } else {
+      setPasswordIsConfirmed(false);
+    }
+  }, [password, confirmPassword]);
+
+  const handlePasswordInputType = () => {
+    if (passwordInputType === "password") {
+      setPasswordInputType("text");
+    } else {
+      setPasswordInputType("password");
+    }
+  };
 
   return (
     <form
@@ -94,20 +124,57 @@ export function SignUpForm({
         </div>
         <div className='flex flex-col gap-2'>
           <Label htmlFor='password'>Password</Label>
-          <Input
-            name='password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type='password'
-          />
+          <div className='relative'>
+            <Input
+              name='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type={passwordInputType}
+            />
+            <Eye
+              className={
+                (cn(passwordInputType === "password" ? "" : "hidden"),
+                "absolute right-3 top-2 cursor-pointer")
+              }
+              onClick={handlePasswordInputType}
+            />
+            <EyeOff
+              className={cn(
+                passwordInputType === "text" ? "" : "hidden",
+                "absolute right-3 top-2 cursor-pointer"
+              )}
+              onClick={handlePasswordInputType}
+            />
+          </div>
         </div>
         <div className='flex flex-col gap-2'>
-          <Label htmlFor='password'>Password (confirmation)</Label>
-          <Input
-            value={confirmPassword}
-            type='password'
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <Label
+            className={cn(passwordIsConfirmed ? "" : "text-red-500")}
+            htmlFor='password'>
+            Password (confirmation)
+          </Label>
+          <div className='relative'>
+            <Input
+              value={confirmPassword}
+              className={cn(passwordIsConfirmed ? "" : "border-red-500")}
+              type={passwordInputType}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <Eye
+              className={
+                (cn(passwordInputType === "password" ? "" : "hidden"),
+                "absolute right-3 top-2 cursor-pointer")
+              }
+              onClick={handlePasswordInputType}
+            />
+            <EyeOff
+              className={cn(
+                passwordInputType === "text" ? "" : "hidden",
+                "absolute right-3 top-2 cursor-pointer"
+              )}
+              onClick={handlePasswordInputType}
+            />
+          </div>
         </div>
         <Button
           type='submit'
