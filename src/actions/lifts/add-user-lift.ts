@@ -6,17 +6,11 @@ import { ServerResponseMessage } from "@/lib/types";
 import { convertWeightToKg } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 
-export async function addUserLiftAction(
-  data: FormData
-): Promise<ServerResponseMessage> {
+export async function addUserLiftAction(data: FormData): Promise<ServerResponseMessage> {
   const weightPreference = data.get("weightPreference") as string;
-  const convertedWeight = convertWeightToKg(
-    Number(data.get("weight") as string),
-    weightPreference
-  );
+  const convertedWeight = convertWeightToKg(Number(data.get("weight") as string), weightPreference);
 
   const newUserLift: UserLift = {
-    userId: data.get("userId") as string,
     liftId: data.get("liftId") as string,
     oneRepMax: Number(convertedWeight),
     oneRepMaxDate: new Date(),

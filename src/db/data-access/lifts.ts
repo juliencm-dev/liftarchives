@@ -1,34 +1,9 @@
 import { db } from "@/db/db";
-import {
-  competitionCategoriesDetails,
-  CompetitionCategoryDetails,
-  Lift,
-  LiftEstimate,
-  lifts,
-  liftsEstimates,
-} from "@/db/schemas/lifts";
-import {
-  UserLift,
-  usersLifts,
-  UserTrackedLift,
-  userTrackedLifts,
-} from "@/db/schemas/users";
-import {
-  CompetitionCategoryDetailsDto,
-  EstimationLiftDto,
-  LiftDto,
-} from "@/db/data-access/dto/lifts/types";
-import {
-  toSavedLiftsDtoMapper,
-  toCompetitionCategoryDetailsMapper,
-  toLiftDtoMapper,
-  toSavedUserTrackedLiftsDtoMapper,
-} from "@/db/data-access/dto-mapper/lifts";
-import {
-  getAuthenticatedUserId,
-  getCurrentUser,
-  getUserInformation,
-} from "@/db/data-access/users";
+import { competitionCategoriesDetails, CompetitionCategoryDetails, Lift, LiftEstimate, lifts, liftsEstimates } from "@/db/schemas/lifts";
+import { UserLift, usersLifts, UserTrackedLift, userTrackedLifts } from "@/db/schemas/users";
+import { CompetitionCategoryDetailsDto, EstimationLiftDto, LiftDto } from "@/db/data-access/dto/lifts/types";
+import { toSavedLiftsDtoMapper, toCompetitionCategoryDetailsMapper, toLiftDtoMapper, toSavedUserTrackedLiftsDtoMapper } from "@/db/data-access/dto-mapper/lifts";
+import { getAuthenticatedUserId, getCurrentUser, getUserInformation } from "@/db/data-access/users";
 
 import { asc, eq, ne } from "drizzle-orm";
 import { cache } from "react";
@@ -51,7 +26,7 @@ export const getBenchmarkLiftsByUserId = cache(async (userId: string) => {
   // Group the lifts by liftId, placing each in its own array inside a main array
   const liftsGroupedByLiftID: Record<string, UserLift[]> = {};
 
-  userBenchmarkLifts.forEach((lift) => {
+  userBenchmarkLifts.forEach(lift => {
     if (!liftsGroupedByLiftID[lift.liftId]) {
       liftsGroupedByLiftID[lift.liftId] = [];
     }
@@ -60,28 +35,21 @@ export const getBenchmarkLiftsByUserId = cache(async (userId: string) => {
   });
 
   // Convert the object into an array of arrays, each representing a liftId
-  const userBenchmarkLiftsArray: UserLift[][] =
-    Object.values(liftsGroupedByLiftID);
+  const userBenchmarkLiftsArray: UserLift[][] = Object.values(liftsGroupedByLiftID);
 
   return toSavedLiftsDtoMapper(userBenchmarkLiftsArray);
 });
 
 export const getLiftById = async (id: string) => {
-  return toLiftDtoMapper(
-    await db.query.lifts.findMany({ where: eq(lifts.id, id) })
-  );
+  return toLiftDtoMapper(await db.query.lifts.findMany({ where: eq(lifts.id, id) }));
 };
 
 export const getBenchmarkLifts = cache(async () => {
-  return toLiftDtoMapper(
-    await db.query.lifts.findMany({ where: eq(lifts.benchmark, true) })
-  );
+  return toLiftDtoMapper(await db.query.lifts.findMany({ where: eq(lifts.benchmark, true) }));
 });
 
 export const getNoneBenchmarkLifts = cache(async () => {
-  return toLiftDtoMapper(
-    await db.query.lifts.findMany({ where: eq(lifts.benchmark, false) })
-  );
+  return toLiftDtoMapper(await db.query.lifts.findMany({ where: eq(lifts.benchmark, false) }));
 });
 
 export const getLifts = cache(async () => {
@@ -89,16 +57,17 @@ export const getLifts = cache(async () => {
 });
 
 export const addUserLift = async (userLift: UserLift) => {
+  const userId: string = await getAuthenticatedUserId();
+  userLift.userId = userId;
   try {
     await db.insert(usersLifts).values(userLift);
   } catch (error) {
+    console.log(error);
     throw new Error("Failed to add user lift");
   }
 };
 
-export const getEstimationLift = async (
-  liftId: string
-): Promise<EstimationLiftDto | undefined> => {
+export const getEstimationLift = async (liftId: string): Promise<EstimationLiftDto | undefined> => {
   const userId: string = await getAuthenticatedUserId();
 
   const userBenchmarkLifts: UserLift[] = await db.query.usersLifts.findMany({
@@ -109,7 +78,7 @@ export const getEstimationLift = async (
   // Group the lifts by liftId, placing each in its own array inside a main array
   const liftsGroupedByLiftID: Record<string, UserLift[]> = {};
 
-  userBenchmarkLifts.forEach((lift) => {
+  userBenchmarkLifts.forEach(lift => {
     if (!liftsGroupedByLiftID[lift.liftId]) {
       liftsGroupedByLiftID[lift.liftId] = [];
     }
@@ -127,13 +96,7 @@ export const getEstimationLift = async (
     return undefined;
   }
 
-  const liftEstimateLatestMax = liftsGroupedByLiftID[
-    liftEstimate.liftForCalculationId
-  ].sort(
-    (a, b) =>
-      new Date(b.oneRepMaxDate!).getTime() -
-      new Date(a.oneRepMaxDate!).getTime()
-  )[0].oneRepMax;
+  const liftEstimateLatestMax = liftsGroupedByLiftID[liftEstimate.liftForCalculationId].sort((a, b) => new Date(b.oneRepMaxDate!).getTime() - new Date(a.oneRepMaxDate!).getTime())[0].oneRepMax;
 
   const liftEstimationDto: EstimationLiftDto = {
     weight: liftEstimateLatestMax,
@@ -144,13 +107,9 @@ export const getEstimationLift = async (
   return liftEstimationDto;
 };
 
-export const addCompetitionCategoryDetails = async (
-  competitionCategoryDetails: CompetitionCategoryDetailsDto
-) => {
+export const addCompetitionCategoryDetails = async (competitionCategoryDetails: CompetitionCategoryDetailsDto) => {
   try {
-    await db
-      .insert(competitionCategoriesDetails)
-      .values(competitionCategoryDetails as CompetitionCategoryDetails);
+    await db.insert(competitionCategoriesDetails).values(competitionCategoryDetails as CompetitionCategoryDetails);
   } catch (error) {
     throw new Error("Failed to add competition category details");
   }
@@ -160,78 +119,39 @@ export const getCompetitionCategoryDetails = cache(async () => {
   const currentUser: UserDto = await getCurrentUser();
   if (!currentUser) throw new Error("User not authenticated");
 
-  const currentUserInformation: UserInformationDto = await getUserInformation(
-    currentUser.id
-  );
+  const currentUserInformation: UserInformationDto = await getUserInformation(currentUser.id);
 
-  const competitionCategoryDetails: CompetitionCategoryDetails[] =
-    await db.query.competitionCategoriesDetails.findMany({
-      where: eq(
-        competitionCategoriesDetails.gender,
-        currentUserInformation.gender
-      ),
-    });
+  const competitionCategoryDetails: CompetitionCategoryDetails[] = await db.query.competitionCategoriesDetails.findMany({
+    where: eq(competitionCategoriesDetails.gender, currentUserInformation.gender),
+  });
 
-  const filteredCompetitionCategoryDetailsByAge: CompetitionCategoryDetails[] =
-    competitionCategoryDetails.filter(
-      (competitionCategoryDetail: CompetitionCategoryDetails) => {
-        if (
-          competitionCategoryDetail.maxBirthYear === null &&
-          currentUserInformation.birthYear <
-            competitionCategoryDetail.minBirthYear
-        )
-          return true;
+  const filteredCompetitionCategoryDetailsByAge: CompetitionCategoryDetails[] = competitionCategoryDetails.filter((competitionCategoryDetail: CompetitionCategoryDetails) => {
+    if (competitionCategoryDetail.maxBirthYear === null && currentUserInformation.birthYear < competitionCategoryDetail.minBirthYear) return true;
 
-        if (
-          currentUserInformation.birthYear <=
-          competitionCategoryDetail.minBirthYear
-        ) {
-          if (
-            currentUserInformation.birthYear >
-            competitionCategoryDetail.maxBirthYear!
-          ) {
-            return true;
-          }
-        }
+    if (currentUserInformation.birthYear <= competitionCategoryDetail.minBirthYear) {
+      if (currentUserInformation.birthYear > competitionCategoryDetail.maxBirthYear!) {
+        return true;
       }
-    );
+    }
+  });
 
-  const filteredCompetitionCategoryDetailsByWeight: CompetitionCategoryDetails[] =
-    filteredCompetitionCategoryDetailsByAge.filter(
-      (competitionCategoryDetail: CompetitionCategoryDetails) => {
-        if (
-          competitionCategoryDetail.maxWeight === null &&
-          currentUserInformation.weight > competitionCategoryDetail.minWeight
-        )
-          return true;
+  const filteredCompetitionCategoryDetailsByWeight: CompetitionCategoryDetails[] = filteredCompetitionCategoryDetailsByAge.filter((competitionCategoryDetail: CompetitionCategoryDetails) => {
+    if (competitionCategoryDetail.maxWeight === null && currentUserInformation.weight > competitionCategoryDetail.minWeight) return true;
 
-        if (
-          currentUserInformation.weight > competitionCategoryDetail.minWeight
-        ) {
-          if (
-            currentUserInformation.weight <=
-            competitionCategoryDetail.maxWeight!
-          ) {
-            return true;
-          }
-        }
+    if (currentUserInformation.weight > competitionCategoryDetail.minWeight) {
+      if (currentUserInformation.weight <= competitionCategoryDetail.maxWeight!) {
+        return true;
       }
-    );
+    }
+  });
 
-  const filteredCompetitionCategoryDetailsByDivision: CompetitionCategoryDetails[] =
-    filteredCompetitionCategoryDetailsByWeight.filter(
-      (competitionCategoryDetail: CompetitionCategoryDetails) => {
-        if (
-          competitionCategoryDetail.division === currentUserInformation.division
-        ) {
-          return true;
-        }
-      }
-    );
+  const filteredCompetitionCategoryDetailsByDivision: CompetitionCategoryDetails[] = filteredCompetitionCategoryDetailsByWeight.filter((competitionCategoryDetail: CompetitionCategoryDetails) => {
+    if (competitionCategoryDetail.division === currentUserInformation.division) {
+      return true;
+    }
+  });
 
-  return toCompetitionCategoryDetailsMapper(
-    filteredCompetitionCategoryDetailsByDivision
-  );
+  return toCompetitionCategoryDetailsMapper(filteredCompetitionCategoryDetailsByDivision);
 });
 
 export const getDefaultLiftId = cache(async () => {
@@ -245,9 +165,7 @@ export const getDefaultLiftId = cache(async () => {
   return defaultLiftId.id;
 });
 
-export const addUserTrackedLift = async (
-  newUserTrackedLift: UserTrackedLift
-) => {
+export const addUserTrackedLift = async (newUserTrackedLift: UserTrackedLift) => {
   const userId: string = await getAuthenticatedUserId();
   try {
     newUserTrackedLift.userId = userId;
@@ -259,16 +177,15 @@ export const addUserTrackedLift = async (
 
 export const getUserTrackedLiftsByUserId = cache(async (userId: string) => {
   try {
-    const userTrackedLift: UserTrackedLift[] =
-      await db.query.userTrackedLifts.findMany({
-        where: eq(userTrackedLifts.userId, userId),
-        orderBy: asc(userTrackedLifts.oneRepMaxDate),
-      });
+    const userTrackedLift: UserTrackedLift[] = await db.query.userTrackedLifts.findMany({
+      where: eq(userTrackedLifts.userId, userId),
+      orderBy: asc(userTrackedLifts.oneRepMaxDate),
+    });
 
     const liftsGroupedByLiftID: Record<string, UserLift[]> = {};
 
     // Group the lifts by liftId, placing each in its own array inside a main array
-    userTrackedLift.forEach((lift) => {
+    userTrackedLift.forEach(lift => {
       if (!liftsGroupedByLiftID[lift.liftId]) {
         liftsGroupedByLiftID[lift.liftId] = [];
       }
@@ -277,8 +194,7 @@ export const getUserTrackedLiftsByUserId = cache(async (userId: string) => {
     });
 
     // Convert the object into an array of arrays, each representing a liftId
-    const userTrackedLiftArray: UserTrackedLift[][] =
-      Object.values(liftsGroupedByLiftID);
+    const userTrackedLiftArray: UserTrackedLift[][] = Object.values(liftsGroupedByLiftID);
 
     return toSavedUserTrackedLiftsDtoMapper(userTrackedLiftArray);
   } catch (error) {
