@@ -7,7 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectI
 import { ArrowBigRight, CircleAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { use, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn, convertWeightToLbs } from "@/lib/utils";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";

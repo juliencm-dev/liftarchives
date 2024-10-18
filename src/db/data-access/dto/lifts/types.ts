@@ -42,4 +42,5 @@ export type CompetitionCategoryDetailsDto = {
   minWeight: number;
   maxWeight: number | null;
   gender: string;
+  division: string;
 };

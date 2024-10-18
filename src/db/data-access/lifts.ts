@@ -5,7 +5,7 @@ import { CompetitionCategoryDetailsDto, EstimationLiftDto, LiftDto } from "@/db/
 import { toSavedLiftsDtoMapper, toCompetitionCategoryDetailsMapper, toLiftDtoMapper, toSavedUserTrackedLiftsDtoMapper } from "@/db/data-access/dto-mapper/lifts";
 import { getAuthenticatedUserId, getCurrentUser, getUserInformation } from "@/db/data-access/users";
 
-import { asc, eq, ne } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { cache } from "react";
 import { UserDto, UserInformationDto } from "./dto/users/types";
 
@@ -109,9 +109,19 @@ export const getEstimationLift = async (liftId: string): Promise<EstimationLiftD
 
 export const addCompetitionCategoryDetails = async (competitionCategoryDetails: CompetitionCategoryDetailsDto) => {
   try {
-    await db.insert(competitionCategoriesDetails).values(competitionCategoryDetails as CompetitionCategoryDetails);
+    await db.insert(competitionCategoriesDetails).values(competitionCategoryDetails);
   } catch (error) {
+    console.error(error);
     throw new Error("Failed to add competition category details");
+  }
+};
+
+export const deleteCompetitionDivision = async () => {
+  try {
+    await db.delete(competitionCategoriesDetails).where(eq(competitionCategoriesDetails.division, "master"));
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to delete competition division");
   }
 };
 

@@ -1,15 +1,5 @@
-import {
-  boolean,
-  unique,
-  doublePrecision,
-  integer,
-  pgTable,
-  primaryKey,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, pgTable, primaryKey, text } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
-import { users } from "./users";
 
 export const lifts = pgTable("lifts", {
   id: text("id")
@@ -33,31 +23,27 @@ export const liftsEstimates = pgTable(
     percentage: doublePrecision("percentage").notNull(),
     description: text("description").notNull(),
   },
-  (table) => {
+  table => {
     return {
       pk: primaryKey({ columns: [table.liftId, table.liftForCalculationId] }),
     };
   }
 );
 
-export const competitionCategoriesDetails = pgTable(
-  "competitionCategoriesDetails",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => createId()),
-    name: text("name").notNull().unique(),
-    total: doublePrecision("total"),
-    minBirthYear: integer("minBirthDate").notNull(),
-    maxBirthYear: integer("maxBirthDate"),
-    minWeight: integer("minWeight").notNull(),
-    maxWeight: integer("maxWeight"),
-    gender: text("gender").notNull(),
-    division: text("division").notNull(),
-  }
-);
+export const competitionCategoriesDetails = pgTable("competitionCategoriesDetails", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  name: text("name").notNull().unique(),
+  total: doublePrecision("total"),
+  minBirthYear: integer("minBirthDate").notNull(),
+  maxBirthYear: integer("maxBirthDate"),
+  minWeight: integer("minWeight").notNull(),
+  maxWeight: integer("maxWeight"),
+  gender: text("gender").notNull(),
+  division: text("division").notNull(),
+});
 
 export type Lift = typeof lifts.$inferSelect;
 export type LiftEstimate = typeof liftsEstimates.$inferSelect;
-export type CompetitionCategoryDetails =
-  typeof competitionCategoriesDetails.$inferSelect;
+export type CompetitionCategoryDetails = typeof competitionCategoriesDetails.$inferSelect;
