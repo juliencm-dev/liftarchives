@@ -1,0 +1,82 @@
+[
+    {
+        "name": "IWF Junior Men -55kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 0,
+        "maxWeight": 55
+    },
+    {
+        "name": "IWF Junior Men -61kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 55,
+        "maxWeight": 61
+    },
+    {
+        "name": "IWF Junior Men -67kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 61,
+        "maxWeight": 67
+    },
+    {
+        "name": "IWF Junior Men -73kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 67,
+        "maxWeight": 73
+    },
+    {
+        "name": "IWF Junior Men -81kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 73,
+        "maxWeight": 81
+    },
+    {
+        "name": "IWF Junior Men -89kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 81,
+        "maxWeight": 89
+    },
+    {
+        "name": "IWF Junior Men -96kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 89,
+        "maxWeight": 96
+    },
+    {
+        "name": "IWF Junior Men -102kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 96,
+        "maxWeight": 102
+    },
+    {
+        "name": "IWF Junior Men -109kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 102,
+        "maxWeight": 109
+    },
+    {
+        "name": "IWF Junior Men +109kg",
+        "total": null,
+        "minBirthYear": 2009,
+        "maxBirthYear": 2004,
+        "minWeight": 109,
+        "maxWeight": null
+    }
+]

@@ -1,0 +1,82 @@
+[
+    {
+        "name": "IWF Senior Men -55kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 0,
+        "maxWeight": 55
+    },
+    {
+        "name": "IWF Senior Men -61kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 55,
+        "maxWeight": 61
+    },
+    {
+        "name": "IWF Senior Men -67kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 61,
+        "maxWeight": 67
+    },
+    {
+        "name": "IWF Senior Men -73kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 67,
+        "maxWeight": 73
+    },
+    {
+        "name": "IWF Senior Men -81kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 73,
+        "maxWeight": 81
+    },
+    {
+        "name": "IWF Senior Men -89kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 81,
+        "maxWeight": 89
+    },
+    {
+        "name": "IWF Senior Men -96kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 89,
+        "maxWeight": 96
+    },
+    {
+        "name": "IWF Senior Men -102kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 96,
+        "maxWeight": 102
+    },
+    {
+        "name": "IWF Senior Men -109kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 102,
+        "maxWeight": 109
+    },
+    {
+        "name": "IWF Senior Men +109kg",
+        "total": null,
+        "minBirthYear": 2003,
+        "maxBirthYear": null,
+        "minWeight": 109,
+        "maxWeight": null
+    }
+]
