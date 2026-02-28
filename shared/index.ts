@@ -4,3 +4,7 @@
 //   import type { AppType } from "@liftarchives/shared/app-type";
 
 export * from "./schemas/user";
+export * from "./schemas/profile";
+export * from "./schemas/lifts";
+export * from "./schemas/programs";
+export * from "./dto";

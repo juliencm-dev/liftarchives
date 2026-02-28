@@ -27,6 +27,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard').then((m) => ({ defa
 const TrainingPage = lazy(() => import('@/pages/training').then((m) => ({ default: m.TrainingPage })));
 const LiftsPage = lazy(() => import('@/pages/lifts').then((m) => ({ default: m.LiftsPage })));
 const ProgramsPage = lazy(() => import('@/pages/programs').then((m) => ({ default: m.ProgramsPage })));
+const ProgramDetailPage = lazy(() => import('@/pages/program-detail').then((m) => ({ default: m.ProgramDetailPage })));
 const ProfilePage = lazy(() => import('@/pages/profile').then((m) => ({ default: m.ProfilePage })));
 
 function PageSuspense({ children }: { children: React.ReactNode }) {
@@ -91,13 +92,13 @@ const _appLayout = createRoute({
     id: 'appLayout',
     beforeLoad: isProtectedRoute,
     component: () => (
-        <>
+        <div className="flex min-h-dvh w-full flex-col">
             <AppHeader />
-            <main className="pb-20 md:pb-0">
+            <main className="flex-1 overflow-x-hidden pb-20 md:pb-0">
                 <Outlet />
             </main>
             <BottomNav />
-        </>
+        </div>
     ),
 });
 
@@ -207,6 +208,16 @@ const programsRoute = createRoute({
     ),
 });
 
+const programDetailRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/programs/$programId',
+    component: () => (
+        <PageSuspense>
+            <ProgramDetailPage />
+        </PageSuspense>
+    ),
+});
+
 const profileRoute = createRoute({
     getParentRoute: () => _appLayout,
     path: '/profile',
@@ -227,7 +238,14 @@ const routeTree = _root.addChildren([
         forgotPasswordRoute,
         resetPasswordRoute,
     ]),
-    _appLayout.addChildren([dashboardRoute, trainingRoute, liftsRoute, programsRoute, profileRoute]),
+    _appLayout.addChildren([
+        dashboardRoute,
+        trainingRoute,
+        liftsRoute,
+        programsRoute,
+        programDetailRoute,
+        profileRoute,
+    ]),
 ]);
 
 // Create the router instance

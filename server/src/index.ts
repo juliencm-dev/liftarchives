@@ -7,6 +7,9 @@ import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 
 import { authRateLimit, unauthRateLimit } from "@/middleware/rate-limit-config";
+import { profileRoutes } from "@/routes/profile";
+import { liftsRoutes } from "@/routes/lifts";
+import { programRoutes } from "@/routes/programs";
 import { db, isAccountLocked, lockAccountByEmail } from "@liftarchives/database";
 import {
   recordFailure,
@@ -104,9 +107,13 @@ app.on(["POST", "GET"], "/api/auth/*", async (c) => {
   return response;
 });
 
-const routes = app.get("/api/health", unauthRateLimit, (c) => {
-  return c.json({ status: "ok" });
-});
+const routes = app
+  .get("/api/health", unauthRateLimit, (c) => {
+    return c.json({ status: "ok" });
+  })
+  .route("/api/profile", profileRoutes)
+  .route("/api/lifts", liftsRoutes)
+  .route("/api/programs", programRoutes);
 
 // Global error handler
 app.onError((err, c) => {

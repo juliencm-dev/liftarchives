@@ -1,64 +1,75 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Dumbbell, LogOut, User } from 'lucide-react';
+import { Calculator, Dumbbell, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { PercentageCalculatorDialog } from '@/components/calculator/PercentageCalculator';
 
 export function AppHeader() {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
-    const [showMenu, setShowMenu] = useState(false);
+
+    const name = (user as { name?: string })?.name ?? 'Account';
+    const initial = name.charAt(0).toUpperCase();
 
     const handleSignOut = async () => {
-        setShowMenu(false);
         await signOut();
         navigate({ to: '/' });
     };
 
     return (
-        <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
-                    {/* Logo */}
-                    <Link to="/dashboard" className="flex items-center gap-2 group cursor-pointer">
-                        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Dumbbell className="h-6 w-6 text-primary-foreground" />
-                        </div>
-                        <span className="text-2xl font-bold">LiftArchives</span>
-                    </Link>
-
-                    {/* User Menu */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowMenu(!showMenu)}
-                            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                        >
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <span className="font-medium text-foreground hidden sm:block">
-                                {(user as { name?: string })?.name ?? 'Account'}
-                            </span>
-                        </button>
-
-                        {showMenu && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                                <div className="absolute right-0 mt-2 w-56 rounded-lg bg-card border shadow-lg z-50">
-                                    <div className="p-2">
-                                        <button
-                                            onClick={handleSignOut}
-                                            className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground"
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            Sign Out
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+        <header className="sticky top-0 z-50 hidden border-b border-border/50 bg-background/80 backdrop-blur-xl md:block">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
+                <Link to="/dashboard" className="flex items-center gap-3 group">
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 group-hover:scale-110 transition-transform">
+                        <Dumbbell className="size-5 text-primary" />
                     </div>
+                    <span className="text-lg font-semibold tracking-tight text-foreground">LiftArchives</span>
+                </Link>
+
+                <div className="flex items-center gap-2">
+                    <PercentageCalculatorDialog
+                        trigger={
+                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                                <Calculator className="size-5" />
+                                <span className="sr-only">Percentage Calculator</span>
+                            </Button>
+                        }
+                    />
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="flex items-center gap-3 rounded-full p-1 pr-3 transition-colors hover:bg-secondary">
+                                <Avatar className="size-8 border border-primary/30">
+                                    <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
+                                        {initial}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="hidden text-sm font-medium text-foreground md:inline-block">
+                                    {name}
+                                </span>
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem asChild>
+                                <Link to="/profile">
+                                    <User className="mr-2 size-4" />
+                                    Profile
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
-        </nav>
+        </header>
     );
 }

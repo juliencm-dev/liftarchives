@@ -2,13 +2,13 @@ import { relations } from "drizzle-orm";
 import { user, session, account } from "./auth";
 import { clubs, clubMemberships } from "./clubs";
 import { lifterProfile, coachProfile, coachLifters } from "./profiles";
-import { lifts } from "./lifts";
+import { lifts, liftTranslations } from "./lifts";
 import {
   programs,
   programWeeks,
   programDays,
-  programDayExercises,
-  programDayExerciseSets,
+  programBlocks,
+  programBlockMovements,
   programAssignments,
 } from "./programs";
 import {
@@ -36,6 +36,8 @@ export const userRelations = relations(user, ({ one, many }) => ({
   ownedClubs: many(clubs),
   clubMemberships: many(clubMemberships),
   createdLifts: many(lifts),
+  createdPrograms: many(programs),
+  programAssignments: many(programAssignments),
   trainingSessions: many(trainingSessions),
   personalRecords: many(personalRecords),
   sessionComments: many(sessionComments),
@@ -96,7 +98,6 @@ export const lifterProfileRelations = relations(
       references: [clubs.id],
     }),
     coaches: many(coachLifters),
-    programAssignments: many(programAssignments),
   }),
 );
 
@@ -112,7 +113,6 @@ export const coachProfileRelations = relations(
       references: [clubs.id],
     }),
     lifters: many(coachLifters),
-    programs: many(programs),
   }),
 );
 
@@ -134,17 +134,37 @@ export const liftsRelations = relations(lifts, ({ one, many }) => ({
     fields: [lifts.createdById],
     references: [user.id],
   }),
+  parentLift: one(lifts, {
+    fields: [lifts.parentLiftId],
+    references: [lifts.id],
+    relationName: "liftParent",
+  }),
+  variations: many(lifts, { relationName: "liftParent" }),
+  translations: one(liftTranslations, {
+    fields: [lifts.id],
+    references: [liftTranslations.liftId],
+  }),
   sessionExercises: many(sessionExercises),
-  programDayExercises: many(programDayExercises),
+  programBlockMovements: many(programBlockMovements),
   personalRecords: many(personalRecords),
 }));
+
+export const liftTranslationsRelations = relations(
+  liftTranslations,
+  ({ one }) => ({
+    lift: one(lifts, {
+      fields: [liftTranslations.liftId],
+      references: [lifts.id],
+    }),
+  }),
+);
 
 // ── Programs ──
 
 export const programsRelations = relations(programs, ({ one, many }) => ({
-  coach: one(coachProfile, {
-    fields: [programs.coachId],
-    references: [coachProfile.userId],
+  createdBy: one(user, {
+    fields: [programs.createdById],
+    references: [user.id],
   }),
   weeks: many(programWeeks),
   assignments: many(programAssignments),
@@ -168,32 +188,32 @@ export const programDaysRelations = relations(
       fields: [programDays.weekId],
       references: [programWeeks.id],
     }),
-    exercises: many(programDayExercises),
+    blocks: many(programBlocks),
     trainingSessions: many(trainingSessions),
   }),
 );
 
-export const programDayExercisesRelations = relations(
-  programDayExercises,
+export const programBlocksRelations = relations(
+  programBlocks,
   ({ one, many }) => ({
     day: one(programDays, {
-      fields: [programDayExercises.dayId],
+      fields: [programBlocks.dayId],
       references: [programDays.id],
     }),
-    lift: one(lifts, {
-      fields: [programDayExercises.liftId],
-      references: [lifts.id],
-    }),
-    sets: many(programDayExerciseSets),
+    movements: many(programBlockMovements),
   }),
 );
 
-export const programDayExerciseSetsRelations = relations(
-  programDayExerciseSets,
+export const programBlockMovementsRelations = relations(
+  programBlockMovements,
   ({ one }) => ({
-    exercise: one(programDayExercises, {
-      fields: [programDayExerciseSets.exerciseId],
-      references: [programDayExercises.id],
+    block: one(programBlocks, {
+      fields: [programBlockMovements.blockId],
+      references: [programBlocks.id],
+    }),
+    lift: one(lifts, {
+      fields: [programBlockMovements.liftId],
+      references: [lifts.id],
     }),
   }),
 );
@@ -205,9 +225,9 @@ export const programAssignmentsRelations = relations(
       fields: [programAssignments.programId],
       references: [programs.id],
     }),
-    lifter: one(lifterProfile, {
-      fields: [programAssignments.lifterId],
-      references: [lifterProfile.userId],
+    user: one(user, {
+      fields: [programAssignments.userId],
+      references: [user.id],
     }),
   }),
 );

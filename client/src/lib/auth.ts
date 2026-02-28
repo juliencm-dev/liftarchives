@@ -8,6 +8,8 @@ export const { signIn, signUp, signOut, useSession, getSession } = authClient;
 
 export const requestPasswordReset = authClient.requestPasswordReset;
 export const resetPassword = authClient.resetPassword;
+export const updateUser = authClient.updateUser;
+export const changePassword = authClient.changePassword;
 
 export const getCurrentUser = async () => {
     const { data: session, error } = await getSession();

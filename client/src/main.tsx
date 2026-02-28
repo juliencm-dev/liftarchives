@@ -25,7 +25,25 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <QueryClientProvider client={queryClient}>
                 <AuthProvider>
                     <RouterProvider router={router} context={{ queryClient }} />
-                    <Toaster position="top-center" />
+                    <Toaster
+                        position="top-center"
+                        toastOptions={{
+                            className: 'rounded-xl border border-border/60 bg-card text-foreground shadow-md',
+                            style: {
+                                background: 'var(--card)',
+                                border: '1px solid color-mix(in srgb, var(--border) 60%, transparent)',
+                                color: 'var(--foreground)',
+                                borderRadius: 'var(--radius)',
+                            },
+                            classNames: {
+                                success: '[&>svg]:text-primary',
+                                error: '[&>svg]:text-primary',
+                                info: '[&>svg]:text-primary',
+                                warning: '[&>svg]:text-primary',
+                                description: 'text-muted-foreground text-xs',
+                            },
+                        }}
+                    />
                 </AuthProvider>
             </QueryClientProvider>
         </ErrorBoundary>

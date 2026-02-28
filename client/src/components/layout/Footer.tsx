@@ -1,20 +1,49 @@
 import { Dumbbell } from 'lucide-react';
 
-const footerLinks = {
-    product: [
-        { label: 'Features', href: '#features' },
-        { label: 'Pricing', href: '#pricing' },
-    ],
-    company: [
-        { label: 'About', href: '/about' },
-        { label: 'Blog', href: '/blog' },
-    ],
-    legal: [
-        { label: 'Privacy', href: '/privacy' },
-        { label: 'Terms', href: '/terms' },
-        { label: 'Contact', href: '/contact' },
-    ],
-};
+const footerSections = [
+    {
+        title: 'Product',
+        links: [
+            { label: 'Features', href: '#features' },
+            { label: 'Pricing', href: '#pricing' },
+        ],
+    },
+    {
+        title: 'Company',
+        links: [
+            { label: 'About', href: '/about' },
+            { label: 'Blog', href: '/blog' },
+        ],
+    },
+    {
+        title: 'Legal',
+        links: [
+            { label: 'Privacy', href: '/privacy' },
+            { label: 'Terms', href: '/terms' },
+            { label: 'Contact', href: '/contact' },
+        ],
+    },
+];
+
+function FooterLinkGroup({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+    return (
+        <div>
+            <h4 className="text-sm font-medium text-foreground mb-4">{title}</h4>
+            <ul className="space-y-3">
+                {links.map((link) => (
+                    <li key={link.label}>
+                        <a
+                            href={link.href}
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {link.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
 
 export function Footer() {
     return (
@@ -34,56 +63,9 @@ export function Footer() {
                         </p>
                     </div>
 
-                    {/* Product Links */}
-                    <div>
-                        <h4 className="text-sm font-medium text-foreground mb-4">Product</h4>
-                        <ul className="space-y-3">
-                            {footerLinks.product.map((link) => (
-                                <li key={link.label}>
-                                    <a
-                                        href={link.href}
-                                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {link.label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Company Links */}
-                    <div>
-                        <h4 className="text-sm font-medium text-foreground mb-4">Company</h4>
-                        <ul className="space-y-3">
-                            {footerLinks.company.map((link) => (
-                                <li key={link.label}>
-                                    <a
-                                        href={link.href}
-                                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {link.label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Legal Links */}
-                    <div>
-                        <h4 className="text-sm font-medium text-foreground mb-4">Legal</h4>
-                        <ul className="space-y-3">
-                            {footerLinks.legal.map((link) => (
-                                <li key={link.label}>
-                                    <a
-                                        href={link.href}
-                                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {link.label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {footerSections.map((section) => (
+                        <FooterLinkGroup key={section.title} title={section.title} links={section.links} />
+                    ))}
                 </div>
 
                 {/* Bottom Bar */}

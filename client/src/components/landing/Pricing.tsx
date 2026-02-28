@@ -3,7 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ArrowRight } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
-const plans = [
+interface Plan {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    popular?: boolean;
+    features: string[];
+}
+
+const plans: Plan[] = [
     {
         id: 'free',
         name: 'Free',
@@ -34,6 +43,51 @@ const plans = [
     },
 ];
 
+function PricingPlanCard({ plan, index }: { plan: Plan; index: number }) {
+    return (
+        <Card
+            className={`relative flex flex-col intersect intersect-once intersect:motion-preset-slide-up-md ${
+                plan.popular ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border'
+            }`}
+            style={{ animationDelay: `${index * 100}ms` }}
+        >
+            {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                    Popular
+                </div>
+            )}
+
+            <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-foreground">{plan.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                <div className="pt-2">
+                    <span className="text-3xl font-bold text-foreground">
+                        {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                    </span>
+                    {plan.price > 0 && <span className="text-muted-foreground text-sm">/month</span>}
+                </div>
+            </CardHeader>
+
+            <CardContent className="flex-1 flex flex-col">
+                <ul className="space-y-3 flex-1">
+                    {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2.5">
+                            <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-muted-foreground">{feature}</span>
+                        </li>
+                    ))}
+                </ul>
+
+                <Link to="/signup" className="mt-6 block">
+                    <Button variant={plan.popular ? 'default' : 'outline'} className="w-full">
+                        {plan.price === 0 ? 'Get Started' : 'Subscribe'}
+                    </Button>
+                </Link>
+            </CardContent>
+        </Card>
+    );
+}
+
 export function Pricing() {
     return (
         <section id="pricing" className="py-20 bg-background">
@@ -49,47 +103,7 @@ export function Pricing() {
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
                     {plans.map((plan, index) => (
-                        <Card
-                            key={plan.id}
-                            className={`relative flex flex-col intersect intersect-once intersect:motion-preset-slide-up-md ${
-                                plan.popular ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border'
-                            }`}
-                            style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                            {plan.popular && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                                    Popular
-                                </div>
-                            )}
-
-                            <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-semibold text-foreground">{plan.name}</CardTitle>
-                                <p className="text-sm text-muted-foreground">{plan.description}</p>
-                                <div className="pt-2">
-                                    <span className="text-3xl font-bold text-foreground">
-                                        {plan.price === 0 ? 'Free' : `$${plan.price}`}
-                                    </span>
-                                    {plan.price > 0 && <span className="text-muted-foreground text-sm">/month</span>}
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="flex-1 flex flex-col">
-                                <ul className="space-y-3 flex-1">
-                                    {plan.features.map((feature) => (
-                                        <li key={feature} className="flex items-start gap-2.5">
-                                            <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                            <span className="text-sm text-muted-foreground">{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <Link to="/signup" className="mt-6 block">
-                                    <Button variant={plan.popular ? 'default' : 'outline'} className="w-full">
-                                        {plan.price === 0 ? 'Get Started' : 'Subscribe'}
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                        <PricingPlanCard key={plan.id} plan={plan} index={index} />
                     ))}
                 </div>
 
