@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useAddPersonalRecord } from '@/hooks/use-lifts';
+import { useUnit } from '@/hooks/use-profile';
 import { toast } from 'sonner';
 import { generatePercentageTable } from '@/lib/calculator';
+import { toKg, displayWeight } from '@/lib/units';
 
 interface LiftRecord {
     date: string;
@@ -43,6 +45,7 @@ function LiftCardAddForm({
     newWeight,
     newDate,
     isPending,
+    unit,
     onWeightChange,
     onDateChange,
     onSubmit,
@@ -51,6 +54,7 @@ function LiftCardAddForm({
     newWeight: string;
     newDate: string;
     isPending: boolean;
+    unit: 'kg' | 'lb';
     onWeightChange: (value: string) => void;
     onDateChange: (value: string) => void;
     onSubmit: () => void;
@@ -72,7 +76,7 @@ function LiftCardAddForm({
                         if (e.key === 'Escape') onCancel();
                     }}
                 />
-                <span className="text-xs text-muted-foreground">kg</span>
+                <span className="text-xs text-muted-foreground">{unit}</span>
             </div>
             <DatePicker value={newDate} onChange={(v) => onDateChange(v)} className="h-8 text-sm" />
             <div className="flex items-center gap-1.5">
@@ -91,9 +95,11 @@ function LiftCardAddForm({
 function LiftCardPRDisplay({
     currentPR,
     improvement,
+    unit,
 }: {
     currentPR: { weight: number; date: string } | null;
     improvement: number | null;
+    unit: 'kg' | 'lb';
 }) {
     if (!currentPR) {
         return (
@@ -108,13 +114,14 @@ function LiftCardPRDisplay({
         <div className="flex flex-col gap-1">
             <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold tabular-nums text-foreground">{currentPR.weight}</span>
-                <span className="text-xs font-medium text-muted-foreground">kg</span>
+                <span className="text-xs font-medium text-muted-foreground">{unit}</span>
             </div>
             <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{currentPR.date}</span>
                 {improvement !== null && improvement > 0 && (
                     <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-400">
-                        <TrendingUp className="size-3" />+{improvement}kg
+                        <TrendingUp className="size-3" />+{improvement}
+                        {unit}
                     </span>
                 )}
             </div>
@@ -122,12 +129,15 @@ function LiftCardPRDisplay({
     );
 }
 
-function LiftCardPercentageTable({ max, onBack }: { max: number; onBack: () => void }) {
-    const rows = generatePercentageTable(max, 'kg');
+function LiftCardPercentageTable({ max, unit, onBack }: { max: number; unit: 'kg' | 'lb'; onBack: () => void }) {
+    const rows = generatePercentageTable(max, unit);
     return (
         <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">% of {max}kg</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    % of {max}
+                    {unit}
+                </span>
                 <Button
                     variant="ghost"
                     size="icon-sm"
@@ -145,7 +155,10 @@ function LiftCardPercentageTable({ max, onBack }: { max: number; onBack: () => v
                         className="flex items-center justify-between rounded px-1.5 py-0.5 odd:bg-secondary/40"
                     >
                         <span className="tabular-nums text-muted-foreground">{row.percent}%</span>
-                        <span className="tabular-nums font-medium text-foreground">{row.weight}kg</span>
+                        <span className="tabular-nums font-medium text-foreground">
+                            {row.weight}
+                            {unit}
+                        </span>
                     </div>
                 ))}
             </div>
@@ -159,6 +172,7 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
     const [newWeight, setNewWeight] = useState('');
     const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
 
+    const unit = useUnit();
     const addRecord = useAddPersonalRecord();
 
     // Compute current PR (best 1RM) and previous PR (second best 1RM)
@@ -168,6 +182,9 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
     const previousPR = sorted[1] ?? null;
     const improvement = currentPR && previousPR ? currentPR.weight - previousPR.weight : null;
 
+    const displayPRWeight = currentPR ? displayWeight(currentPR.weight, unit) : null;
+    const displayImprovement = improvement !== null ? displayWeight(improvement, unit) : null;
+
     function handleSubmit() {
         const weight = parseFloat(newWeight);
         if (isNaN(weight) || weight <= 0) return;
@@ -175,7 +192,7 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
         addRecord.mutate(
             {
                 liftId: lift.id,
-                weight,
+                weight: toKg(weight, unit),
                 reps: 1,
                 date: newDate,
             },
@@ -262,19 +279,32 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
             {/* Content area */}
             <div className="p-4 pt-3">
                 {isFlipped && currentPR ? (
-                    <LiftCardPercentageTable max={currentPR.weight} onBack={() => setIsFlipped(false)} />
+                    <LiftCardPercentageTable
+                        max={displayWeight(currentPR.weight, unit)}
+                        unit={unit}
+                        onBack={() => setIsFlipped(false)}
+                    />
                 ) : isAdding ? (
                     <LiftCardAddForm
                         newWeight={newWeight}
                         newDate={newDate}
                         isPending={addRecord.isPending}
+                        unit={unit}
                         onWeightChange={setNewWeight}
                         onDateChange={setNewDate}
                         onSubmit={handleSubmit}
                         onCancel={handleCancel}
                     />
                 ) : (
-                    <LiftCardPRDisplay currentPR={currentPR} improvement={improvement} />
+                    <LiftCardPRDisplay
+                        currentPR={
+                            displayPRWeight !== null && currentPR
+                                ? { weight: displayPRWeight, date: currentPR.date }
+                                : null
+                        }
+                        improvement={displayImprovement}
+                        unit={unit}
+                    />
                 )}
             </div>
 

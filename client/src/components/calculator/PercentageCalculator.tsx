@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { roundToPlate, calcPercentage, calcEpley, calcBrzycki, generatePercentageTable } from '@/lib/calculator';
+import { useUnit } from '@/hooks/use-profile';
 
 function PercentageTable({ max, unit }: { max: number; unit: 'kg' | 'lb' }) {
     const rows = generatePercentageTable(max, unit);
@@ -143,7 +144,7 @@ export function PercentageCalculatorDialog({
     onOpenChange?: (open: boolean) => void;
 }) {
     const [maxWeight, setMaxWeight] = useState('');
-    const unit: 'kg' | 'lb' = 'kg';
+    const unit = useUnit();
     const max = parseFloat(maxWeight);
     const hasMax = !isNaN(max) && max > 0;
 

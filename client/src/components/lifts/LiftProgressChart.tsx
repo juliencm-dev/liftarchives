@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useUnit } from '@/hooks/use-profile';
+import { displayWeight } from '@/lib/units';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 interface LiftRecord {
@@ -24,9 +26,11 @@ interface ChartDataPoint {
 function CustomTooltip({
     active,
     payload,
+    unit,
 }: {
     active?: boolean;
     payload?: Array<{ value?: number; payload?: ChartDataPoint }>;
+    unit: 'kg' | 'lb';
 }) {
     if (!active || !payload || !payload.length) return null;
     const point = payload[0];
@@ -35,22 +39,23 @@ function CustomTooltip({
             <p className="text-xs text-muted-foreground">{point.payload?.label || point.payload?.date}</p>
             <p className="text-sm font-bold text-foreground">
                 {point.value}
-                <span className="ml-1 text-xs font-normal text-muted-foreground">kg</span>
+                <span className="ml-1 text-xs font-normal text-muted-foreground">{unit}</span>
             </p>
         </div>
     );
 }
 
 export function LiftProgressChart({ liftName, records }: LiftProgressChartProps) {
+    const unit = useUnit();
     const chartData = useMemo<ChartDataPoint[]>(() => {
         return records
             .map((r) => ({
                 date: r.date,
-                weight: r.reps === 1 ? r.weight : (r.estimatedOneRepMax ?? r.weight),
+                weight: displayWeight(r.reps === 1 ? r.weight : (r.estimatedOneRepMax ?? r.weight), unit),
                 label: new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             }))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [records]);
+    }, [records, unit]);
 
     const hasData = chartData.length > 0;
     const maxWeight = hasData ? Math.max(...chartData.map((d) => d.weight)) : 0;
@@ -74,7 +79,7 @@ export function LiftProgressChart({ liftName, records }: LiftProgressChartProps)
                                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Best</p>
                                 <p className="text-sm font-bold tabular-nums text-foreground">
                                     {maxWeight}
-                                    <span className="text-xs font-normal text-muted-foreground">kg</span>
+                                    <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                                 </p>
                             </div>
                             {totalGain !== 0 && (
@@ -84,7 +89,7 @@ export function LiftProgressChart({ liftName, records }: LiftProgressChartProps)
                                         <TrendingUp className="size-3" />
                                         {totalGain > 0 ? '+' : ''}
                                         {totalGain}
-                                        <span className="text-xs font-normal">kg</span>
+                                        <span className="text-xs font-normal">{unit}</span>
                                     </p>
                                 </div>
                             )}
@@ -112,7 +117,7 @@ export function LiftProgressChart({ liftName, records }: LiftProgressChartProps)
                                     domain={['dataMin - 2', 'dataMax + 2']}
                                     dx={-4}
                                 />
-                                <Tooltip content={<CustomTooltip />} />
+                                <Tooltip content={<CustomTooltip unit={unit} />} />
                                 <Line
                                     type="monotone"
                                     dataKey="weight"

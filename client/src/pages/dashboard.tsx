@@ -1,10 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRecentRecords } from '@/hooks/use-lifts';
 import { useActiveProgram } from '@/hooks/use-programs';
+import { useWeeklySessionCount } from '@/hooks/use-sessions';
 import { Button } from '@/components/ui/button';
 import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard';
 import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { TodaysTrainingCard } from '@/components/dashboard/TodaysTrainingCard';
+import { ActiveSessionBanner } from '@/components/sessions/ActiveSessionBanner';
 import { Link } from '@tanstack/react-router';
 import { Activity, CalendarDays, Target, Plus, TrendingUp } from 'lucide-react';
 
@@ -13,6 +15,7 @@ export function DashboardPage() {
     const firstName = (user as { name?: string })?.name?.split(' ')[0] ?? 'Lifter';
     const { data: recentRecords } = useRecentRecords();
     const { data: activeData } = useActiveProgram();
+    const { data: weeklyCount } = useWeeklySessionCount();
 
     const activeProgram = activeData?.program ?? null;
     const activeProgramName = activeProgram?.name ?? 'None';
@@ -29,6 +32,9 @@ export function DashboardPage() {
                 <p className="mt-1 text-sm text-muted-foreground">Here's your training overview</p>
             </div>
 
+            {/* Active session resume banner */}
+            <ActiveSessionBanner />
+
             {/* Stats Grid */}
             <div className="mb-6 flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4">
                 {activeProgram ? (
@@ -40,7 +46,7 @@ export function DashboardPage() {
                         <DashboardStatCard label="Active Program" value={activeProgramName} icon={CalendarDays} />
                     </div>
                 )}
-                <DashboardStatCard label="Sessions This Week" value="0" icon={Activity} />
+                <DashboardStatCard label="Sessions This Week" value={String(weeklyCount?.count ?? 0)} icon={Activity} />
                 <DashboardStatCard label="Next Competition" value="—" icon={Target} />
             </div>
 

@@ -10,6 +10,7 @@ import { authRateLimit, unauthRateLimit } from "@/middleware/rate-limit-config";
 import { profileRoutes } from "@/routes/profile";
 import { liftsRoutes } from "@/routes/lifts";
 import { programRoutes } from "@/routes/programs";
+import { sessionRoutes } from "@/routes/sessions";
 import { db, isAccountLocked, lockAccountByEmail } from "@liftarchives/database";
 import {
   recordFailure,
@@ -113,7 +114,8 @@ const routes = app
   })
   .route("/api/profile", profileRoutes)
   .route("/api/lifts", liftsRoutes)
-  .route("/api/programs", programRoutes);
+  .route("/api/programs", programRoutes)
+  .route("/api/sessions", sessionRoutes);
 
 // Global error handler
 app.onError((err, c) => {

@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { useAddPersonalRecord } from '@/hooks/use-lifts';
+import { useUnit } from '@/hooks/use-profile';
+import { toKg } from '@/lib/units';
 
 interface Lift {
     id: string;
@@ -29,6 +31,7 @@ interface AddRecordDialogProps {
 }
 
 export function AddRecordDialog({ open, onOpenChange, lifts, preselectedLiftId }: AddRecordDialogProps) {
+    const unit = useUnit();
     const [liftId, setLiftId] = useState(preselectedLiftId ?? '');
     const [weight, setWeight] = useState('');
     const [reps, setReps] = useState('1');
@@ -59,7 +62,7 @@ export function AddRecordDialog({ open, onOpenChange, lifts, preselectedLiftId }
         addRecord.mutate(
             {
                 liftId,
-                weight: weightNum,
+                weight: toKg(weightNum, unit),
                 reps: repsNum,
                 date,
                 notes: notes.trim() || undefined,
@@ -112,7 +115,7 @@ export function AddRecordDialog({ open, onOpenChange, lifts, preselectedLiftId }
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-medium text-foreground">Weight (kg)</label>
+                            <label className="text-sm font-medium text-foreground">Weight ({unit})</label>
                             <input
                                 type="number"
                                 step="0.1"

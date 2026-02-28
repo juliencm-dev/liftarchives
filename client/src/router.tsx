@@ -29,6 +29,8 @@ const LiftsPage = lazy(() => import('@/pages/lifts').then((m) => ({ default: m.L
 const ProgramsPage = lazy(() => import('@/pages/programs').then((m) => ({ default: m.ProgramsPage })));
 const ProgramDetailPage = lazy(() => import('@/pages/program-detail').then((m) => ({ default: m.ProgramDetailPage })));
 const ProfilePage = lazy(() => import('@/pages/profile').then((m) => ({ default: m.ProfilePage })));
+const ActiveSessionPage = lazy(() => import('@/pages/active-session').then((m) => ({ default: m.ActiveSessionPage })));
+const SessionDetailPage = lazy(() => import('@/pages/session-detail').then((m) => ({ default: m.SessionDetailPage })));
 
 function PageSuspense({ children }: { children: React.ReactNode }) {
     return <Suspense fallback={null}>{children}</Suspense>;
@@ -167,6 +169,14 @@ const resetPasswordRoute = createRoute({
     ),
 });
 
+// Session Layout (authenticated, no chrome — full-screen workout)
+const _sessionLayout = createRoute({
+    getParentRoute: () => _root,
+    id: 'sessionLayout',
+    beforeLoad: isProtectedRoute,
+    component: () => <Outlet />,
+});
+
 // App routes (protected via layout-level beforeLoad)
 const dashboardRoute = createRoute({
     getParentRoute: () => _appLayout,
@@ -228,6 +238,26 @@ const profileRoute = createRoute({
     ),
 });
 
+const activeSessionRoute = createRoute({
+    getParentRoute: () => _sessionLayout,
+    path: '/training/session',
+    component: () => (
+        <PageSuspense>
+            <ActiveSessionPage />
+        </PageSuspense>
+    ),
+});
+
+const sessionDetailRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/training/sessions/$sessionId',
+    component: () => (
+        <PageSuspense>
+            <SessionDetailPage />
+        </PageSuspense>
+    ),
+});
+
 // Create the route tree
 const routeTree = _root.addChildren([
     _publicLayout.addChildren([
@@ -241,11 +271,13 @@ const routeTree = _root.addChildren([
     _appLayout.addChildren([
         dashboardRoute,
         trainingRoute,
+        sessionDetailRoute,
         liftsRoute,
         programsRoute,
         programDetailRoute,
         profileRoute,
     ]),
+    _sessionLayout.addChildren([activeSessionRoute]),
 ]);
 
 // Create the router instance

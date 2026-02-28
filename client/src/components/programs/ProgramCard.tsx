@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
     DropdownMenu,
@@ -31,7 +30,7 @@ export function ProgramCard({ program, isActive, onEdit, onActivate, onDeactivat
 
     return (
         <Card
-            className={`group relative border-border bg-card transition-all hover:border-primary/25 hover:shadow-[0_0_20px_rgba(212,168,83,0.04)] ${isActive ? 'border-primary/40 bg-primary/[0.03] md:border-border md:bg-card' : ''}`}
+            className={`group relative border-border bg-card transition-all hover:border-primary/25 hover:shadow-[0_0_20px_rgba(212,168,83,0.04)] ${isActive ? 'border-primary/40 bg-primary/[0.03]' : ''}`}
         >
             <div className="flex items-start justify-between p-5">
                 <Link
@@ -57,12 +56,6 @@ export function ProgramCard({ program, isActive, onEdit, onActivate, onDeactivat
                 </Link>
 
                 <div className="flex items-center gap-2">
-                    {isActive && (
-                        <Badge className="hidden border-0 bg-primary/15 text-xs font-medium text-primary md:inline-flex">
-                            Active
-                        </Badge>
-                    )}
-
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

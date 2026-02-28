@@ -15,6 +15,11 @@ export function useLifterProfile() {
     });
 }
 
+export function useUnit(): 'kg' | 'lb' {
+    const { data } = useLifterProfile();
+    return data?.liftUnit ?? 'kg';
+}
+
 export function useCreateLifterProfile() {
     const queryClient = useQueryClient();
     return useMutation({

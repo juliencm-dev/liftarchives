@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Check, LayoutGrid, Loader2 } from 'lucide-react';
+import { CalendarDays, Check, LayoutGrid, Loader2, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCompleteDay } from '@/hooks/use-programs';
+import { useStartSession } from '@/hooks/use-sessions';
 import { ExerciseBlock } from '@/components/programs/ExerciseBlock';
+import { useNavigate } from '@tanstack/react-router';
 import type { ProgramBlockResponse } from '@liftarchives/shared';
 
 interface UpNextDay {
@@ -29,6 +31,8 @@ interface UpNextCardProps {
 export function TodaysTrainingCard({ currentWeek, upNextDayId, hasActiveAssignment }: UpNextCardProps) {
     const [selectedDayId, setSelectedDayId] = useState<string | null>(upNextDayId);
     const completeDay = useCompleteDay();
+    const startSession = useStartSession();
+    const navigate = useNavigate();
 
     // Sync selectedDayId when upNextDayId changes (e.g. after mutation)
     useEffect(() => {
@@ -37,6 +41,18 @@ export function TodaysTrainingCard({ currentWeek, upNextDayId, hasActiveAssignme
 
     const selectedDay = currentWeek?.days.find((d) => d.id === selectedDayId) ?? null;
     const hasContent = currentWeek && currentWeek.days.length > 0;
+
+    const handleStartSession = async () => {
+        if (!selectedDay) return;
+        startSession.mutate(
+            { programDayId: selectedDay.id, title: selectedDay.name ?? `Day ${selectedDay.dayNumber}` },
+            {
+                onSuccess: () => {
+                    navigate({ to: '/training/session' });
+                },
+            }
+        );
+    };
 
     return (
         <Card className="border-border/60">
@@ -104,20 +120,35 @@ export function TodaysTrainingCard({ currentWeek, upNextDayId, hasActiveAssignme
                             </div>
                         )}
 
-                        {/* Mark Complete button — pinned below scroll area */}
+                        {/* Action buttons — pinned below scroll area */}
                         {selectedDay && !selectedDay.isCompleted && (
-                            <Button
-                                className="mt-2 w-full"
-                                onClick={() => completeDay.mutate(selectedDay.id)}
-                                disabled={completeDay.isPending}
-                            >
-                                {completeDay.isPending ? (
-                                    <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                    <Check className="size-4" />
-                                )}
-                                Mark Complete
-                            </Button>
+                            <div className="mt-2 flex gap-2">
+                                <Button
+                                    className="flex-1 gap-2"
+                                    onClick={handleStartSession}
+                                    disabled={startSession.isPending}
+                                >
+                                    {startSession.isPending ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <Play className="size-4" />
+                                    )}
+                                    Start Session
+                                </Button>
+                                <Button
+                                    variant="outline-primary"
+                                    className="gap-2"
+                                    onClick={() => completeDay.mutate(selectedDay.id)}
+                                    disabled={completeDay.isPending}
+                                >
+                                    {completeDay.isPending ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <Check className="size-4" />
+                                    )}
+                                    Quick Complete
+                                </Button>
+                            </div>
                         )}
                     </div>
                 ) : (

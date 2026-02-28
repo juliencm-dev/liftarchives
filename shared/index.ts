@@ -7,4 +7,6 @@ export * from "./schemas/user";
 export * from "./schemas/profile";
 export * from "./schemas/lifts";
 export * from "./schemas/programs";
+export * from "./schemas/sessions";
+export * from "./schemas/settings";
 export * from "./dto";

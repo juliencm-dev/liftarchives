@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ProgramWizard } from '@/components/programs/wizard/ProgramWizard';
 import { serverProgramToWizardData } from '@/components/programs/wizard/transforms';
 import { ProgramDayCard } from '@/components/programs/ProgramDayCard';
+import { DaysCarousel } from '@/components/programs/DaysCarousel';
 import {
     useProgram,
     useActiveProgram,
@@ -55,7 +56,7 @@ export function ProgramDetailPage() {
         const transformed = serverProgramToWizardData(program as ProgramResponse);
 
         return (
-            <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-6 lg:py-8">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
                 <ProgramWizard onClose={() => setEditing(false)} initialData={transformed} />
             </div>
         );
@@ -124,11 +125,18 @@ export function ProgramDetailPage() {
                                 Week {week.weekNumber}
                             </h2>
                         )}
-                        <div className="flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-6">
+                        {/* Mobile: stacked column */}
+                        <div className="flex flex-col gap-4 md:hidden">
                             {week.days.map((day) => (
                                 <ProgramDayCard key={day.id} day={day} defaultOpen />
                             ))}
                         </div>
+                        {/* Desktop: 3-wide carousel */}
+                        <DaysCarousel>
+                            {week.days.map((day) => (
+                                <ProgramDayCard key={day.id} day={day} defaultOpen />
+                            ))}
+                        </DaysCarousel>
                     </div>
                 ))}
             </div>

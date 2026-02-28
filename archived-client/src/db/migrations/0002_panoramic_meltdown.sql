@@ -1,1 +1,0 @@
-ALTER TABLE "lifts" ADD COLUMN "benchmark" boolean DEFAULT false;

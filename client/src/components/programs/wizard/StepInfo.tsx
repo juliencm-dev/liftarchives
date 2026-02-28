@@ -20,8 +20,8 @@ export function StepInfo({
     onDurationWeeksChange,
 }: StepInfoProps) {
     return (
-        <div className="mx-auto w-full max-w-xl space-y-6">
-            <div className="space-y-2">
+        <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+            <div className="flex flex-col gap-2">
                 <Label htmlFor="program-name" className="text-sm font-medium text-foreground">
                     Program Name <span className="text-primary">*</span>
                 </Label>
@@ -34,7 +34,7 @@ export function StepInfo({
                 />
             </div>
 
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
                 <Label htmlFor="program-description" className="text-sm font-medium text-foreground">
                     Description
                 </Label>
@@ -48,7 +48,7 @@ export function StepInfo({
                 />
             </div>
 
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
                 <Label htmlFor="program-duration" className="text-sm font-medium text-foreground">
                     Duration (weeks)
                 </Label>

@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Clock, Trophy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useUnit } from '@/hooks/use-profile';
+import { displayWeight } from '@/lib/units';
 
 interface Record {
     id: string;
@@ -10,7 +12,7 @@ interface Record {
     lift: { name: string };
 }
 
-function RecentRecordItem({ record }: { record: Record }) {
+function RecentRecordItem({ record, unit }: { record: Record; unit: 'kg' | 'lb' }) {
     return (
         <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-secondary/50 p-3 transition-colors hover:bg-secondary">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -19,7 +21,8 @@ function RecentRecordItem({ record }: { record: Record }) {
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">New PR: {record.lift.name}</p>
                 <p className="text-xs text-muted-foreground">
-                    {record.weight}kg &times; {record.reps} rep
+                    {displayWeight(record.weight, unit)}
+                    {unit} &times; {record.reps} rep
                     {record.reps !== 1 ? 's' : ''}
                 </p>
             </div>
@@ -35,6 +38,7 @@ interface RecentActivityCardProps {
 }
 
 export function RecentActivityCard({ recentRecords }: RecentActivityCardProps) {
+    const unit = useUnit();
     return (
         <Card className="border-border/60">
             <CardHeader>
@@ -48,7 +52,7 @@ export function RecentActivityCard({ recentRecords }: RecentActivityCardProps) {
                     <div className="max-h-40 overflow-y-auto md:max-h-80">
                         <div className="flex flex-col gap-3">
                             {recentRecords.map((record) => (
-                                <RecentRecordItem key={record.id} record={record} />
+                                <RecentRecordItem key={record.id} record={record} unit={unit} />
                             ))}
                         </div>
                     </div>

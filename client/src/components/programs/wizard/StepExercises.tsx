@@ -235,11 +235,31 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                     const showNotes = showNotesFor.has(block.id) || block.notes.length > 0;
 
                     return (
-                        <div key={block.id} className="overflow-hidden rounded-xl border border-border bg-card">
+                        <div
+                            key={block.id}
+                            className={cn(
+                                'overflow-hidden rounded-xl border',
+                                block.movements.length > 1
+                                    ? 'border-primary/20 bg-secondary/10'
+                                    : 'border-border/60 bg-secondary/30'
+                            )}
+                        >
                             {/* Block header */}
-                            <div className="flex items-center gap-2 px-3 py-2.5">
+                            <div
+                                className={cn(
+                                    'flex items-center gap-2 px-3 py-2.5',
+                                    block.movements.length > 1 && 'border-b border-primary/10 bg-primary/[0.03]'
+                                )}
+                            >
                                 {/* Letter badge */}
-                                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono text-sm font-bold text-primary">
+                                <div
+                                    className={cn(
+                                        'flex size-7 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold',
+                                        block.movements.length > 1
+                                            ? 'bg-primary/15 text-primary'
+                                            : 'bg-secondary text-foreground'
+                                    )}
+                                >
                                     {block.label}
                                 </div>
 

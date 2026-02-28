@@ -1,6 +1,7 @@
 import { BackToDashboard } from '@/components/layout/BackToDashboard';
 import { AccountInfoCard, LifterProfileCard, CoachProfileCard, ChangePasswordCard } from '@/components/forms/profile';
 import { ChangeCompetitionProfile } from '@/components/forms/profile/competition-profile-card';
+import { TrainingSettingsCard } from '@/components/forms/profile/training-settings-card';
 
 export function ProfilePage() {
     return (
@@ -27,6 +28,7 @@ export function ProfilePage() {
                     </div>
                 </div>
 
+                <TrainingSettingsCard />
                 <CoachProfileCard />
             </div>
         </div>

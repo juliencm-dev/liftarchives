@@ -1,6 +1,60 @@
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, max } from "drizzle-orm";
 import { personalRecords } from "../schemas";
 import type { DbClient } from "./types";
+
+// ── PR Detection Queries ──
+
+export async function getUserBestForLiftAndReps(
+  dbClient: DbClient,
+  userId: string,
+  liftId: string,
+  reps: number,
+) {
+  const [result] = await dbClient
+    .select({ maxWeight: max(personalRecords.weight) })
+    .from(personalRecords)
+    .where(
+      and(
+        eq(personalRecords.userId, userId),
+        eq(personalRecords.liftId, liftId),
+        eq(personalRecords.reps, reps),
+      ),
+    );
+
+  return result?.maxWeight ?? null;
+}
+
+export async function createSessionPR(
+  dbClient: DbClient,
+  userId: string,
+  data: {
+    liftId: string;
+    weight: number;
+    reps: number;
+    estimatedOneRepMax: number | null;
+    date: string;
+    sessionSetId: string;
+  },
+) {
+  const [result] = await dbClient
+    .insert(personalRecords)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      liftId: data.liftId,
+      weight: data.weight,
+      reps: data.reps,
+      estimatedOneRepMax: data.estimatedOneRepMax,
+      date: data.date,
+      sessionSetId: data.sessionSetId,
+      source: "session",
+    })
+    .returning();
+
+  return result;
+}
+
+// ── Existing CRUD ──
 
 export async function getUserRecords(
   dbClient: DbClient,

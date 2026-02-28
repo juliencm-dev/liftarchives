@@ -26,6 +26,8 @@ export {
   getRecentUserRecords,
   createPersonalRecord,
   deletePersonalRecord,
+  getUserBestForLiftAndReps,
+  createSessionPR,
 } from "./personal-records";
 export {
   getUserPrograms,
@@ -39,8 +41,25 @@ export {
   advanceWeekIfComplete,
 } from "./programs";
 export {
+  startSession,
   createProgramSession,
+  getActiveSession,
+  getSessionById,
+  updateSession,
+  discardSession,
   completeSession,
+  getUserSessions,
+  getWeeklySessionCount,
   getCompletedDaysForWeek,
+  addSessionExercise,
+  logSessionSet,
+  updateSessionSet,
+  deleteSessionSet,
+  getPreviousPerformance,
+  getCoachVisibleSessions,
 } from "./sessions";
 export { getCompetitionProfile } from "./competition-profile";
+export {
+  getTrainingSettings,
+  upsertTrainingSettings,
+} from "./training-settings";

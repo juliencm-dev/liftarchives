@@ -7,4 +7,5 @@ export * from "./programs";
 export * from "./sessions";
 export * from "./records";
 export * from "./comments";
+export * from "./settings";
 export * from "./relations";

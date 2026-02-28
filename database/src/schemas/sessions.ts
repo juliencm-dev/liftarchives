@@ -11,7 +11,8 @@ import {
 import { user } from "./auth";
 import { lifts } from "./lifts";
 import { programDays } from "./programs";
-import { setTypeEnum } from "./enums";
+import { setTypeEnum, setFeedbackEnum } from "./enums";
+import { programBlocks } from "./programs";
 
 export const trainingSessions = pgTable(
   "training_sessions",
@@ -27,7 +28,9 @@ export const trainingSessions = pgTable(
     title: text("title"),
     notes: text("notes"),
     durationMinutes: integer("duration_minutes"),
+    startedAt: timestamp("started_at"),
     completedAt: timestamp("completed_at"),
+    isSharedWithCoach: boolean("is_shared_with_coach").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -50,6 +53,10 @@ export const sessionExercises = pgTable(
     liftId: text("lift_id")
       .notNull()
       .references(() => lifts.id, { onDelete: "restrict" }),
+    programBlockId: text("program_block_id").references(
+      () => programBlocks.id,
+      { onDelete: "set null" },
+    ),
     order: integer("order").notNull(),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -79,6 +86,7 @@ export const sessionSets = pgTable(
     tempo: text("tempo"),
     restSeconds: integer("rest_seconds"),
     setType: setTypeEnum("set_type").notNull(),
+    feedback: setFeedbackEnum("feedback"),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

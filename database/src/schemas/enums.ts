@@ -25,3 +25,5 @@ export const setTypeEnum = pgEnum('set_type', ['warmup', 'working', 'backoff', '
 export const programAssignmentStatusEnum = pgEnum('program_assignment_status', ['active', 'completed', 'paused']);
 
 export const prSourceEnum = pgEnum('pr_source', ['session', 'manual', 'competition']);
+
+export const setFeedbackEnum = pgEnum('set_feedback', ['hard', 'normal', 'easy']);

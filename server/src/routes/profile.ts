@@ -4,6 +4,7 @@ import { authMiddleware, type SessionUser } from "@/middleware/auth";
 import {
   LifterProfileSchema,
   UpdateCoachProfileSchema,
+  UpdateTrainingSettingsSchema,
 } from "@liftarchives/shared";
 import {
   db,
@@ -13,6 +14,8 @@ import {
   getCoachProfile,
   updateCoachProfile,
   getCompetitionProfile,
+  getTrainingSettings,
+  upsertTrainingSettings,
 } from "@liftarchives/database";
 
 type Env = {
@@ -73,6 +76,21 @@ const profileRoutes = new Hono<Env>()
 
     const profile = await updateCoachProfile(db, user.id, data);
     return c.json({ profile });
-  });
+  })
+  .get("/training-settings", async (c) => {
+    const user = c.get("user");
+    const settings = await getTrainingSettings(db, user.id);
+    return c.json({ settings });
+  })
+  .put(
+    "/training-settings",
+    zValidator("json", UpdateTrainingSettingsSchema),
+    async (c) => {
+      const user = c.get("user");
+      const data = c.req.valid("json");
+      const settings = await upsertTrainingSettings(db, user.id, data);
+      return c.json({ settings });
+    },
+  );
 
 export { profileRoutes };

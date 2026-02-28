@@ -19,6 +19,7 @@ import {
 } from "./sessions";
 import { personalRecords } from "./records";
 import { sessionComments } from "./comments";
+import { trainingSettings } from "./settings";
 
 // ── Auth ──
 
@@ -40,6 +41,10 @@ export const userRelations = relations(user, ({ one, many }) => ({
   programAssignments: many(programAssignments),
   trainingSessions: many(trainingSessions),
   personalRecords: many(personalRecords),
+  trainingSettings: one(trainingSettings, {
+    fields: [user.id],
+    references: [trainingSettings.userId],
+  }),
   sessionComments: many(sessionComments),
   uploadedMedia: many(exerciseMedia),
 }));
@@ -201,6 +206,7 @@ export const programBlocksRelations = relations(
       references: [programDays.id],
     }),
     movements: many(programBlockMovements),
+    sessionExercises: many(sessionExercises),
   }),
 );
 
@@ -261,6 +267,10 @@ export const sessionExercisesRelations = relations(
       fields: [sessionExercises.liftId],
       references: [lifts.id],
     }),
+    programBlock: one(programBlocks, {
+      fields: [sessionExercises.programBlockId],
+      references: [programBlocks.id],
+    }),
     sets: many(sessionSets),
     media: many(exerciseMedia),
   }),
@@ -304,6 +314,18 @@ export const personalRecordsRelations = relations(
     sessionSet: one(sessionSets, {
       fields: [personalRecords.sessionSetId],
       references: [sessionSets.id],
+    }),
+  }),
+);
+
+// ── Training Settings ──
+
+export const trainingSettingsRelations = relations(
+  trainingSettings,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [trainingSettings.userId],
+      references: [user.id],
     }),
   }),
 );
