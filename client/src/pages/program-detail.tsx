@@ -45,7 +45,7 @@ export function ProgramDetailPage() {
         return (
             <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
                 <p className="text-muted-foreground">Program not found.</p>
-                <Button variant="ghost" asChild className="mt-4">
+                <Button variant="link" asChild className="mt-4">
                     <Link to="/programs">Back to Programs</Link>
                 </Button>
             </div>
@@ -65,9 +65,9 @@ export function ProgramDetailPage() {
     return (
         <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
             <Button
-                variant="ghost"
+                variant="link"
                 asChild
-                className="-ml-2 mb-2 h-auto w-fit gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
+                className="hidden md:inline-flex -ml-2 mb-2 h-auto w-fit gap-1.5 px-2 py-1 text-sm"
             >
                 <Link to="/programs">
                     <ArrowLeft className="size-3.5" />
@@ -83,12 +83,7 @@ export function ProgramDetailPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditing(true)}
-                        className="gap-2 border-border text-foreground hover:border-primary/30"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-2">
                         <Pencil className="size-3.5" />
                         Edit
                     </Button>
@@ -98,17 +93,17 @@ export function ProgramDetailPage() {
                         onClick={() =>
                             isActive ? unassignProgram.mutate(programId) : assignProgram.mutate({ programId })
                         }
-                        className={`gap-2 ${isActive ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15' : 'border-border text-foreground hover:border-primary/30'}`}
+                        className={`gap-2 ${isActive ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15' : ''}`}
                     >
                         {isActive ? <Square className="size-3.5" /> : <Play className="size-3.5" />}
                         {isActive ? 'Active' : 'Activate'}
                     </Button>
                     <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={handleDelete}
                         disabled={deleteProgramMutation.isPending}
-                        className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10"
+                        className="gap-2"
                     >
                         <Trash2 className="size-3.5" />
                         Delete

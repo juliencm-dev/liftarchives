@@ -15,10 +15,7 @@ export function ProgramsEmptyState({ onCreateProgram }: ProgramsEmptyStateProps)
             <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                 Create your first training program to get started
             </p>
-            <Button
-                onClick={onCreateProgram}
-                className="mt-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            <Button onClick={onCreateProgram} className="mt-6 gap-2">
                 <Plus className="size-4" />
                 Create Program
             </Button>

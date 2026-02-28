@@ -1,63 +1,56 @@
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { ThumbsDown, Minus, ThumbsUp } from 'lucide-react';
 
 interface FeedbackSelectorProps {
     value: 'hard' | 'normal' | 'easy' | null;
-    onChange: (feedback: 'hard' | 'normal' | 'easy') => void;
+    onChange: (feedback: 'hard' | 'normal' | 'easy' | null) => void;
     disabled?: boolean;
 }
 
 const options = [
     {
-        value: 'hard' as const,
-        label: 'Hard',
+        key: 'hard' as const,
         icon: ThumbsDown,
-        color: 'text-red-400 bg-red-400/10 border-red-400/30',
-        activeRing: 'ring-red-400/40',
+        label: 'Hard',
+        activeColor: 'text-destructive border-destructive/30 bg-destructive/10 hover:bg-destructive/10',
     },
     {
-        value: 'normal' as const,
-        label: 'Normal',
+        key: 'normal' as const,
         icon: Minus,
-        color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
-        activeRing: 'ring-yellow-400/40',
+        label: 'Normal',
+        activeColor: 'text-muted-foreground border-border bg-secondary/50 hover:bg-secondary/50',
     },
     {
-        value: 'easy' as const,
-        label: 'Easy',
+        key: 'easy' as const,
         icon: ThumbsUp,
-        color: 'text-green-400 bg-green-400/10 border-green-400/30',
-        activeRing: 'ring-green-400/40',
+        label: 'Easy',
+        activeColor: 'text-green-500 border-green-500/30 bg-green-500/10 hover:bg-green-500/10',
     },
 ];
 
 export function FeedbackSelector({ value, onChange, disabled }: FeedbackSelectorProps) {
     return (
-        <div className="flex flex-col items-center gap-3">
-            <p className="text-sm font-medium text-muted-foreground">How hard was that?</p>
-            <div className="flex gap-3">
-                {options.map((opt) => {
-                    const Icon = opt.icon;
-                    const isSelected = value === opt.value;
-                    return (
-                        <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => onChange(opt.value)}
-                            disabled={disabled}
-                            className={cn(
-                                'flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-all',
-                                isSelected
-                                    ? `${opt.color} ring-2 ${opt.activeRing}`
-                                    : 'border-border/60 text-muted-foreground hover:border-border hover:text-foreground',
-                                disabled && 'opacity-50 cursor-not-allowed'
-                            )}
-                        >
-                            <Icon className="size-4" />
-                            {opt.label}
-                        </button>
-                    );
-                })}
+        <div className="mt-6 px-4">
+            <p className="mb-2.5 text-center text-xs text-muted-foreground">How hard was that?</p>
+            <div className="grid grid-cols-3 gap-2">
+                {options.map(({ key, icon: Icon, label, activeColor }) => (
+                    <Button
+                        key={key}
+                        variant="outline"
+                        onClick={() => onChange(value === key ? null : key)}
+                        disabled={disabled}
+                        className={cn(
+                            'rounded-xl py-2.5 text-sm font-medium',
+                            value === key
+                                ? activeColor
+                                : 'border-border/50 bg-transparent text-muted-foreground/60 hover:border-border hover:text-muted-foreground'
+                        )}
+                    >
+                        <Icon className="size-4" />
+                        {label}
+                    </Button>
+                ))}
             </div>
         </div>
     );

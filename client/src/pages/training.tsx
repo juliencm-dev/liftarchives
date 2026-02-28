@@ -9,10 +9,8 @@ export function TrainingPage() {
 
     return (
         <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
-            <h1 className="text-2xl font-bold">Training</h1>
-            <p className="mt-1 text-muted-foreground">
-                Log sessions, track your workouts, and review training history.
-            </p>
+            <h1 className="text-2xl font-bold">Session History</h1>
+            <p className="mt-1 text-muted-foreground">Review your past training sessions and track progress.</p>
 
             <div className="mt-6">
                 <ActiveSessionBanner />

@@ -1856,6 +1856,232 @@ const ALL_LIFTS: LiftSeed[] = [
     },
 ];
 
+// ═══════════════════════════════════════════════════════════════
+// Parent lift mapping for 1RM percentage resolution.
+// Variation → parent lift name. The parent's recorded 1RM is used
+// when calculating "up to X%" targets during a session.
+// ═══════════════════════════════════════════════════════════════
+const PARENT_MAP: Record<string, string> = {
+    // ── Snatch variations → Snatch ─────────────────────────────
+    'Power Snatch': 'Snatch',
+    // Hang
+    'Hang Snatch': 'Snatch',
+    'High-Hang Snatch': 'Snatch',
+    'Below Knee Hang Snatch': 'Snatch',
+    'Floating Snatch': 'Snatch',
+    'Hip Snatch': 'Snatch',
+    'Hang Power Snatch': 'Snatch',
+    'High-Hang Power Snatch': 'Snatch',
+    'Below Knee Hang Power Snatch': 'Snatch',
+    // Technique / Turnover
+    'Tall Snatch': 'Snatch',
+    'Dip Snatch': 'Snatch',
+    'Muscle Snatch': 'Snatch',
+    'Dip Muscle Snatch': 'Snatch',
+    'Drop Snatch': 'Snatch',
+    'Snatch Balance': 'Snatch',
+    'Heaving Snatch Balance': 'Snatch',
+    'Pressing Snatch Balance': 'Snatch',
+    'Snatch from Power Position': 'Snatch',
+    'Power Snatch from Power Position': 'Snatch',
+    'No Feet Snatch': 'Snatch',
+    'Clean Grip Snatch': 'Snatch',
+    'Snatch Grip Push Press': 'Snatch',
+    'Snatch Grip Behind the Neck Push Press': 'Snatch',
+    'Sots Press (Snatch Grip)': 'Snatch',
+    'Snatch Push Press + Overhead Squat': 'Snatch',
+    // Multi-position
+    '2-Position Snatch': 'Snatch',
+    '3-Position Snatch': 'Snatch',
+    '2-Position Power Snatch': 'Snatch',
+    '3-Position Power Snatch': 'Snatch',
+    // Block
+    'Block Snatch': 'Snatch',
+    'Block Power Snatch': 'Snatch',
+    'Snatch from Blocks': 'Snatch',
+    // Riser / Deficit
+    'Snatch on Riser': 'Snatch',
+    'Deficit Snatch': 'Snatch',
+    'Power Snatch on Riser': 'Snatch',
+    // Tempo / Paused
+    'Paused Snatch': 'Snatch',
+    'Slow Pull Snatch': 'Snatch',
+    'Pause at Knee Snatch': 'Snatch',
+    // Pull variations
+    'Snatch Pull': 'Snatch',
+    'Snatch High Pull': 'Snatch',
+    'Snatch Speed Pull (Panda Pull)': 'Snatch',
+    'Snatch Segment Pull': 'Snatch',
+    'Snatch Pull to Hold': 'Snatch',
+    'Snatch Pull to Hip': 'Snatch',
+    'Flat-Footed Snatch Pull': 'Snatch',
+    'Flat-Footed Snatch Pull to Hold': 'Snatch',
+    'Floating Snatch Pull': 'Snatch',
+    'Snatch Pull on Riser': 'Snatch',
+    'Snatch High Pull on Riser': 'Snatch',
+    'Block Snatch Pull': 'Snatch',
+    'Block Snatch Pull to Hold': 'Snatch',
+    'Block Snatch High Pull': 'Snatch',
+    'Dip Snatch Pull': 'Snatch',
+    'Snatch Lasha Pull (Short Pull)': 'Snatch',
+    'Snatch Stage Pull': 'Snatch',
+    // Deadlift variations
+    'Snatch Deadlift': 'Snatch',
+    'Snatch Grip Deadlift': 'Snatch',
+    'Snatch Deadlift on Riser': 'Snatch',
+    'Snatch Deadlift to Power Position': 'Snatch',
+    'Halting Snatch Deadlift': 'Snatch',
+    'Floating Halting Snatch Deadlift': 'Snatch',
+    'Floating Halting Snatch Deadlift on Riser': 'Snatch',
+    'Block Snatch Deadlift': 'Snatch',
+    'Block Halting Snatch Deadlift': 'Snatch',
+    'Snatch Segment Deadlift': 'Snatch',
+    'Snatch Lift-Off': 'Snatch',
+    // Snatch complexes
+    'Snatch Pull + Snatch': 'Snatch',
+    'Power Snatch + Snatch': 'Snatch',
+    'Hang Snatch + Snatch': 'Snatch',
+
+    // ── Clean variations → Clean ───────────────────────────────
+    'Power Clean': 'Clean',
+    // Hang
+    'Hang Clean': 'Clean',
+    'High-Hang Clean': 'Clean',
+    'Below Knee Hang Clean': 'Clean',
+    'Floating Clean': 'Clean',
+    'Hip Clean': 'Clean',
+    'Hang Power Clean': 'Clean',
+    'High-Hang Power Clean': 'Clean',
+    'Below Knee Hang Power Clean': 'Clean',
+    // Technique / Turnover
+    'Tall Clean': 'Clean',
+    'Dip Clean': 'Clean',
+    'Muscle Clean': 'Clean',
+    'Dip Muscle Clean': 'Clean',
+    'Clean from Power Position': 'Clean',
+    'Power Clean from Power Position': 'Clean',
+    'No Feet Clean': 'Clean',
+    'Clean Bench Pull (Staircase Pull)': 'Clean',
+    'Sots Press (Clean Grip)': 'Clean',
+    // Multi-position
+    '2-Position Clean': 'Clean',
+    '3-Position Clean': 'Clean',
+    '2-Position Power Clean': 'Clean',
+    '3-Position Power Clean': 'Clean',
+    // Block
+    'Block Clean': 'Clean',
+    'Block Power Clean': 'Clean',
+    'Clean from Blocks': 'Clean',
+    // Riser / Deficit
+    'Clean on Riser': 'Clean',
+    'Deficit Clean': 'Clean',
+    'Power Clean on Riser': 'Clean',
+    // Tempo / Paused
+    'Paused Clean': 'Clean',
+    'Slow Pull Clean': 'Clean',
+    'Pause at Knee Clean': 'Clean',
+    // Pull variations
+    'Clean Pull': 'Clean',
+    'Clean High Pull': 'Clean',
+    'Clean Speed Pull (Panda Pull)': 'Clean',
+    'Clean Segment Pull': 'Clean',
+    'Clean Pull to Hold': 'Clean',
+    'Clean Pull to Hip': 'Clean',
+    'Flat-Footed Clean Pull': 'Clean',
+    'Flat-Footed Clean Pull to Hold': 'Clean',
+    'Floating Clean Pull': 'Clean',
+    'Clean Pull on Riser': 'Clean',
+    'Clean High Pull on Riser': 'Clean',
+    'Block Clean Pull': 'Clean',
+    'Block Clean Pull to Hold': 'Clean',
+    'Block Clean High Pull': 'Clean',
+    'Dip Clean Pull': 'Clean',
+    'Clean Lasha Pull (Short Pull)': 'Clean',
+    'Clean Stage Pull': 'Clean',
+    // Deadlift variations
+    'Clean Deadlift': 'Clean',
+    'Clean Deadlift on Riser': 'Clean',
+    'Clean Deadlift to Power Position': 'Clean',
+    'Halting Clean Deadlift': 'Clean',
+    'Floating Halting Clean Deadlift': 'Clean',
+    'Floating Halting Clean Deadlift on Riser': 'Clean',
+    'Block Clean Deadlift': 'Clean',
+    'Block Halting Clean Deadlift': 'Clean',
+    'Clean Segment Deadlift': 'Clean',
+    'Clean Lift-Off': 'Clean',
+    // Clean complexes
+    'Clean Pull + Clean': 'Clean',
+    'Power Clean + Clean': 'Clean',
+    'Hang Clean + Clean': 'Clean',
+    'Clean to Front Squat': 'Clean',
+    'Hang Clean to Push Press': 'Clean',
+
+    // ── Jerk variations → Jerk ─────────────────────────────────
+    'Split Jerk': 'Jerk',
+    'Power Jerk': 'Jerk',
+    'Push Jerk': 'Jerk',
+    'Squat Jerk': 'Jerk',
+    'Jerk from Blocks': 'Jerk',
+    'Behind the Neck Jerk': 'Jerk',
+    'Behind the Neck Power Jerk': 'Jerk',
+    'Behind the Neck Split Jerk': 'Jerk',
+    'Jerk from Split': 'Jerk',
+    'Jerk Recovery': 'Jerk',
+    'Jerk Dip': 'Jerk',
+    'Jerk Dip Squat': 'Jerk',
+    'Jerk Spring': 'Jerk',
+    'Jerk Drive': 'Jerk',
+    'Tall Jerk': 'Jerk',
+    'Press in Split': 'Jerk',
+    'Push Press in Split': 'Jerk',
+    'Jerk Balance': 'Jerk',
+    'Drop to Split': 'Jerk',
+    'Pause Jerk': 'Jerk',
+    'Jerk with Pause in Dip': 'Jerk',
+    'Push Press': 'Jerk',
+    'Push Press Behind the Neck': 'Jerk',
+
+    // ── Clean & Jerk variations → Clean & Jerk ─────────────────
+    'Block Clean & Jerk': 'Clean & Jerk',
+    'Clean-Jerk (Squat Clean to Jerk)': 'Clean & Jerk',
+    'Clean + Front Squat + Jerk': 'Clean & Jerk',
+
+    // ── Powerlifting: Squat variations → Back Squat ────────────
+    'Pause Squat': 'Back Squat',
+    'Pin Squat': 'Back Squat',
+    'Box Squat': 'Back Squat',
+    'Tempo Squat': 'Back Squat',
+    'Safety Bar Squat': 'Back Squat',
+    'Belt Squat': 'Back Squat',
+    'Anderson Squat': 'Back Squat',
+    'High Bar Squat': 'Back Squat',
+    'Low Bar Squat': 'Back Squat',
+
+    // ── Powerlifting: Deadlift variations → Deadlift ───────────
+    'Sumo Deadlift': 'Deadlift',
+    'Romanian Deadlift': 'Deadlift',
+    'Deficit Deadlift': 'Deadlift',
+    'Block Pull': 'Deadlift',
+    'Rack Pull': 'Deadlift',
+    'Paused Deadlift': 'Deadlift',
+    'Stiff Leg Deadlift': 'Deadlift',
+    'Trap Bar Deadlift': 'Deadlift',
+    'Snatch Grip Romanian Deadlift': 'Snatch',
+
+    // ── Powerlifting: Bench variations → Bench Press ───────────
+    'Close Grip Bench Press': 'Bench Press',
+    'Wide Grip Bench Press': 'Bench Press',
+    'Pause Bench Press': 'Bench Press',
+    'Spoto Press': 'Bench Press',
+    'Floor Press': 'Bench Press',
+    'Board Press': 'Bench Press',
+    'Incline Bench Press': 'Bench Press',
+    'Decline Bench Press': 'Bench Press',
+    'Larsen Press': 'Bench Press',
+    'Pin Press': 'Bench Press',
+    'Tempo Bench Press': 'Bench Press',
+};
+
 async function seed() {
     console.log(`Seeding ${ALL_LIFTS.length} lifts...`);
 
@@ -1925,6 +2151,26 @@ async function seed() {
             translationsInserted++;
         }
     }
+
+    // ── Resolve parent lift relationships ──────
+    console.log('\nResolving parent lift relationships...');
+    const allDbLifts = await db.select({ id: lifts.id, name: lifts.name }).from(lifts);
+    const nameToId = new Map(allDbLifts.map((l) => [l.name, l.id]));
+    let parentsSet = 0;
+
+    for (const [childName, parentName] of Object.entries(PARENT_MAP)) {
+        const childId = nameToId.get(childName);
+        const parentId = nameToId.get(parentName);
+        if (childId && parentId) {
+            await db.update(lifts).set({ parentLiftId: parentId }).where(eq(lifts.id, childId));
+            parentsSet++;
+        } else if (!childId) {
+            console.warn(`  ⚠ Child lift "${childName}" not found in DB`);
+        } else {
+            console.warn(`  ⚠ Parent lift "${parentName}" not found in DB`);
+        }
+    }
+    console.log(`Parent relationships set: ${parentsSet}/${Object.keys(PARENT_MAP).length}`);
 
     console.log(
         `\nDone: ${inserted} inserted, ${updated} updated, ${skipped} skipped.` +

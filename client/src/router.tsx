@@ -31,6 +31,8 @@ const ProgramDetailPage = lazy(() => import('@/pages/program-detail').then((m) =
 const ProfilePage = lazy(() => import('@/pages/profile').then((m) => ({ default: m.ProfilePage })));
 const ActiveSessionPage = lazy(() => import('@/pages/active-session').then((m) => ({ default: m.ActiveSessionPage })));
 const SessionDetailPage = lazy(() => import('@/pages/session-detail').then((m) => ({ default: m.SessionDetailPage })));
+const CalculatorPage = lazy(() => import('@/pages/calculator').then((m) => ({ default: m.CalculatorPage })));
+const InstallPage = lazy(() => import('@/pages/install').then((m) => ({ default: m.InstallPage })));
 
 function PageSuspense({ children }: { children: React.ReactNode }) {
     return <Suspense fallback={null}>{children}</Suspense>;
@@ -113,7 +115,15 @@ const indexRoute = createRoute({
             <LandingPage />
         </PageSuspense>
     ),
-    beforeLoad: isPublicRoute,
+    beforeLoad: async (ctx) => {
+        // Mobile browser users → install prompt (unless skipped or already standalone)
+        const { isMobile, isStandalone, hasSkippedInstall } = await import('@/lib/pwa');
+        if (isMobile() && !isStandalone() && !hasSkippedInstall()) {
+            throw redirect({ to: '/install' });
+        }
+        // Normal public route check (redirect to dashboard if logged in)
+        await isPublicRoute(ctx);
+    },
 });
 
 const signInRoute = createRoute({
@@ -165,6 +175,16 @@ const resetPasswordRoute = createRoute({
     component: () => (
         <PageSuspense>
             <ResetPasswordPage />
+        </PageSuspense>
+    ),
+});
+
+const installRoute = createRoute({
+    getParentRoute: () => _publicLayout,
+    path: '/install',
+    component: () => (
+        <PageSuspense>
+            <InstallPage />
         </PageSuspense>
     ),
 });
@@ -238,6 +258,16 @@ const profileRoute = createRoute({
     ),
 });
 
+const calculatorRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/calculator',
+    component: () => (
+        <PageSuspense>
+            <CalculatorPage />
+        </PageSuspense>
+    ),
+});
+
 const activeSessionRoute = createRoute({
     getParentRoute: () => _sessionLayout,
     path: '/training/session',
@@ -267,6 +297,7 @@ const routeTree = _root.addChildren([
         verifyEmailRoute,
         forgotPasswordRoute,
         resetPasswordRoute,
+        installRoute,
     ]),
     _appLayout.addChildren([
         dashboardRoute,
@@ -276,6 +307,7 @@ const routeTree = _root.addChildren([
         programsRoute,
         programDetailRoute,
         profileRoute,
+        calculatorRoute,
     ]),
     _sessionLayout.addChildren([activeSessionRoute]),
 ]);

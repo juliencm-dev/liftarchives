@@ -7,6 +7,7 @@ import { useCompleteDay } from '@/hooks/use-programs';
 import { useStartSession } from '@/hooks/use-sessions';
 import { ExerciseBlock } from '@/components/programs/ExerciseBlock';
 import { useNavigate } from '@tanstack/react-router';
+import { clearLocalSession } from '@/lib/session-store';
 import type { ProgramBlockResponse } from '@liftarchives/shared';
 
 interface UpNextDay {
@@ -44,6 +45,8 @@ export function TodaysTrainingCard({ currentWeek, upNextDayId, hasActiveAssignme
 
     const handleStartSession = async () => {
         if (!selectedDay) return;
+        // Clear any stale local session data before starting fresh
+        clearLocalSession();
         startSession.mutate(
             { programDayId: selectedDay.id, title: selectedDay.name ?? `Day ${selectedDay.dayNumber}` },
             {
@@ -136,7 +139,7 @@ export function TodaysTrainingCard({ currentWeek, upNextDayId, hasActiveAssignme
                                     Start Session
                                 </Button>
                                 <Button
-                                    variant="outline-primary"
+                                    variant="outline"
                                     className="gap-2"
                                     onClick={() => completeDay.mutate(selectedDay.id)}
                                     disabled={completeDay.isPending}

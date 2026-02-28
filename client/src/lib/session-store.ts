@@ -10,6 +10,14 @@ export interface LocalSet {
     loggedAt: string; // ISO timestamp
 }
 
+export interface LocalMovement {
+    movementId: string;
+    liftId: string;
+    liftName: string;
+    displayOrder: number;
+    reps: number;
+}
+
 export interface LocalExerciseData {
     exerciseId: string; // server-side session_exercise ID
     liftId: string;
@@ -21,6 +29,8 @@ export interface LocalExerciseData {
     upToPercent: number | null;
     oneRepMax: number | null; // 1RM of parent lift (olympic) or self
     sets: LocalSet[];
+    movements: LocalMovement[];
+    blockDisplayOrder: number;
 }
 
 export interface LocalSessionData {
@@ -87,6 +97,21 @@ export function setCurrentExercise(index: number): LocalSessionData | null {
     if (!session) return null;
 
     session.currentExerciseIndex = index;
+    saveLocalSession(session);
+    return session;
+}
+
+export function updateMovementReps(exerciseIndex: number, movementId: string, reps: number): LocalSessionData | null {
+    const session = getLocalSession();
+    if (!session) return null;
+
+    const exercise = session.exercises[exerciseIndex];
+    if (!exercise) return null;
+
+    const movement = exercise.movements.find((m) => m.movementId === movementId);
+    if (!movement) return null;
+
+    movement.reps = Math.max(0, reps);
     saveLocalSession(session);
     return session;
 }

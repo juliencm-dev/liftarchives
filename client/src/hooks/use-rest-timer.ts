@@ -53,6 +53,11 @@ export function useRestTimer(options: UseRestTimerOptions = {}) {
         setRemaining(duration);
     }, [duration]);
 
+    const adjust = useCallback((delta: number) => {
+        setRemaining((prev) => Math.max(0, prev + delta));
+        setDuration((prev) => Math.max(0, prev + delta));
+    }, []);
+
     const progress = duration > 0 ? (duration - remaining) / duration : 0;
 
     return {
@@ -65,5 +70,6 @@ export function useRestTimer(options: UseRestTimerOptions = {}) {
         resume,
         skip,
         reset,
+        adjust,
     };
 }

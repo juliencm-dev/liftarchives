@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { Calculator, Minus, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { roundToPlate, calcPercentage, calcEpley, calcBrzycki, generatePercentageTable } from '@/lib/calculator';
 import { useUnit } from '@/hooks/use-profile';
+import { useLifts, usePersonalRecords } from '@/hooks/use-lifts';
+import { displayWeight } from '@/lib/units';
 
 function PercentageTable({ max, unit }: { max: number; unit: 'kg' | 'lb' }) {
     const rows = generatePercentageTable(max, unit);
@@ -134,6 +137,93 @@ function RepMaxEstimator({ unit }: { unit: 'kg' | 'lb' }) {
     );
 }
 
+/** Standalone calculator content — used by both the page and the dialog */
+export function PercentageCalculatorContent() {
+    const [maxWeight, setMaxWeight] = useState('');
+    const [selectedLiftId, setSelectedLiftId] = useState<string | null>(null);
+    const [noPR, setNoPR] = useState(false);
+    const unit = useUnit();
+    const { data: lifts = [] } = useLifts();
+    const { data: allRecords = [] } = usePersonalRecords();
+    const max = parseFloat(maxWeight);
+    const hasMax = !isNaN(max) && max > 0;
+
+    const handleLiftSelect = (liftId: string) => {
+        setSelectedLiftId(liftId);
+        // Find the highest 1RM PR for this specific lift
+        const liftRecords = allRecords.filter((r) => r.liftId === liftId && r.reps === 1 && r.weight > 0);
+        if (liftRecords.length === 0) {
+            setNoPR(true);
+            setMaxWeight('');
+            return;
+        }
+        const best = liftRecords.reduce((max, r) => (r.weight > max.weight ? r : max), liftRecords[0]);
+        setNoPR(false);
+        setMaxWeight(String(displayWeight(best.weight, unit)));
+    };
+
+    return (
+        <div className="flex flex-col gap-5">
+            {/* Select a lift */}
+            {lifts.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <Select onValueChange={handleLiftSelect} value={selectedLiftId ?? undefined}>
+                        <SelectTrigger className="text-sm">
+                            <SelectValue placeholder="Select a lift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {lifts.map((lift) => (
+                                <SelectItem key={lift.id} value={lift.id}>
+                                    {lift.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {noPR && (
+                        <p className="text-xs text-muted-foreground">
+                            No PR recorded for this lift — enter weight manually.
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Weight input */}
+            <div className="flex items-center gap-2">
+                <Input
+                    type="number"
+                    step="0.5"
+                    placeholder="Enter 1RM weight"
+                    value={maxWeight}
+                    onChange={(e) => setMaxWeight(e.target.value)}
+                    className="text-sm"
+                />
+                <span className="text-sm text-muted-foreground">{unit}</span>
+            </div>
+
+            {hasMax && (
+                <>
+                    {/* Percentage table */}
+                    <PercentageTable max={max} unit={unit} />
+
+                    {/* Custom slider */}
+                    <div className="rounded-lg border border-border/60 bg-secondary/20 p-3">
+                        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            Custom Percentage
+                        </p>
+                        <CustomSlider max={max} unit={unit} />
+                    </div>
+                </>
+            )}
+
+            {/* Separator */}
+            <div className="border-t border-border/50" />
+
+            {/* Rep max estimator */}
+            <RepMaxEstimator unit={unit} />
+        </div>
+    );
+}
+
 export function PercentageCalculatorDialog({
     trigger,
     open,
@@ -143,11 +233,6 @@ export function PercentageCalculatorDialog({
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
 }) {
-    const [maxWeight, setMaxWeight] = useState('');
-    const unit = useUnit();
-    const max = parseFloat(maxWeight);
-    const hasMax = !isNaN(max) && max > 0;
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -158,43 +243,7 @@ export function PercentageCalculatorDialog({
                         Percentage Calculator
                     </DialogTitle>
                 </DialogHeader>
-
-                <div className="flex flex-col gap-5">
-                    {/* Weight input */}
-                    <div className="flex items-center gap-2">
-                        <Input
-                            type="number"
-                            step="0.5"
-                            placeholder="Enter 1RM weight"
-                            value={maxWeight}
-                            onChange={(e) => setMaxWeight(e.target.value)}
-                            className="text-sm"
-                            autoFocus
-                        />
-                        <span className="text-sm text-muted-foreground">{unit}</span>
-                    </div>
-
-                    {hasMax && (
-                        <>
-                            {/* Percentage table */}
-                            <PercentageTable max={max} unit={unit} />
-
-                            {/* Custom slider */}
-                            <div className="rounded-lg border border-border/60 bg-secondary/20 p-3">
-                                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Custom Percentage
-                                </p>
-                                <CustomSlider max={max} unit={unit} />
-                            </div>
-                        </>
-                    )}
-
-                    {/* Separator */}
-                    <div className="border-t border-border/50" />
-
-                    {/* Rep max estimator */}
-                    <RepMaxEstimator unit={unit} />
-                </div>
+                <PercentageCalculatorContent />
             </DialogContent>
         </Dialog>
     );

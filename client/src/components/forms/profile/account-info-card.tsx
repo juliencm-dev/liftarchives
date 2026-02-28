@@ -95,12 +95,7 @@ export function AccountInfoCard() {
                                 />
                             )}
                         />
-                        <Button
-                            type="submit"
-                            size="icon-lg"
-                            disabled={isLoading}
-                            className="shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-                        >
+                        <Button type="submit" size="icon-lg" disabled={isLoading} className="shrink-0 rounded-lg">
                             {saved ? <Check className="size-4" /> : <Save className="size-4" />}
                         </Button>
                     </div>

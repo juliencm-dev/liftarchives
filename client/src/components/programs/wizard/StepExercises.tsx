@@ -182,7 +182,7 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                     {/* Copy from week dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground">
+                            <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
                                 <Copy className="size-3" />
                                 Copy from
                             </Button>
@@ -324,12 +324,7 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => toggleNotes(block.id)}
-                                    className={cn(
-                                        'size-7',
-                                        showNotes
-                                            ? 'text-primary'
-                                            : 'text-muted-foreground/50 hover:text-muted-foreground'
-                                    )}
+                                    className={cn('size-7', showNotes ? 'text-primary' : '')}
                                     title="Add notes"
                                 >
                                     <Settings2 className="size-3.5" />
@@ -341,7 +336,7 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => toggleCollapse(block.id)}
-                                    className="size-7 text-muted-foreground/50 hover:text-muted-foreground"
+                                    className="size-7"
                                 >
                                     {isCollapsed ? (
                                         <ChevronDown className="size-3.5" />
@@ -353,10 +348,10 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                                 {/* Delete block */}
                                 <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="destructive"
                                     size="icon"
                                     onClick={() => removeBlock(block.id)}
-                                    className="size-7 text-destructive/50 hover:text-destructive"
+                                    className="size-7"
                                 >
                                     <Trash2 className="size-3.5" />
                                 </Button>
@@ -370,7 +365,7 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                                         onChange={(e) => updateBlock(block.id, { notes: e.target.value })}
                                         placeholder="Notes: Every 90sec, From box, EMOM 15min..."
                                         rows={1}
-                                        className="min-h-[32px] resize-none border-0 bg-transparent p-0 text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus-visible:ring-0"
+                                        className="min-h-8 resize-none border-0 bg-transparent p-0 text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus-visible:ring-0"
                                     />
                                 </div>
                             )}
@@ -435,7 +430,7 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setPickerForBlock(block.id)}
-                                            className="h-7 w-full gap-1.5 text-xs text-muted-foreground/60 hover:text-primary"
+                                            className="h-7 w-full gap-1.5 text-xs hover:text-primary"
                                         >
                                             <Plus className="size-3" />
                                             Add Movement
@@ -449,17 +444,10 @@ export function StepExercises({ days, weekBlocks, onWeekBlocksChange }: StepExer
             </div>
 
             {/* Add block button */}
-            <Button
-                type="button"
-                variant="outline"
-                onClick={addBlock}
-                className="h-12 w-full gap-2 border-dashed border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            >
+            <Button type="button" variant="outline" onClick={addBlock} className="h-12 w-full gap-2 border-dashed">
                 <Plus className="size-4" />
                 Add Block
-                {currentBlocks.length > 0 && (
-                    <span className="font-mono text-xs text-muted-foreground/60">({getNextLabel(currentBlocks)})</span>
-                )}
+                {currentBlocks.length > 0 && <span className="font-mono">({getNextLabel(currentBlocks)})</span>}
             </Button>
 
             {/* Exercise picker dialog — stays open for adding multiple movements */}

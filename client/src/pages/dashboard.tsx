@@ -8,7 +8,7 @@ import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { TodaysTrainingCard } from '@/components/dashboard/TodaysTrainingCard';
 import { ActiveSessionBanner } from '@/components/sessions/ActiveSessionBanner';
 import { Link } from '@tanstack/react-router';
-import { Activity, CalendarDays, Target, Plus, TrendingUp } from 'lucide-react';
+import { Activity, CalendarDays, Target, TrendingUp } from 'lucide-react';
 
 export function DashboardPage() {
     const { user } = useAuth();
@@ -52,17 +52,22 @@ export function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="mb-8 hidden gap-3 md:flex">
-                <Button className="h-11 flex-1 gap-2 rounded-xl font-semibold shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:shadow-[0_0_30px_rgba(212,168,83,0.25)]">
-                    <Plus className="size-4" />
-                    Log Session
+                <Button
+                    className="h-11 flex-1 gap-2 rounded-xl font-semibold shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:shadow-[0_0_30px_rgba(212,168,83,0.25)]"
+                    asChild
+                >
+                    <Link to="/training">
+                        <Activity className="size-4" />
+                        Session History
+                    </Link>
                 </Button>
-                <Button variant="outline-primary" className="h-11 flex-1 gap-2 rounded-xl" asChild>
+                <Button variant="outline" className="h-11 flex-1 gap-2 rounded-xl" asChild>
                     <Link to="/lifts">
                         <TrendingUp className="size-4" />
                         View Progress
                     </Link>
                 </Button>
-                <Button variant="outline-primary" className="h-11 flex-1 gap-2 rounded-xl" asChild>
+                <Button variant="outline" className="h-11 flex-1 gap-2 rounded-xl" asChild>
                     <Link to="/programs">
                         <CalendarDays className="size-4" />
                         Browse Programs

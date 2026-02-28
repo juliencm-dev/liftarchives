@@ -140,11 +140,7 @@ function ProfileFormFields({
                         />
                     </div>
 
-                    <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="mt-2 h-11 w-full rounded-xl font-semibold shadow-[0_0_20px_rgba(212,168,83,0.15)] hover:shadow-[0_0_30px_rgba(212,168,83,0.25)]"
-                    >
+                    <Button type="submit" disabled={isLoading} className="mt-2 h-11 w-full rounded-xl font-semibold">
                         {isLoading ? (
                             <Loader2 className="size-4 animate-spin" />
                         ) : isCreate ? (

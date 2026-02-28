@@ -58,11 +58,7 @@ export function ProgramCard({ program, isActive, onEdit, onActivate, onDeactivat
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-                            >
+                            <Button variant="ghost" size="icon" className="size-8 shrink-0">
                                 <MoreVertical className="size-4" />
                                 <span className="sr-only">Program options</span>
                             </Button>

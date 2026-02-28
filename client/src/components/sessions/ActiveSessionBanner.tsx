@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Play, Trash2, Loader2 } from 'lucide-react';
 import { useActiveSession, useDiscardSession } from '@/hooks/use-sessions';
 import { useNavigate } from '@tanstack/react-router';
+import { clearLocalSession } from '@/lib/session-store';
 
 export function ActiveSessionBanner() {
     const { data } = useActiveSession();
@@ -24,9 +25,10 @@ export function ActiveSessionBanner() {
             <div className="flex gap-2">
                 <Button
                     size="sm"
-                    variant="outline-primary"
+                    variant="destructive"
                     className="gap-1.5"
                     onClick={() => {
+                        clearLocalSession();
                         discardSession.mutate(session.id);
                     }}
                     disabled={discardSession.isPending}

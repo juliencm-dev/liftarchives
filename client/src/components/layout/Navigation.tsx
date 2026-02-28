@@ -16,15 +16,15 @@ export function Navigation() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="sticky top-0 z-50 border-b border-border/50 bg-transparent backdrop-blur-xl">
+            <div className="mx-auto max-w-7xl px-4 lg:px-6">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group cursor-pointer">
-                        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Dumbbell className="h-6 w-6 text-primary-foreground" />
+                    <Link to="/" className="flex items-center gap-3 group cursor-pointer">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/15 group-hover:scale-110 transition-transform">
+                            <Dumbbell className="size-4 text-primary" />
                         </div>
-                        <span className="text-2xl font-bold">LiftArchives</span>
+                        <span className="text-base font-semibold tracking-tight text-foreground">LiftArchives</span>
                     </Link>
 
                     {/* Desktop Navigation */}

@@ -45,7 +45,7 @@ function DayRow({
                     variant="ghost"
                     size="icon"
                     onClick={onDuplicate}
-                    className="size-9 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                    className="size-9 opacity-0 transition-opacity group-hover:opacity-100"
                     aria-label={`Duplicate ${day.name}`}
                 >
                     <Copy className="size-4" />
@@ -131,12 +131,7 @@ export function StepDays({ days, onDaysChange, dayBlocks, onDayBlocksChange }: S
                 />
             ))}
 
-            <Button
-                type="button"
-                variant="outline"
-                onClick={addDay}
-                className="h-12 w-full gap-2 border-dashed border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            >
+            <Button type="button" variant="outline" onClick={addDay} className="h-12 w-full gap-2 border-dashed">
                 <Plus className="size-4" />
                 Add Day
             </Button>

@@ -17,23 +17,13 @@ export function ExerciseBlock({ block }: ExerciseBlockProps) {
     const label = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[block.displayOrder - 1] ?? `${block.displayOrder}`;
 
     return (
-        <div
-            className={cn(
-                'overflow-hidden rounded-xl border',
-                isComplex ? 'border-primary/20 bg-secondary/10' : 'border-border/60 bg-secondary/30'
-            )}
-        >
+        <div className={cn('overflow-hidden rounded-xl border border-primary/20 bg-secondary/10')}>
             {/* Block header */}
-            <div
-                className={cn(
-                    'flex items-center gap-3 px-4 py-2.5',
-                    isComplex && 'border-b border-primary/10 bg-primary/[0.03]'
-                )}
-            >
+            <div className={cn('flex items-center gap-3 px-4 py-2.5 border-b border-primary/10 bg-primary/3')}>
                 <div
                     className={cn(
                         'flex size-7 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold',
-                        isComplex ? 'bg-primary/15 text-primary' : 'bg-secondary text-foreground'
+                        'bg-primary/15 text-primary'
                     )}
                 >
                     {label}

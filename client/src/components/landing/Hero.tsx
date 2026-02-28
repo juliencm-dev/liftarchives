@@ -29,7 +29,7 @@ export function Hero() {
                             </Button>
                         </Link>
                         <a href="#features">
-                            <Button size="lg" variant="outline" className="px-8 bg-transparent">
+                            <Button size="lg" variant="outline" className="px-8">
                                 Learn More
                             </Button>
                         </a>

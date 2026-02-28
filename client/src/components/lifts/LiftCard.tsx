@@ -138,13 +138,7 @@ function LiftCardPercentageTable({ max, unit, onBack }: { max: number; unit: 'kg
                     % of {max}
                     {unit}
                 </span>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="size-6 text-muted-foreground"
-                    onClick={onBack}
-                    aria-label="Back to PR view"
-                >
+                <Button variant="ghost" size="icon-sm" className="size-6" onClick={onBack} aria-label="Back to PR view">
                     <ArrowLeft className="size-3.5" />
                 </Button>
             </div>
@@ -250,7 +244,7 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
                             <Button
                                 variant="ghost"
                                 size="icon-sm"
-                                className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                                className="size-7 shrink-0 opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsFlipped(true);
@@ -263,7 +257,7 @@ export function LiftCard({ lift, records, isSelected, onSelect }: LiftCardProps)
                         <Button
                             variant="ghost"
                             size="icon-sm"
-                            className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                            className="size-7 shrink-0 opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setIsAdding(true);

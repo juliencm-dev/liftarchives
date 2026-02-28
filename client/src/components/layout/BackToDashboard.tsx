@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 export const BackToDashboard = () => {
     return (
         <Button
-            variant="ghost"
+            variant="link"
             asChild
-            className="-ml-2 mb-2 h-auto w-fit gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
+            className="hidden md:inline-flex -ml-2 mb-2 h-auto w-fit gap-1.5 px-2 py-1 text-sm"
         >
             <Link to="/dashboard">
                 <ArrowLeft className="size-3.5" />

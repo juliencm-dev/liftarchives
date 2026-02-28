@@ -61,7 +61,7 @@ export function ProgramsPage() {
 
     if (wizardOpen) {
         return (
-            <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-6 lg:py-8">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
                 <ProgramWizard onClose={handleCloseWizard} initialData={editData} />
             </div>
         );

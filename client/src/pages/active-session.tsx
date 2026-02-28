@@ -1,13 +1,19 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { useActiveSession, useCompleteSession, useAddExercise, useBatchUploadSets } from '@/hooks/use-sessions';
 import { FeedbackSelector } from '@/components/sessions/FeedbackSelector';
 import { SessionSummary } from '@/components/sessions/SessionSummary';
-import { RestTimer } from '@/components/sessions/RestTimer';
+import { RestTimerView } from '@/components/sessions/RestTimerView';
 import { PRCelebration } from '@/components/sessions/PRCelebration';
+import { SessionHeader } from '@/components/sessions/SessionHeader';
+import { VideoDemo } from '@/components/sessions/VideoDemo';
+import { ExerciseInfo } from '@/components/sessions/ExerciseInfo';
+import { MovementRepCounters } from '@/components/sessions/MovementRepCounters';
+import { RepsWeightControls } from '@/components/sessions/RepsWeightControls';
+import { SetCounterRow } from '@/components/sessions/SetCounterRow';
+import { BlockNavigation } from '@/components/sessions/BlockNavigation';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Check, Loader2, Minus, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Loader2, FileText, History, ChevronRight } from 'lucide-react';
 import { useUnit } from '@/hooks/use-profile';
 import { displayWeight, toKg } from '@/lib/units';
 import { useTrainingSettings } from '@/hooks/use-training-settings';
@@ -18,11 +24,14 @@ import {
     addLocalSet,
     removeLocalSet,
     setCurrentExercise,
+    updateMovementReps,
     type LocalSessionData,
 } from '@/lib/session-store';
 
+type ViewState = 'exercise' | 'rest';
+
 export function ActiveSessionPage() {
-    const { data, isLoading } = useActiveSession();
+    const { data, isLoading, isFetching } = useActiveSession();
     const completeSession = useCompleteSession();
     const addExercise = useAddExercise();
     const batchUpload = useBatchUploadSets();
@@ -33,9 +42,10 @@ export function ActiveSessionPage() {
     const [localSession, setLocalSession] = useState<LocalSessionData | null>(null);
     const [showSummary, setShowSummary] = useState(false);
     const [completedSession, setCompletedSession] = useState<unknown>(null);
-    const [showRestTimer, setShowRestTimer] = useState(false);
+    const [viewState, setViewState] = useState<ViewState>('exercise');
     const [isFinishing, setIsFinishing] = useState(false);
     const [elapsed, setElapsed] = useState(0);
+    const [activeMovementIndex, setActiveMovementIndex] = useState(0);
 
     // PR celebration state
     const [prList, setPrList] = useState<
@@ -101,17 +111,35 @@ export function ActiveSessionPage() {
             }
         }
 
+        // Only carry over exercise index if existing local session is for the same session
+        const isSameSession = existing?.sessionId === session.id;
+
+        // Sort exercises by block display order (mutations may resolve out of order)
+        const sortedExercises = [...session.exercises].sort(
+            (a: any, b: any) => (a.programBlock?.displayOrder ?? 0) - (b.programBlock?.displayOrder ?? 0)
+        );
+
         const local: LocalSessionData = {
             sessionId: session.id,
             title: session.title ?? null,
             startedAt: session.startedAt ?? new Date().toISOString(),
-            currentExerciseIndex: existing?.currentExerciseIndex ?? 0,
-            exercises: session.exercises.map((ex: any) => {
+            currentExerciseIndex: isSameSession ? (existing?.currentExerciseIndex ?? 0) : 0,
+            exercises: sortedExercises.map((ex: any, idx: number) => {
                 const existingEx = existing?.exercises.find((e: any) => e.exerciseId === ex.id);
 
                 // Get movement-specific reps (movements can override block reps)
                 const matchingMovement = ex.programBlock?.movements?.find((m: any) => m.liftId === ex.liftId);
                 const targetReps = matchingMovement?.reps ?? ex.programBlock?.reps ?? 5;
+
+                // Build movements list from program block
+                const movements = (ex.programBlock?.movements ?? []).map((m: any) => ({
+                    movementId: m.id,
+                    liftId: m.liftId,
+                    liftName: m.lift?.name ?? 'Unknown',
+                    displayOrder: m.displayOrder,
+                    reps:
+                        existingEx?.movements?.find((em: any) => em.movementId === m.id)?.reps ?? m.reps ?? targetReps,
+                }));
 
                 return {
                     exerciseId: ex.id,
@@ -124,6 +152,8 @@ export function ActiveSessionPage() {
                     upToPercent: ex.programBlock?.upToPercent ?? null,
                     oneRepMax: ex.oneRepMax ?? null,
                     sets: existingEx?.sets ?? [],
+                    movements,
+                    blockDisplayOrder: ex.programBlock?.displayOrder ?? idx,
                 };
             }),
         };
@@ -132,62 +162,98 @@ export function ActiveSessionPage() {
         setLocalSession(local);
     }, [sessionId, sessionExerciseCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Elapsed time ticker
+    // Elapsed time ticker (seconds for M:SS display)
     useEffect(() => {
         const startTime = localSession?.startedAt ?? session?.startedAt;
         if (!startTime) return;
         const start = new Date(startTime).getTime();
-        const tick = () => setElapsed(Math.floor((Date.now() - start) / 60000));
+        const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
         tick();
-        const interval = setInterval(tick, 60000);
+        const interval = setInterval(tick, 1000);
         return () => clearInterval(interval);
     }, [localSession?.startedAt, session?.startedAt]);
 
-    // Redirect if no session
+    // Redirect if no session (wait for any in-flight refetch to settle first)
     useEffect(() => {
-        if (!isLoading && !session) {
+        if (!isLoading && !isFetching && !session) {
             navigate({ to: '/dashboard' });
         }
-    }, [isLoading, session, navigate]);
+    }, [isLoading, isFetching, session, navigate]);
+
+    // Format elapsed seconds to M:SS
+    const formatTime = useCallback((seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }, []);
 
     // Current exercise derived state
     const currentIndex = localSession?.currentExerciseIndex ?? 0;
     const currentExercise = localSession?.exercises[currentIndex] ?? null;
     const totalExercises = localSession?.exercises.length ?? 0;
+    const isMultiMovement = (currentExercise?.movements.length ?? 0) > 1;
 
-    // Get increment for current exercise based on category
-    const increment = useMemo(() => {
-        if (!settings || !currentExercise) return 2.5;
-        switch (currentExercise.liftCategory) {
-            case 'olympic':
-                return settings.olympicIncrement;
-            case 'powerlifting':
-                return settings.powerliftingIncrement;
-            default:
-                return settings.accessoryIncrement;
-        }
-    }, [settings, currentExercise]);
+    // Reset active movement index when switching blocks
+    useEffect(() => {
+        setActiveMovementIndex(0);
+    }, [currentIndex]);
+
+    // Get the active movement name for complex blocks
+    const activeMovementName = useMemo(() => {
+        if (!currentExercise || !isMultiMovement) return undefined;
+        const sorted = [...currentExercise.movements].sort((a, b) => a.displayOrder - b.displayOrder);
+        return sorted[activeMovementIndex]?.liftName;
+    }, [currentExercise, isMultiMovement, activeMovementIndex]);
 
     const barWeight = settings?.barWeight ?? 20;
 
-    // Get target weight for the current exercise (bar → upToPercent of 1RM)
+    // Target weight for the current exercise (upToPercent of 1RM)
     const targetWeight = useMemo(() => {
         if (!currentExercise?.upToPercent || !currentExercise?.oneRepMax) return null;
         const raw = (currentExercise.oneRepMax * currentExercise.upToPercent) / 100;
-        return Math.round(raw / increment) * increment;
-    }, [currentExercise?.upToPercent, currentExercise?.oneRepMax, increment]);
+        return Math.round(raw);
+    }, [currentExercise?.upToPercent, currentExercise?.oneRepMax]);
 
-    // Compute planned weight for a given set number (1-indexed)
+    // Starting weight for this block: carry-over from previous block or bar weight.
+    // Recalculated at the beginning of each block.
+    // Only carries over from the same lift category (prevents nonsensical carry across different lifts).
+    const blockStartWeight = useMemo(() => {
+        if (!localSession || currentIndex === 0) return barWeight;
+        const prevExercise = localSession.exercises[currentIndex - 1];
+        const prevLastSet = prevExercise?.sets[prevExercise.sets.length - 1];
+        if (!prevLastSet) return barWeight;
+        // Only carry over from the same lift category (e.g. both "olympic" or both "squat")
+        if (currentExercise && prevExercise.liftCategory !== currentExercise.liftCategory) {
+            return barWeight;
+        }
+        const carry = prevLastSet.weight + 2; // minimum 2kg jump between blocks
+        // If carry-over exceeds this block's target, start from bar instead
+        if (targetWeight && carry >= targetWeight) return barWeight;
+        return Math.round(carry);
+    }, [localSession, currentIndex, barWeight, targetWeight, currentExercise]);
+
+    // Planned weight for a given progression position (1-indexed).
+    // Linear interpolation from blockStartWeight to targetWeight.
+    // Position 1 = start, position totalSets = target. Naturally lands on target.
     const getPlannedWeight = useCallback(
-        (setNumber: number, totalSets: number) => {
-            if (!targetWeight || targetWeight <= barWeight) return barWeight;
-            if (totalSets <= 1) return targetWeight;
-            // Evenly space from bar to target across sets
-            const jump = (targetWeight - barWeight) / (totalSets - 1);
-            const raw = barWeight + jump * (setNumber - 1);
-            return Math.round(raw / increment) * increment;
+        (position: number) => {
+            if (!currentExercise) return Math.round(blockStartWeight);
+
+            if (!targetWeight) {
+                // No 1RM data available — fall back to 2kg increments per set
+                return Math.round(blockStartWeight + (position - 1) * 2);
+            }
+
+            if (targetWeight <= blockStartWeight) {
+                // Already at or above target — stay at target weight
+                return Math.round(targetWeight);
+            }
+
+            const totalPositions = Math.max(1, currentExercise.targetSets - 1);
+            const progress = Math.min(position - 1, totalPositions) / totalPositions;
+            return Math.round(blockStartWeight + (targetWeight - blockStartWeight) * progress);
         },
-        [targetWeight, barWeight, increment]
+        [targetWeight, blockStartWeight, currentExercise]
     );
 
     // Input state
@@ -195,7 +261,9 @@ export function ActiveSessionPage() {
     const [reps, setReps] = useState(5);
     const [feedback, setFeedback] = useState<'hard' | 'normal' | 'easy' | null>(null);
 
-    // Update weight/reps when exercise changes or a set is logged
+    // Update weight/reps when exercise changes or a set is logged.
+    // "Effective position" = number of non-hard sets completed + 1.
+    // Hard sets don't advance the progression, so the same weight is suggested again.
     useEffect(() => {
         if (!currentExercise) return;
 
@@ -203,34 +271,27 @@ export function ActiveSessionPage() {
         const lastSet = currentExercise.sets[setsLogged - 1];
 
         if (lastSet) {
-            // Adjust weight based on previous set's feedback
-            const plannedNext = getPlannedWeight(setsLogged + 1, currentExercise.targetSets);
-            const plannedJump = plannedNext - lastSet.weight;
-
-            let nextWeight: number;
             if (lastSet.feedback === 'hard') {
-                // Stay at same weight
-                nextWeight = lastSet.weight;
-            } else if (lastSet.feedback === 'easy') {
-                // Bigger jump: double the planned jump (or 2x increment minimum)
-                nextWeight = lastSet.weight + Math.max(plannedJump * 2, increment * 2);
+                // Hard: stay at same weight — lifter may need extra sets to reach target
+                setWeight(Math.round(displayWeight(lastSet.weight, unit)));
             } else {
-                // Normal: follow planned progression (at least 1 increment)
-                nextWeight = lastSet.weight + Math.max(plannedJump, increment);
+                // Count non-hard sets to determine where we are in the progression
+                const effectivePosition = currentExercise.sets.filter((s) => s.feedback !== 'hard').length;
+                // Next weight = planned weight for the next progression position
+                const nextWeight = getPlannedWeight(effectivePosition + 1);
+                setWeight(Math.round(displayWeight(nextWeight, unit)));
             }
-            setWeight(displayWeight(Math.round(nextWeight / increment) * increment, unit));
             setReps(lastSet.reps);
         } else {
-            // First set → empty bar
-            setWeight(displayWeight(barWeight, unit));
+            // First set of this block
+            setWeight(Math.round(displayWeight(blockStartWeight, unit)));
             setReps(currentExercise.targetReps);
         }
         setFeedback(null);
-    }, [currentIndex, currentExercise?.sets.length, barWeight, increment, unit, getPlannedWeight]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [currentIndex, currentExercise?.sets.length, blockStartWeight, unit, getPlannedWeight]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const currentSetNumber = (currentExercise?.sets.length ?? 0) + 1;
     const targetSets = currentExercise?.targetSets ?? 3;
-    const isExerciseDone = currentSetNumber > targetSets;
 
     // Navigation between exercises
     const goToExercise = useCallback(
@@ -243,28 +304,32 @@ export function ActiveSessionPage() {
     );
 
     const goNext = useCallback(() => goToExercise(currentIndex + 1), [currentIndex, goToExercise]);
-    const goPrev = useCallback(() => goToExercise(currentIndex - 1), [currentIndex, goToExercise]);
 
     // Log a set
     const handleLogSet = useCallback(() => {
-        if (!currentExercise || weight <= 0 || reps <= 0) return;
+        if (!currentExercise || weight <= 0) return;
+
+        // For multi-movement blocks, total reps = sum of movement reps
+        const totalReps = isMultiMovement ? currentExercise.movements.reduce((sum, m) => sum + m.reps, 0) : reps;
+
+        if (totalReps <= 0) return;
 
         const updated = addLocalSet(currentIndex, {
             weight: toKg(weight, unit),
-            reps,
+            reps: totalReps,
             setType: 'working',
             feedback: feedback ?? undefined,
         });
 
         if (updated) {
             setLocalSession({ ...updated });
-            setShowRestTimer(true);
+            setViewState('rest');
         }
-    }, [currentExercise, currentIndex, weight, reps, feedback, unit]);
+    }, [currentExercise, currentIndex, weight, reps, feedback, unit, isMultiMovement]);
 
-    // After rest timer closes
+    // After rest timer completes
     const handleRestDone = useCallback(() => {
-        setShowRestTimer(false);
+        setViewState('exercise');
 
         if (!localSession) return;
         const ex = localSession.exercises[currentIndex];
@@ -274,8 +339,16 @@ export function ActiveSessionPage() {
         if (ex.sets.length >= ex.targetSets && currentIndex < totalExercises - 1) {
             goNext();
         }
-        // Weight/reps update is handled by the effect watching sets.length
-    }, [localSession, currentIndex, totalExercises, goNext, unit, increment]);
+    }, [localSession, currentIndex, totalExercises, goNext]);
+
+    // Update movement reps
+    const handleMovementRepsChange = useCallback(
+        (movementId: string, newReps: number) => {
+            const updated = updateMovementReps(currentIndex, movementId, newReps);
+            if (updated) setLocalSession({ ...updated });
+        },
+        [currentIndex]
+    );
 
     // Delete last set (undo)
     const handleUndoLastSet = useCallback(() => {
@@ -291,7 +364,6 @@ export function ActiveSessionPage() {
         setIsFinishing(true);
 
         try {
-            // Collect all sets across all exercises
             const allSets = localSession.exercises.flatMap((ex) =>
                 ex.sets.map((s) => ({
                     sessionExerciseId: ex.exerciseId,
@@ -355,6 +427,9 @@ export function ActiveSessionPage() {
     }
 
     const totalSetsLogged = localSession.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+    const setsPerBlock = localSession.exercises.map((ex) => ex.sets.length);
+    const targetSetsPerBlock = localSession.exercises.map((ex) => ex.targetSets);
+    const isLastBlock = currentIndex >= totalExercises - 1;
 
     return (
         <div className="flex min-h-dvh flex-col bg-background">
@@ -369,185 +444,98 @@ export function ActiveSessionPage() {
                 onDone={() => setCurrentPr((p) => ({ ...p, show: false }))}
             />
 
-            {/* Top bar */}
-            <header className="flex items-center justify-between border-b border-border/40 px-4 py-3">
-                <button
-                    type="button"
-                    onClick={() => navigate({ to: '/dashboard' })}
-                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <ArrowLeft className="size-4" />
-                </button>
-                <div className="text-center">
-                    <p className="text-sm font-semibold text-foreground">{localSession.title ?? 'Training Session'}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {elapsed} min &middot; {totalSetsLogged} sets
-                    </p>
+            {/* Sticky header with progress bar */}
+            <SessionHeader
+                title={localSession.title ?? 'Training Session'}
+                elapsed={formatTime(elapsed)}
+                totalSetsLogged={totalSetsLogged}
+                currentBlock={currentIndex}
+                totalBlocks={totalExercises}
+                setsPerBlock={setsPerBlock}
+                targetSetsPerBlock={targetSetsPerBlock}
+                onBack={() => navigate({ to: '/dashboard' })}
+            />
+
+            {/* Rest timer view (replaces block content) */}
+            {viewState === 'rest' && currentExercise ? (
+                <div className="flex flex-1 flex-col">
+                    <RestTimerView
+                        completedSet={Math.min(currentSetNumber - 1, targetSets)}
+                        totalSets={targetSets}
+                        currentBlock={currentIndex}
+                        onComplete={handleRestDone}
+                    />
                 </div>
-                <Button
-                    size="sm"
-                    onClick={handleFinish}
-                    disabled={isFinishing || totalSetsLogged === 0}
-                    className="gap-1.5"
-                >
-                    {isFinishing ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
-                    Finish
-                </Button>
-            </header>
+            ) : currentExercise ? (
+                /* Block content + bottom nav */
+                <div className="relative flex flex-1 flex-col">
+                    <div className="flex flex-1 flex-col pb-6">
+                        {/* Video demo placeholder */}
+                        <VideoDemo />
 
-            {/* Exercise navigation dots */}
-            <div className="flex items-center justify-center gap-2 py-3">
-                {localSession.exercises.map((ex, i) => {
-                    const isDone = ex.sets.length >= ex.targetSets;
-                    return (
-                        <button
-                            key={ex.exerciseId}
-                            type="button"
-                            onClick={() => goToExercise(i)}
-                            className={cn(
-                                'size-2.5 rounded-full transition-all',
-                                i === currentIndex ? 'scale-125 bg-primary' : isDone ? 'bg-primary/40' : 'bg-border'
-                            )}
-                        />
-                    );
-                })}
-            </div>
+                        {/* Exercise info */}
+                        <ExerciseInfo exercise={currentExercise} activeMovementName={activeMovementName} />
 
-            {/* Main content — centered, one exercise */}
-            {currentExercise && (
-                <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-8">
-                    {/* Exercise name */}
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-foreground">{currentExercise.liftName}</h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            {currentExercise.targetSets}&times;{currentExercise.targetReps}
-                        </p>
-                    </div>
-
-                    {/* Reps counter */}
-                    <div className="flex items-center gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setReps((r) => Math.max(1, r - 1))}
-                            className="flex size-12 items-center justify-center rounded-xl border border-border/60 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                        >
-                            <Minus className="size-5" />
-                        </button>
-                        <div className="flex w-24 flex-col items-center">
-                            <span className="font-mono text-4xl font-bold text-foreground">{reps}</span>
-                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                Reps
-                            </span>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setReps((r) => r + 1)}
-                            className="flex size-12 items-center justify-center rounded-xl border border-border/60 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                        >
-                            <Plus className="size-5" />
-                        </button>
-                    </div>
-
-                    {/* Weight counter */}
-                    <div className="flex items-center gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setWeight((w) => Math.max(0, w - increment))}
-                            className="flex size-12 items-center justify-center rounded-xl border border-border/60 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                        >
-                            <Minus className="size-5" />
-                        </button>
-                        <div className="flex w-24 flex-col items-center">
-                            <span className="font-mono text-4xl font-bold text-foreground">{weight}</span>
-                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                {unit}
-                            </span>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setWeight((w) => w + increment)}
-                            className="flex size-12 items-center justify-center rounded-xl border border-border/60 text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                        >
-                            <Plus className="size-5" />
-                        </button>
-                    </div>
-
-                    {/* Feedback */}
-                    <FeedbackSelector value={feedback} onChange={setFeedback} />
-
-                    {/* Set counter + log button */}
-                    <div className="flex w-full max-w-xs items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                            {currentExercise.sets.length > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={handleUndoLastSet}
-                                    className="text-xs text-muted-foreground underline hover:text-foreground"
-                                >
-                                    Undo
-                                </button>
-                            )}
-                        </div>
-
-                        <span className="text-sm font-medium text-muted-foreground">
-                            Set {Math.min(currentSetNumber, targetSets)}/{targetSets}
-                        </span>
-
-                        {isExerciseDone ? (
-                            currentIndex < totalExercises - 1 ? (
-                                <Button onClick={goNext} className="gap-1.5">
-                                    Next
-                                    <ChevronRight className="size-4" />
-                                </Button>
-                            ) : (
-                                <Button onClick={handleFinish} disabled={isFinishing} className="gap-1.5">
-                                    {isFinishing ? (
-                                        <Loader2 className="size-3.5 animate-spin" />
-                                    ) : (
-                                        <Check className="size-3.5" />
-                                    )}
-                                    Finish
-                                </Button>
-                            )
-                        ) : (
-                            <Button onClick={handleLogSet} disabled={weight <= 0 || reps <= 0} className="gap-1.5 px-6">
-                                Log Set
-                            </Button>
+                        {/* Movement rep counters (multi-movement only) */}
+                        {isMultiMovement && (
+                            <MovementRepCounters
+                                movements={currentExercise.movements}
+                                activeMovementIndex={activeMovementIndex}
+                                onSelectMovement={setActiveMovementIndex}
+                                onUpdateReps={handleMovementRepsChange}
+                            />
                         )}
+
+                        {/* Reps & weight controls */}
+                        <RepsWeightControls
+                            reps={reps}
+                            weight={weight}
+                            unit={unit}
+                            increment={2}
+                            hideReps={isMultiMovement}
+                            onRepsChange={setReps}
+                            onWeightChange={setWeight}
+                        />
+
+                        {/* Feedback selector */}
+                        <FeedbackSelector value={feedback} onChange={setFeedback} />
+
+                        {/* Set counter + log/finish button */}
+                        <SetCounterRow
+                            currentSet={currentSetNumber}
+                            targetSets={targetSets}
+                            isLastBlock={isLastBlock}
+                            isFinishing={isFinishing}
+                            canLog={weight > 0 && (isMultiMovement || reps > 0)}
+                            onLogSet={handleLogSet}
+                            onFinish={handleFinish}
+                            onUndo={handleUndoLastSet}
+                            hasSets={currentExercise.sets.length > 0}
+                        />
+
+                        {/* Action links */}
+                        <div className="mt-4 divide-y divide-border/40 border-t border-border/40 px-4">
+                            {[
+                                { icon: FileText, label: 'Movement description' },
+                                { icon: History, label: 'View history' },
+                            ].map(({ icon: Icon, label }) => (
+                                <Button
+                                    key={label}
+                                    variant="menu"
+                                    className="h-auto gap-3 rounded-none px-0 py-3.5 text-sm"
+                                >
+                                    <Icon className="size-4" />
+                                    <span className="flex-1">{label}</span>
+                                    <ChevronRight className="size-4 text-muted-foreground/40" />
+                                </Button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Previous / Next exercise navigation */}
-                    <div className="flex w-full max-w-xs justify-between">
-                        <button
-                            type="button"
-                            onClick={goPrev}
-                            disabled={currentIndex === 0}
-                            className={cn(
-                                'flex items-center gap-1 text-xs text-muted-foreground',
-                                currentIndex === 0 ? 'invisible' : 'hover:text-foreground'
-                            )}
-                        >
-                            <ChevronLeft className="size-3.5" />
-                            Previous
-                        </button>
-                        <button
-                            type="button"
-                            onClick={goNext}
-                            disabled={currentIndex >= totalExercises - 1}
-                            className={cn(
-                                'flex items-center gap-1 text-xs text-muted-foreground',
-                                currentIndex >= totalExercises - 1 ? 'invisible' : 'hover:text-foreground'
-                            )}
-                        >
-                            Next
-                            <ChevronRight className="size-3.5" />
-                        </button>
-                    </div>
+                    {/* Bottom block label */}
+                    <BlockNavigation currentBlock={currentIndex} totalBlocks={totalExercises} />
                 </div>
-            )}
-
-            {/* Rest timer overlay */}
-            <RestTimer show={showRestTimer} onClose={handleRestDone} />
+            ) : null}
         </div>
     );
 }

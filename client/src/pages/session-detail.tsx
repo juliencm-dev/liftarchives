@@ -29,19 +29,23 @@ export function SessionDetailPage() {
         );
     }
 
-    const exercises = session.exercises ?? [];
-    const totalSets = exercises.reduce((acc, ex) => acc + (ex.sets?.length ?? 0), 0);
+    // Sort exercises by program block display order (matches program structure)
+    const exercises = [...(session.exercises ?? [])].sort(
+        (a: any, b: any) => (a.programBlock?.displayOrder ?? 0) - (b.programBlock?.displayOrder ?? 0)
+    );
+    const totalSets = exercises.reduce((acc: number, ex: any) => acc + (ex.sets?.length ?? 0), 0);
     const totalVolume = exercises.reduce(
-        (acc, ex) => acc + (ex.sets ?? []).reduce((setAcc, s) => setAcc + s.weight * s.reps, 0),
+        (acc: number, ex: any) =>
+            acc + (ex.sets ?? []).reduce((setAcc: number, s: any) => setAcc + s.weight * s.reps, 0),
         0
     );
 
     return (
         <div className="mx-auto w-full max-w-2xl px-4 py-6">
-            {/* Back link */}
+            {/* Back link — hidden on mobile (bottom nav handles navigation) */}
             <Link
                 to="/training"
-                className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                className="mb-4 hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:inline-flex"
             >
                 <ArrowLeft className="size-4" />
                 Training History
@@ -75,17 +79,47 @@ export function SessionDetailPage() {
 
             {/* Exercises */}
             <div className="flex flex-col gap-4">
-                {exercises.map((exercise, i) => {
+                {exercises.map((exercise: any, i: number) => {
                     const label = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i] ?? `${i + 1}`;
+                    const movements = exercise.programBlock?.movements ?? [];
+                    const sortedMovements = [...movements].sort(
+                        (a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+                    );
+                    const isComplex = sortedMovements.length > 1;
+                    const exerciseName = isComplex
+                        ? sortedMovements.map((m: any) => m.lift?.name ?? 'Unknown').join(' + ')
+                        : exercise.lift.name;
+                    // For complexes, show per-movement rep breakdown: (2+1+1)
+                    const repBreakdown = isComplex
+                        ? `(${sortedMovements.map((m: any) => m.reps ?? 1).join('+')})`
+                        : null;
+                    const targetSets = exercise.programBlock?.sets ?? null;
+                    const targetReps = isComplex
+                        ? repBreakdown
+                        : (sortedMovements[0]?.reps ?? exercise.programBlock?.reps ?? null);
+                    const upToPercent = exercise.programBlock?.upToPercent ?? null;
+
                     return (
                         <Card key={exercise.id} className="border-border/60">
                             <CardHeader className="pb-3">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-start gap-3">
                                     <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/15 font-mono text-sm font-bold text-primary">
                                         {label}
                                     </div>
-                                    <CardTitle className="text-sm font-semibold">{exercise.lift.name}</CardTitle>
-                                    <Badge variant="outline" className="ml-auto text-xs">
+                                    <div className="min-w-0 flex-1">
+                                        <CardTitle className="text-sm font-semibold">{exerciseName}</CardTitle>
+                                        {targetSets != null && targetReps != null && (
+                                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                                {targetSets} &times; {targetReps}
+                                                {upToPercent != null && (
+                                                    <span className="ml-1.5 text-muted-foreground/60">
+                                                        | up to {upToPercent}%
+                                                    </span>
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <Badge variant="outline" className="shrink-0 text-xs">
                                         {exercise.sets?.length ?? 0} sets
                                     </Badge>
                                 </div>
@@ -104,7 +138,7 @@ export function SessionDetailPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {exercise.sets.map((set) => (
+                                                {exercise.sets.map((set: any) => (
                                                     <tr
                                                         key={set.id}
                                                         className="border-b border-border/20 last:border-0"

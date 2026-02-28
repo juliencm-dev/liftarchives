@@ -173,7 +173,7 @@ export function ProgramWizard({ onClose, initialData }: ProgramWizardProps) {
         <div className="flex flex-col gap-6">
             <WizardStepper currentStep={step} />
 
-            <div className="min-h-[300px]">
+            <div className="min-h-75]">
                 {step === 0 && (
                     <StepInfo
                         name={name}
