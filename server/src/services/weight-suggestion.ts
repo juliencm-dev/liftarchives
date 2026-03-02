@@ -9,7 +9,8 @@ type LiftCategory =
 
 type TrainingSettings = {
   barWeight: number;
-  olympicIncrement: number;
+  snatchIncrement: number;
+  cleanAndJerkIncrement: number;
   powerliftingIncrement: number;
   accessoryIncrement: number;
 };
@@ -32,10 +33,15 @@ type BlockTemplate = {
 function getIncrement(
   settings: TrainingSettings,
   category: LiftCategory,
+  liftName?: string,
 ): number {
   switch (category) {
-    case "olympic":
-      return settings.olympicIncrement;
+    case "olympic": {
+      if (liftName && /snatch/i.test(liftName)) {
+        return settings.snatchIncrement;
+      }
+      return settings.cleanAndJerkIncrement;
+    }
     case "powerlifting":
       return settings.powerliftingIncrement;
     default:
@@ -71,15 +77,16 @@ export function suggestWeights(params: {
   settings: TrainingSettings;
   oneRepMax: number | null;
   category: LiftCategory;
+  liftName?: string;
   blockTemplate: BlockTemplate;
   previousSets: PreviousSet[] | null;
 }): {
   warmupSets: { weight: number; reps: number }[];
   workingSets: { weight: number; reps: number }[];
 } {
-  const { settings, oneRepMax, category, blockTemplate, previousSets } =
+  const { settings, oneRepMax, category, liftName, blockTemplate, previousSets } =
     params;
-  const increment = getIncrement(settings, category);
+  const increment = getIncrement(settings, category, liftName);
 
   // If no 1RM and no previous data, return empty suggestions
   if (!oneRepMax && !previousSets) {

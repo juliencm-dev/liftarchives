@@ -4,11 +4,13 @@ import type { DbClient } from "./types";
 
 const DEFAULTS = {
   barWeight: 20,
-  olympicIncrement: 1.0,
+  snatchIncrement: 5,
+  cleanAndJerkIncrement: 10,
   powerliftingIncrement: 2.5,
   accessoryIncrement: 2.5,
   defaultRestSeconds: 120,
   defaultBlockRestSeconds: 180,
+  intensityMode: "percent" as const,
 };
 
 export async function getTrainingSettings(
@@ -31,11 +33,13 @@ export async function upsertTrainingSettings(
   userId: string,
   data: {
     barWeight?: number;
-    olympicIncrement?: number;
+    snatchIncrement?: number;
+    cleanAndJerkIncrement?: number;
     powerliftingIncrement?: number;
     accessoryIncrement?: number;
     defaultRestSeconds?: number;
     defaultBlockRestSeconds?: number;
+    intensityMode?: string;
   },
 ) {
   const [result] = await dbClient

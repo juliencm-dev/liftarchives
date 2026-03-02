@@ -6,13 +6,18 @@
     "client",
     "server",
     "shared",
-    "database"
+    "database",
+    "agent"
   ],
   "scripts": {
     "dev": "bun run --filter '*' dev",
-    "build": "bun run --filter '*' build"
+    "dev:worker": "bun run --filter @liftarchives/client dev & bun run --filter @liftarchives/server dev:worker",
+    "build": "bun run --filter '*' build",
+    "client": "bun run --filter @liftarchives/client build"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "wrangler": "^4.0.0",
+    "@cloudflare/workers-types": "^4.20250109.0"
   }
 }

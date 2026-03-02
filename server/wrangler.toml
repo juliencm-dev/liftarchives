@@ -1,0 +1,25 @@
+name = "liftarchives-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat_v2"]
+workers_dev = true
+preview_urls = false
+
+[dev]
+port = 4000
+
+[observability]
+enabled = true
+
+[vars]
+NODE_ENV = "production"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "989257f479774b18988d280b504b0e36"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "liftarchives"
+database_id = "33ee991e-418d-4502-9ef8-a9295cf7409f"
+migrations_dir = "../database/migrations"

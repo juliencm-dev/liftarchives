@@ -1,25 +1,58 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Mail, Save, Check } from 'lucide-react';
+import { Mail, Save, Check, Camera, Loader2 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpdateAccount } from '@/hooks/use-profile';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAvatarUpload } from '@/hooks/use-avatar-upload';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export function AccountInfoCard() {
     const { user } = useAuth();
     const updateAccount = useUpdateAccount();
+    const uploadAvatar = useAvatarUpload();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [saved, setSaved] = useState(false);
 
     const name = (user as { name?: string })?.name ?? '';
     const email = (user as { email?: string })?.email ?? '';
+    const image = (user as { image?: string | null })?.image ?? null;
     const initial = name.charAt(0).toUpperCase();
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!ACCEPTED_TYPES.includes(file.type)) {
+            toast.error('Please select a JPEG, PNG, or WebP image');
+            return;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error('Image must be under 5MB');
+            return;
+        }
+
+        uploadAvatar.mutate(
+            { file },
+            {
+                onSuccess: () => toast.success('Avatar updated'),
+                onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to upload avatar'),
+            }
+        );
+
+        // Reset input so the same file can be re-selected
+        e.target.value = '';
+    };
 
     const form = useForm({
         defaultValues: {
@@ -50,11 +83,33 @@ export function AccountInfoCard() {
             {/* Avatar + Info */}
             <div className="relative px-4 pb-6 sm:px-6">
                 <div className="-mt-10 flex flex-col items-start gap-4 sm:-mt-12 sm:flex-row sm:items-end">
-                    <Avatar className="size-20 border-4 border-card shadow-lg sm:size-24">
-                        <AvatarFallback className="bg-primary/20 text-2xl font-bold text-primary sm:text-3xl">
-                            {initial}
-                        </AvatarFallback>
-                    </Avatar>
+                    <div className="group relative cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                        <Avatar className="size-20 border-4 border-card shadow-lg sm:size-24">
+                            <AvatarImage src={image ?? undefined} alt={name} />
+                            <AvatarFallback className="bg-primary/20 text-2xl font-bold text-primary sm:text-3xl">
+                                {initial}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                            {uploadAvatar.isPending ? (
+                                <Loader2 className="size-6 animate-spin text-white" />
+                            ) : (
+                                <Camera className="size-6 text-white" />
+                            )}
+                        </div>
+                        {uploadAvatar.isPending && (
+                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
+                                <Loader2 className="size-6 animate-spin text-white" />
+                            </div>
+                        )}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={handleFileSelect}
+                        />
+                    </div>
                     <div className="flex-1 pb-1">
                         <h2 className="text-lg font-semibold text-foreground sm:text-xl">{name}</h2>
                         <div className="mt-1 flex items-center gap-1.5 text-muted-foreground">

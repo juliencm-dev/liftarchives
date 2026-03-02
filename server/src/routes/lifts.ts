@@ -41,6 +41,10 @@ const liftsRoutes = new Hono<Env>()
   .get("/records", async (c) => {
     const user = c.get("user");
     const liftId = c.req.query("liftId");
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (liftId && !uuidRegex.test(liftId)) {
+      return c.json({ message: "Invalid liftId" }, 400);
+    }
     const records = await getUserRecords(db, user.id, liftId || undefined);
     return c.json({ records });
   })

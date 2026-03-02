@@ -385,6 +385,7 @@ export async function logSessionSet(
 
 export async function updateSessionSet(
   dbClient: DbClient,
+  sessionId: string,
   setId: string,
   data: {
     weight?: number;
@@ -395,6 +396,23 @@ export async function updateSessionSet(
     notes?: string | null;
   },
 ) {
+  // Verify the set belongs to an exercise in this session
+  const exercise = await dbClient.query.sessionExercises.findFirst({
+    where: and(
+      eq(sessionExercises.sessionId, sessionId),
+    ),
+    columns: { id: true },
+    with: {
+      sets: {
+        where: eq(sessionSets.id, setId),
+        columns: { id: true },
+        limit: 1,
+      },
+    },
+  });
+
+  if (!exercise?.sets?.length) return null;
+
   const [updated] = await dbClient
     .update(sessionSets)
     .set(data)
@@ -404,7 +422,28 @@ export async function updateSessionSet(
   return updated ?? null;
 }
 
-export async function deleteSessionSet(dbClient: DbClient, setId: string) {
+export async function deleteSessionSet(
+  dbClient: DbClient,
+  sessionId: string,
+  setId: string,
+) {
+  // Verify the set belongs to an exercise in this session
+  const exercise = await dbClient.query.sessionExercises.findFirst({
+    where: and(
+      eq(sessionExercises.sessionId, sessionId),
+    ),
+    columns: { id: true },
+    with: {
+      sets: {
+        where: eq(sessionSets.id, setId),
+        columns: { id: true },
+        limit: 1,
+      },
+    },
+  });
+
+  if (!exercise?.sets?.length) return null;
+
   const [deleted] = await dbClient
     .delete(sessionSets)
     .where(eq(sessionSets.id, setId))
@@ -455,31 +494,32 @@ export async function getPreviousPerformance(
   userId: string,
   programBlockId: string,
 ) {
-  // Find the most recent completed session that has an exercise linked to this block
-  const exercise = await dbClient.query.sessionExercises.findFirst({
-    where: eq(sessionExercises.programBlockId, programBlockId),
-    orderBy: desc(sessionExercises.createdAt),
+  // Find the most recent completed session that has an exercise linked to this block,
+  // scoped to this user at the DB level
+  const session = await dbClient.query.trainingSessions.findFirst({
+    where: and(
+      eq(trainingSessions.userId, userId),
+      isNotNull(trainingSessions.completedAt),
+    ),
+    orderBy: desc(trainingSessions.completedAt),
     with: {
-      session: true,
-      sets: {
-        orderBy: (s, { asc }) => [asc(s.setNumber)],
+      exercises: {
+        where: eq(sessionExercises.programBlockId, programBlockId),
+        limit: 1,
+        with: {
+          sets: {
+            orderBy: (s, { asc }) => [asc(s.setNumber)],
+          },
+        },
       },
     },
   });
 
-  if (!exercise || !exercise.session) return null;
-
-  // Verify the session belongs to the user and is completed
-  if (
-    exercise.session.userId !== userId ||
-    !exercise.session.completedAt
-  ) {
-    return null;
-  }
+  if (!session || !session.exercises.length) return null;
 
   return {
-    sessionId: exercise.session.id,
-    date: exercise.session.date,
-    sets: exercise.sets,
+    sessionId: session.id,
+    date: session.date,
+    sets: session.exercises[0].sets,
   };
 }

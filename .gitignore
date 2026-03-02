@@ -11,10 +11,15 @@ dist/
 .env
 .env*.local
 .env.sentry-build-plugin
+.dev.vars
+secrets.json
 
 # misc
 .DS_Store
 *.pem
+
+# agent logs
+agent/logs/
 
 # debug
 npm-debug.log*

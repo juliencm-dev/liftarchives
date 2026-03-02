@@ -1,17 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
+import {
+    liftsQueryOptions,
+    personalRecordsQueryOptions,
+    bestRecordsQueryOptions,
+    recentRecordsQueryOptions,
+} from '@/lib/queries';
 import type { AddPersonalRecordData, CreateLiftData } from '@liftarchives/shared';
 
 export function useLifts() {
-    return useQuery({
-        queryKey: ['lifts'],
-        queryFn: async () => {
-            const res = await client.api.lifts.$get();
-            if (!res.ok) throw new Error('Failed to fetch lifts');
-            const data = await res.json();
-            return data.lifts;
-        },
-    });
+    return useQuery(liftsQueryOptions);
 }
 
 export function useAllLifts() {
@@ -27,41 +25,15 @@ export function useAllLifts() {
 }
 
 export function usePersonalRecords(liftId?: string) {
-    return useQuery({
-        queryKey: ['personalRecords', liftId],
-        queryFn: async () => {
-            const res = await client.api.lifts.records.$get({
-                query: liftId ? { liftId } : {},
-            });
-            if (!res.ok) throw new Error('Failed to fetch records');
-            const data = await res.json();
-            return data.records;
-        },
-    });
+    return useQuery(personalRecordsQueryOptions(liftId));
 }
 
 export function useBestRecords() {
-    return useQuery({
-        queryKey: ['personalRecords', 'best'],
-        queryFn: async () => {
-            const res = await client.api.lifts.records.best.$get();
-            if (!res.ok) throw new Error('Failed to fetch best records');
-            const data = await res.json();
-            return data.records;
-        },
-    });
+    return useQuery(bestRecordsQueryOptions);
 }
 
 export function useRecentRecords() {
-    return useQuery({
-        queryKey: ['personalRecords', 'recent'],
-        queryFn: async () => {
-            const res = await client.api.lifts.records.recent.$get();
-            if (!res.ok) throw new Error('Failed to fetch recent records');
-            const data = await res.json();
-            return data.records;
-        },
-    });
+    return useQuery(recentRecordsQueryOptions);
 }
 
 export function useAddPersonalRecord() {

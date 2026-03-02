@@ -1,38 +1,46 @@
-import { Resend } from "resend";
-import { env } from "@/env";
-import type { ReactElement } from "react";
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import { env } from '@/env';
+import type { ReactElement } from 'react';
 
-const resend = new Resend(env.RESEND_API_KEY);
+let _resend: Resend | null = null;
 
-const FROM_ADDRESS = "Lift Archives <noreply@liftarchives.com>";
-
-export type EmailType = "verify_email" | "reset_password";
-
-export function getFrontendUrl() {
-  if (env.NODE_ENV === "production") {
-    return env.FRONTEND_URL!;
-  }
-  return "http://localhost:3000";
+function getResend(): Resend {
+    if (!_resend) {
+        _resend = new Resend(env.RESEND_API_KEY);
+    }
+    return _resend;
 }
 
-export async function sendEmail({
-  to,
-  subject,
-  react,
-}: {
-  to: string;
-  subject: string;
-  react: ReactElement;
-}) {
-  const { error } = await resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject,
-    react,
-  });
+const FROM_ADDRESS = 'Lift Archives <noreply@liftarchives.app>';
 
-  if (error) {
-    console.error(`[Email] Failed to send to ${to}:`, error);
-    throw error;
-  }
+export type EmailType = 'verify_email' | 'reset_password';
+
+export function getFrontendUrl() {
+    if (env.NODE_ENV === 'production') {
+        return env.FRONTEND_URL!;
+    }
+    return 'http://localhost:3000';
+}
+
+export async function sendEmail({ to, subject, react }: { to: string; subject: string; react: ReactElement }) {
+    const html = await render(react);
+    console.log(
+        `[Email] Sending "${subject}" to ${to.replace(/^(.)(.*)(@.*)$/, (_, first: string, middle: string, domain: string) => first + '*'.repeat(middle.length) + domain)}`
+    );
+    const { error } = await getResend().emails.send({
+        from: FROM_ADDRESS,
+        to: [to],
+        subject,
+        html,
+    });
+
+    if (error) {
+        const masked = to.replace(
+            /^(.)(.*)(@.*)$/,
+            (_, first: string, middle: string, domain: string) => first + '*'.repeat(middle.length) + domain
+        );
+        console.error(`[Email] Failed to send to ${masked}:`, error);
+        throw error;
+    }
 }

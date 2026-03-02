@@ -1,17 +1,38 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { ProgramBlockResponse } from '@liftarchives/shared';
+import { useIntensityMode } from '@/hooks/use-training-settings';
+interface BlockLike {
+    displayOrder: number;
+    sets: number;
+    reps: number;
+    upTo: boolean;
+    upToPercent: number | null;
+    upToRpe: number | null;
+    setDetails: { percent?: number; rpe?: number }[] | null;
+    notes: string | null;
+    movements: {
+        id: string;
+        reps: number;
+        lift: { name: string };
+    }[];
+}
 
 interface ExerciseBlockProps {
-    block: ProgramBlockResponse;
+    block: BlockLike;
 }
 
 export function ExerciseBlock({ block }: ExerciseBlockProps) {
+    const intensityMode = useIntensityMode();
     const isComplex = block.movements.length > 1;
     const intensityParts: string[] = [];
     if (block.upTo) {
-        if (block.upToPercent) intensityParts.push(`${block.upToPercent}%`);
-        if (block.upToRpe) intensityParts.push(`RPE ${block.upToRpe}`);
+        if (intensityMode === 'percent') {
+            if (block.upToPercent) intensityParts.push(`${block.upToPercent}%`);
+            else if (block.upToRpe) intensityParts.push(`RPE ${block.upToRpe}`);
+        } else {
+            if (block.upToRpe) intensityParts.push(`RPE ${block.upToRpe}`);
+            else if (block.upToPercent) intensityParts.push(`${block.upToPercent}%`);
+        }
     }
 
     const label = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[block.displayOrder - 1] ?? `${block.displayOrder}`;
@@ -45,6 +66,26 @@ export function ExerciseBlock({ block }: ExerciseBlockProps) {
                         <span className="text-xs text-primary">
                             {'up to '}
                             <span className="font-mono font-semibold">{intensityParts.join(' / ')}</span>
+                        </span>
+                    </>
+                )}
+
+                {block.setDetails && block.setDetails.length > 0 && (
+                    <>
+                        <div className="h-3.5 w-px bg-border" />
+                        <span className="text-xs text-muted-foreground font-mono">
+                            {block.setDetails
+                                .map((sd) => {
+                                    if (intensityMode === 'percent') {
+                                        if (sd.percent) return `${sd.percent}%`;
+                                        if (sd.rpe) return `RPE ${sd.rpe}`;
+                                    } else {
+                                        if (sd.rpe) return `RPE ${sd.rpe}`;
+                                        if (sd.percent) return `${sd.percent}%`;
+                                    }
+                                    return '—';
+                                })
+                                .join(', ')}
                         </span>
                     </>
                 )}

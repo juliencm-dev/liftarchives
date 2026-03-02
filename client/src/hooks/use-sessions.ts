@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
+import {
+    activeSessionQueryOptions,
+    sessionQueryOptions,
+    sessionHistoryQueryOptions,
+    weeklySessionCountQueryOptions,
+} from '@/lib/queries';
 import type {
     StartSessionData,
     LogSetData,
@@ -10,55 +16,22 @@ import type {
 } from '@liftarchives/shared';
 
 export function useActiveSession() {
-    return useQuery({
-        queryKey: ['sessions', 'active'],
-        queryFn: async () => {
-            const res = await client.api.sessions.active.$get();
-            if (!res.ok) throw new Error('Failed to fetch active session');
-            return res.json();
-        },
-    });
+    return useQuery(activeSessionQueryOptions);
 }
 
 export function useSession(id: string | undefined) {
     return useQuery({
-        queryKey: ['sessions', id],
+        ...sessionQueryOptions(id!),
         enabled: !!id,
-        queryFn: async () => {
-            const res = await client.api.sessions[':id'].$get({
-                param: { id: id! },
-            });
-            if (!res.ok) throw new Error('Failed to fetch session');
-            return res.json();
-        },
     });
 }
 
 export function useSessionHistory(options?: { limit?: number; offset?: number }) {
-    return useQuery({
-        queryKey: ['sessions', 'history', options?.limit, options?.offset],
-        queryFn: async () => {
-            const res = await client.api.sessions.$get({
-                query: {
-                    limit: String(options?.limit ?? 20),
-                    offset: String(options?.offset ?? 0),
-                },
-            });
-            if (!res.ok) throw new Error('Failed to fetch session history');
-            return res.json();
-        },
-    });
+    return useQuery(sessionHistoryQueryOptions(options));
 }
 
 export function useWeeklySessionCount() {
-    return useQuery({
-        queryKey: ['sessions', 'weekly-count'],
-        queryFn: async () => {
-            const res = await client.api.sessions['weekly-count'].$get();
-            if (!res.ok) throw new Error('Failed to fetch weekly count');
-            return res.json();
-        },
-    });
+    return useQuery(weeklySessionCountQueryOptions);
 }
 
 export function useStartSession() {

@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { user, session, account } from "./auth";
 import { clubs, clubMemberships } from "./clubs";
-import { lifterProfile, coachProfile, coachLifters } from "./profiles";
+import { lifterProfile, coachProfile, coachLifters, coachInvitations } from "./profiles";
 import { lifts, liftTranslations } from "./lifts";
 import {
   programs,
@@ -38,7 +38,8 @@ export const userRelations = relations(user, ({ one, many }) => ({
   clubMemberships: many(clubMemberships),
   createdLifts: many(lifts),
   createdPrograms: many(programs),
-  programAssignments: many(programAssignments),
+  programAssignments: many(programAssignments, { relationName: "programAssignmentUser" }),
+  assignedPrograms: many(programAssignments, { relationName: "assignedByUser" }),
   trainingSessions: many(trainingSessions),
   personalRecords: many(personalRecords),
   trainingSettings: one(trainingSettings, {
@@ -103,6 +104,7 @@ export const lifterProfileRelations = relations(
       references: [clubs.id],
     }),
     coaches: many(coachLifters),
+    invitationsReceived: many(coachInvitations),
   }),
 );
 
@@ -118,6 +120,21 @@ export const coachProfileRelations = relations(
       references: [clubs.id],
     }),
     lifters: many(coachLifters),
+    invitationsSent: many(coachInvitations),
+  }),
+);
+
+export const coachInvitationsRelations = relations(
+  coachInvitations,
+  ({ one }) => ({
+    coach: one(coachProfile, {
+      fields: [coachInvitations.coachId],
+      references: [coachProfile.userId],
+    }),
+    lifter: one(lifterProfile, {
+      fields: [coachInvitations.lifterId],
+      references: [lifterProfile.userId],
+    }),
   }),
 );
 
@@ -234,6 +251,12 @@ export const programAssignmentsRelations = relations(
     user: one(user, {
       fields: [programAssignments.userId],
       references: [user.id],
+      relationName: "programAssignmentUser",
+    }),
+    assignedBy: one(user, {
+      fields: [programAssignments.assignedById],
+      references: [user.id],
+      relationName: "assignedByUser",
     }),
   }),
 );

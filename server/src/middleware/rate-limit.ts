@@ -1,86 +1,93 @@
 import type { Context, MiddlewareHandler } from "hono";
 
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+}
+
+let _kv: KVNamespace | null = null;
+
+/** Called from server middleware to pass the CACHE KV binding */
+export function setKV(binding: KVNamespace) {
+  _kv = binding;
+}
+
+function getKV(): KVNamespace | null {
+  return _kv;
+}
+
 /**
- * Sliding-window counter rate limiter.
- * Constant memory per key -- stores only a counter + window start timestamp.
+ * KV-backed sliding-window rate limiter for Cloudflare Workers.
+ *
+ * Each key stores a JSON `{ count, start }` in KV with a TTL matching the window.
+ * Falls back to allow-all if KV is unavailable (dev without KV).
  */
 export class RateLimiter {
-  private windows = new Map<string, { count: number; start: number }>();
-  private cleanupTimer: ReturnType<typeof setInterval>;
-
   constructor(
-    /** Max requests allowed per window */
     public readonly limit: number,
-    /** Window duration in milliseconds */
     public readonly windowMs: number,
-  ) {
-    // Clean up expired entries every 60s
-    this.cleanupTimer = setInterval(() => this.cleanup(), 60_000);
-    // Allow the timer to not block process exit
-    if (this.cleanupTimer.unref) this.cleanupTimer.unref();
-  }
+  ) {}
 
-  /**
-   * Check and consume one request for the given key.
-   * Returns { allowed, remaining, resetMs }.
-   */
-  check(key: string): {
+  async check(key: string): Promise<{
     allowed: boolean;
     remaining: number;
     resetMs: number;
-  } {
-    const now = Date.now();
-    const entry = this.windows.get(key);
-
-    if (!entry || now - entry.start >= this.windowMs) {
-      // New window
-      this.windows.set(key, { count: 1, start: now });
-      return {
-        allowed: true,
-        remaining: this.limit - 1,
-        resetMs: this.windowMs,
-      };
+  }> {
+    const kv = getKV();
+    if (!kv) {
+      // No KV available — allow request (graceful degradation in dev)
+      return { allowed: true, remaining: this.limit - 1, resetMs: this.windowMs };
     }
 
-    entry.count++;
+    const now = Date.now();
+    const raw = await kv.get(`rl:${key}`);
+    let count = 0;
+    let start = now;
 
-    if (entry.count > this.limit) {
-      const resetMs = this.windowMs - (now - entry.start);
+    if (raw) {
+      try {
+        const entry = JSON.parse(raw);
+        if (now - entry.start < this.windowMs) {
+          count = entry.count;
+          start = entry.start;
+        }
+        // else: window expired, start fresh
+      } catch {
+        // Corrupted entry, start fresh
+      }
+    }
+
+    count++;
+    const ttlSeconds = Math.ceil((this.windowMs - (now - start)) / 1000);
+
+    await kv.put(
+      `rl:${key}`,
+      JSON.stringify({ count, start }),
+      { expirationTtl: Math.max(ttlSeconds, 60) },
+    );
+
+    if (count > this.limit) {
       return {
         allowed: false,
         remaining: 0,
-        resetMs,
+        resetMs: this.windowMs - (now - start),
       };
     }
 
-    const resetMs = this.windowMs - (now - entry.start);
     return {
       allowed: true,
-      remaining: this.limit - entry.count,
-      resetMs,
+      remaining: this.limit - count,
+      resetMs: this.windowMs - (now - start),
     };
-  }
-
-  private cleanup() {
-    const now = Date.now();
-    for (const [key, entry] of this.windows) {
-      if (now - entry.start >= this.windowMs) {
-        this.windows.delete(key);
-      }
-    }
-  }
-
-  dispose() {
-    clearInterval(this.cleanupTimer);
   }
 }
 
 /**
- * Extract client IP from request headers (supports proxies).
+ * Extract client IP — on Cloudflare, CF-Connecting-IP is the real client IP.
  */
 export function getClientIp(c: Context): string {
   return (
-    c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
+    c.req.header("cf-connecting-ip") ||
     c.req.header("x-real-ip") ||
     "unknown"
   );
@@ -95,7 +102,7 @@ export function createRateLimitMiddleware(
 ): MiddlewareHandler {
   return async (c, next) => {
     const key = keyExtractor(c);
-    const { allowed, remaining, resetMs } = limiter.check(key);
+    const { allowed, remaining, resetMs } = await limiter.check(key);
 
     c.header("X-RateLimit-Limit", String(limiter.limit));
     c.header("X-RateLimit-Remaining", String(remaining));

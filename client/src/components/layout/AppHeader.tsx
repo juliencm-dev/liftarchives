@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Calculator, Dumbbell, User } from 'lucide-react';
+import { Calculator, Dumbbell, Settings, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -17,6 +17,7 @@ export function AppHeader() {
     const navigate = useNavigate();
 
     const name = (user as { name?: string })?.name ?? 'Account';
+    const image = (user as { image?: string | null })?.image ?? null;
     const initial = name.charAt(0).toUpperCase();
 
     const handleSignOut = async () => {
@@ -25,7 +26,7 @@ export function AppHeader() {
     };
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border/50 bg-transparent backdrop-blur-xl">
+        <header className="sticky top-0 z-50 border-b border-border/50 bg-background pt-10 md:pt-0">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
                 <Link to="/dashboard" className="flex items-center gap-3 group">
                     <div className="flex size-8 items-center justify-center rounded-lg bg-primary/15 group-hover:scale-110 transition-transform md:size-9">
@@ -54,6 +55,7 @@ export function AppHeader() {
                         <DropdownMenuTrigger asChild>
                             <button className="flex items-center gap-3 rounded-full p-1 md:pr-3 transition-colors hover:bg-secondary">
                                 <Avatar className="size-8 border border-primary/30">
+                                    <AvatarImage src={image ?? undefined} alt={name} />
                                     <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
                                         {initial}
                                     </AvatarFallback>
@@ -66,6 +68,12 @@ export function AppHeader() {
                                 <Link to="/profile">
                                     <User className="mr-2 size-4" />
                                     Profile
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link to="/settings">
+                                    <Settings className="mr-2 size-4" />
+                                    Settings
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />

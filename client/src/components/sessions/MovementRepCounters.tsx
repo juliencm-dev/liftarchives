@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ export function MovementRepCounters({
     onSelectMovement,
     onUpdateReps,
 }: MovementRepCountersProps) {
-    const sorted = [...movements].sort((a, b) => a.displayOrder - b.displayOrder);
+    const sorted = useMemo(() => [...movements].sort((a, b) => a.displayOrder - b.displayOrder), [movements]);
 
     return (
         <div className="mx-4 mt-5 rounded-xl border border-border/50 bg-secondary/30">

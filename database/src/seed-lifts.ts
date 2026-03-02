@@ -1,17 +1,5 @@
-import { config } from 'dotenv';
+import { writeFileSync } from 'fs';
 import { resolve } from 'path';
-
-config({ path: resolve(import.meta.dirname, '../../server/.env') });
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { eq } from 'drizzle-orm';
-import { lifts } from './schemas';
-import { liftTranslations } from './schemas'; // adjust path as needed
-
-const DATABASE_URL = process.env.NODE_ENV === 'production' ? process.env.DATABASE_URL! : process.env.DATABASE_URL_DEV!;
-
-const pool = new Pool({ connectionString: DATABASE_URL });
-const db = drizzle(pool);
 
 type LiftSeed = {
     name: string; // internal key (never shown to users)
@@ -2082,104 +2070,50 @@ const PARENT_MAP: Record<string, string> = {
     'Tempo Bench Press': 'Bench Press',
 };
 
-async function seed() {
-    console.log(`Seeding ${ALL_LIFTS.length} lifts...`);
+function esc(s: string): string {
+    return s.replace(/'/g, "''");
+}
 
-    let inserted = 0;
-    let updated = 0;
-    let skipped = 0;
-    let translationsInserted = 0;
-    let translationsUpdated = 0;
+function generateSeedSql(): string {
+    const lines: string[] = [];
+    const now = Math.floor(Date.now() / 1000);
+
+    // Build name → id map for parent resolution
+    const nameToId = new Map<string, string>();
 
     for (const lift of ALL_LIFTS) {
-        // ── Upsert lift ─────────────────────────
-        let liftId: string;
-        const existing = await db.select().from(lifts).where(eq(lifts.name, lift.name)).limit(1);
+        const id = crypto.randomUUID();
+        nameToId.set(lift.name, id);
 
-        if (existing.length > 0) {
-            liftId = existing[0].id;
-            const needsUpdate = existing[0].category !== lift.category || existing[0].isCore !== lift.isCore;
+        lines.push(
+            `INSERT OR REPLACE INTO lifts (id, name, description, category, is_core, parent_lift_id, created_by_id, created_at, updated_at) ` +
+            `VALUES ('${id}', '${esc(lift.name)}', NULL, '${lift.category}', ${lift.isCore ? 1 : 0}, NULL, NULL, ${now}, ${now});`
+        );
 
-            if (needsUpdate) {
-                await db
-                    .update(lifts)
-                    .set({ category: lift.category, isCore: lift.isCore })
-                    .where(eq(lifts.name, lift.name));
-                updated++;
-                console.log(`  Updated "${lift.name}" → category=${lift.category}, isCore=${lift.isCore}`);
-            } else {
-                skipped++;
-            }
-        } else {
-            liftId = crypto.randomUUID();
-            await db.insert(lifts).values({
-                id: liftId,
-                name: lift.name,
-                category: lift.category,
-                isCore: lift.isCore,
-                createdById: null,
-            });
-            inserted++;
-            console.log(`  Inserted "${lift.name}"`);
-        }
-
-        // ── Upsert translation ──────────────────
-        const existingTranslation = await db
-            .select()
-            .from(liftTranslations)
-            .where(eq(liftTranslations.liftId, liftId))
-            .limit(1);
-
-        if (existingTranslation.length > 0) {
-            const needsTranslationUpdate =
-                existingTranslation[0].en !== lift.en || existingTranslation[0].fr !== lift.fr;
-
-            if (needsTranslationUpdate) {
-                await db
-                    .update(liftTranslations)
-                    .set({ en: lift.en, fr: lift.fr })
-                    .where(eq(liftTranslations.liftId, liftId));
-                translationsUpdated++;
-            }
-        } else {
-            await db.insert(liftTranslations).values({
-                id: crypto.randomUUID(),
-                liftId,
-                en: lift.en,
-                fr: lift.fr,
-            });
-            translationsInserted++;
-        }
+        const transId = crypto.randomUUID();
+        lines.push(
+            `INSERT OR REPLACE INTO lift_translations (id, lift_id, en, fr) ` +
+            `VALUES ('${transId}', '${id}', '${esc(lift.en)}', '${esc(lift.fr)}');`
+        );
     }
 
-    // ── Resolve parent lift relationships ──────
-    console.log('\nResolving parent lift relationships...');
-    const allDbLifts = await db.select({ id: lifts.id, name: lifts.name }).from(lifts);
-    const nameToId = new Map(allDbLifts.map((l) => [l.name, l.id]));
-    let parentsSet = 0;
-
+    // Parent relationships
     for (const [childName, parentName] of Object.entries(PARENT_MAP)) {
         const childId = nameToId.get(childName);
         const parentId = nameToId.get(parentName);
         if (childId && parentId) {
-            await db.update(lifts).set({ parentLiftId: parentId }).where(eq(lifts.id, childId));
-            parentsSet++;
-        } else if (!childId) {
-            console.warn(`  ⚠ Child lift "${childName}" not found in DB`);
+            lines.push(
+                `UPDATE lifts SET parent_lift_id = '${parentId}' WHERE id = '${childId}';`
+            );
         } else {
-            console.warn(`  ⚠ Parent lift "${parentName}" not found in DB`);
+            console.warn(`⚠ Missing: child="${childName}" or parent="${parentName}"`);
         }
     }
-    console.log(`Parent relationships set: ${parentsSet}/${Object.keys(PARENT_MAP).length}`);
 
-    console.log(
-        `\nDone: ${inserted} inserted, ${updated} updated, ${skipped} skipped.` +
-            `\nTranslations: ${translationsInserted} inserted, ${translationsUpdated} updated.`
-    );
-    await pool.end();
+    return lines.join('\n');
 }
 
-seed().catch((err) => {
-    console.error('Seed failed:', err);
-    process.exit(1);
-});
+const outPath = resolve(import.meta.dirname, '../seed-lifts.sql');
+writeFileSync(outPath, generateSeedSql(), 'utf-8');
+console.log(`Seed SQL written to ${outPath} (${ALL_LIFTS.length} lifts)`);
+console.log('Apply with: wrangler d1 execute liftarchives --file=database/seed-lifts.sql [--local]');

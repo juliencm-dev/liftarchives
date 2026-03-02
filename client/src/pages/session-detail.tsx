@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-sessions';
 import { useUnit } from '@/hooks/use-profile';
+import { useIntensityMode } from '@/hooks/use-training-settings';
 import { displayWeight } from '@/lib/units';
 import { ArrowLeft, Clock, Dumbbell, Loader2 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
@@ -11,6 +12,7 @@ export function SessionDetailPage() {
     const { sessionId } = useParams({ strict: false }) as { sessionId: string };
     const { data, isLoading } = useSession(sessionId);
     const unit = useUnit();
+    const intensityMode = useIntensityMode();
 
     if (isLoading) {
         return (
@@ -98,6 +100,17 @@ export function SessionDetailPage() {
                         ? repBreakdown
                         : (sortedMovements[0]?.reps ?? exercise.programBlock?.reps ?? null);
                     const upToPercent = exercise.programBlock?.upToPercent ?? null;
+                    const upToRpe = exercise.programBlock?.upToRpe ?? null;
+
+                    // Build intensity label based on mode with fallback
+                    let intensityLabel: string | null = null;
+                    if (intensityMode === 'percent') {
+                        if (upToPercent != null) intensityLabel = `up to ${upToPercent}%`;
+                        else if (upToRpe != null) intensityLabel = `up to RPE ${upToRpe}`;
+                    } else {
+                        if (upToRpe != null) intensityLabel = `up to RPE ${upToRpe}`;
+                        else if (upToPercent != null) intensityLabel = `up to ${upToPercent}%`;
+                    }
 
                     return (
                         <Card key={exercise.id} className="border-border/60">
@@ -111,9 +124,9 @@ export function SessionDetailPage() {
                                         {targetSets != null && targetReps != null && (
                                             <p className="mt-0.5 text-xs text-muted-foreground">
                                                 {targetSets} &times; {targetReps}
-                                                {upToPercent != null && (
+                                                {intensityLabel && (
                                                     <span className="ml-1.5 text-muted-foreground/60">
-                                                        | up to {upToPercent}%
+                                                        | {intensityLabel}
                                                     </span>
                                                 )}
                                             </p>

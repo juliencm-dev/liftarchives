@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const StartSessionSchema = z.object({
   programDayId: z.string(),
-  title: z.string().optional(),
+  title: z.string().max(200).optional(),
 });
 
 export const LogSetSchema = z.object({
@@ -34,7 +34,7 @@ export const UpdateSetSchema = z.object({
 });
 
 export const UpdateSessionSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().max(200).optional(),
   notes: z.string().max(2000).optional(),
 });
 
@@ -54,7 +54,7 @@ export const BatchSetItemSchema = z.object({
 });
 
 export const BatchSetsSchema = z.object({
-  sets: z.array(BatchSetItemSchema).min(1),
+  sets: z.array(BatchSetItemSchema).min(1).max(500),
 });
 
 // ---------------------------------------------------------------------------

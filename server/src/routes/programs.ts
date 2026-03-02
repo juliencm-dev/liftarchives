@@ -209,6 +209,9 @@ const programRoutes = new Hono<Env>()
       data.programId,
       data.startDate,
     );
+    if (!assignment) {
+      return c.json({ message: "Program not found" }, 404);
+    }
     return c.json({ assignment }, 201);
   })
   .post("/unassign/:id", async (c) => {

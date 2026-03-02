@@ -1,22 +1,22 @@
-import { pgTable, text, boolean, date, doublePrecision, integer, timestamp, index } from 'drizzle-orm/pg-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
 import { user } from './auth';
-import { liftCategoryEnum, genderEnum, competitiveDivisionEnum } from './enums';
 
-export const lifts = pgTable(
+export const lifts = sqliteTable(
     'lifts',
     {
         id: text('id').primaryKey(),
         name: text('name').notNull(),
         description: text('description'),
-        category: liftCategoryEnum('category').notNull(),
-        isCore: boolean('is_core').default(false).notNull(),
+        category: text('category').notNull(),
+        isCore: integer('is_core', { mode: 'boolean' }).default(false).notNull(),
         parentLiftId: text('parent_lift_id'),
         createdById: text('created_by_id').references(() => user.id, {
             onDelete: 'set null',
         }),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
-            .defaultNow()
+        createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
+        updatedAt: integer('updated_at', { mode: 'timestamp' })
+            .default(sql`(unixepoch())`)
             .$onUpdate(() => new Date())
             .notNull(),
     },
@@ -26,25 +26,25 @@ export const lifts = pgTable(
     ]
 );
 
-export const competitionCategories = pgTable('competition_categories', {
+export const competitionCategories = sqliteTable('competition_categories', {
     id: text('id').primaryKey(),
     name: text('name').notNull().unique(),
     qualifyingTotal: integer('qualifying_total'),
-    minDateOfBirth: date('min_date_of_birth').notNull(),
-    maxDateOfBirth: date('max_date_of_birth'),
-    minWeight: doublePrecision('min_weight').notNull(),
-    maxWeight: doublePrecision('max_weight'),
-    gender: genderEnum('gender').notNull(),
-    division: competitiveDivisionEnum('division').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-        .defaultNow()
+    minDateOfBirth: text('min_date_of_birth').notNull(),
+    maxDateOfBirth: text('max_date_of_birth'),
+    minWeight: real('min_weight').notNull(),
+    maxWeight: real('max_weight'),
+    gender: text('gender').notNull(),
+    division: text('division').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' })
+        .default(sql`(unixepoch())`)
         .$onUpdate(() => new Date())
         .notNull(),
 });
 
 // Stores display names per language — lifts.name remains the internal key
-export const liftTranslations = pgTable('lift_translations', {
+export const liftTranslations = sqliteTable('lift_translations', {
     id: text('id').primaryKey(),
     liftId: text('lift_id')
         .notNull()

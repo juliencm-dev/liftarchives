@@ -61,7 +61,7 @@ export function ProgramsPage() {
 
     if (wizardOpen) {
         return (
-            <div className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 pb-24 md:pb-6 lg:px-6 lg:py-8">
                 <ProgramWizard onClose={handleCloseWizard} initialData={editData} />
             </div>
         );
@@ -78,13 +78,13 @@ export function ProgramsPage() {
                 </div>
                 <Button className="gap-2" onClick={() => setWizardOpen(true)}>
                     <Plus className="size-4" />
-                    New Program
+                    <span className="hidden sm:inline">New Program</span>
                 </Button>
             </div>
 
             {isLoading ? (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="size-8 animate-spin text-primary" />
                 </div>
             ) : !programs || programs.length === 0 ? (
                 <ProgramsEmptyState onCreateProgram={() => setWizardOpen(true)} />

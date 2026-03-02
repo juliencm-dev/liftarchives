@@ -92,8 +92,8 @@ const sessionRoutes = new Hono<Env>()
   // ── List completed sessions (paginated) ──
   .get("/", async (c) => {
     const user = c.get("user");
-    const limit = parseInt(c.req.query("limit") ?? "20", 10);
-    const offset = parseInt(c.req.query("offset") ?? "0", 10);
+    const limit = Math.min(Math.max(parseInt(c.req.query("limit") ?? "20", 10) || 20, 1), 100);
+    const offset = Math.max(parseInt(c.req.query("offset") ?? "0", 10) || 0, 0);
 
     const sessions = await getUserSessions(db, user.id, { limit, offset });
 
@@ -393,7 +393,7 @@ const sessionRoutes = new Hono<Env>()
         return c.json({ message: "Session not found" }, 404);
       }
 
-      const set = await updateSessionSet(db, setId, data);
+      const set = await updateSessionSet(db, sessionId, setId, data);
       if (!set) {
         return c.json({ message: "Set not found" }, 404);
       }
@@ -414,7 +414,7 @@ const sessionRoutes = new Hono<Env>()
       return c.json({ message: "Session not found" }, 404);
     }
 
-    const set = await deleteSessionSet(db, setId);
+    const set = await deleteSessionSet(db, sessionId, setId);
     if (!set) {
       return c.json({ message: "Set not found" }, 404);
     }
@@ -509,12 +509,14 @@ const sessionRoutes = new Hono<Env>()
     const suggestions = suggestWeights({
       settings: {
         barWeight: settings.barWeight,
-        olympicIncrement: settings.olympicIncrement,
+        snatchIncrement: settings.snatchIncrement,
+        cleanAndJerkIncrement: settings.cleanAndJerkIncrement,
         powerliftingIncrement: settings.powerliftingIncrement,
         accessoryIncrement: settings.accessoryIncrement,
       },
       oneRepMax,
       category: liftCategory as Parameters<typeof suggestWeights>[0]["category"],
+      liftName: exercise.lift.name,
       blockTemplate,
       previousSets,
     });

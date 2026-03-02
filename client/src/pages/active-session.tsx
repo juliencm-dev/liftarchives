@@ -13,7 +13,8 @@ import { SetCounterRow } from '@/components/sessions/SetCounterRow';
 import { BlockNavigation } from '@/components/sessions/BlockNavigation';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, History, ChevronRight } from 'lucide-react';
+import { FileText, History, ChevronRight } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useUnit } from '@/hooks/use-profile';
 import { displayWeight, toKg } from '@/lib/units';
 import { useTrainingSettings } from '@/hooks/use-training-settings';
@@ -27,6 +28,26 @@ import {
     updateMovementReps,
     type LocalSessionData,
 } from '@/lib/session-store';
+
+function getIncrement(
+    settings: {
+        snatchIncrement: number;
+        cleanAndJerkIncrement: number;
+        powerliftingIncrement: number;
+        accessoryIncrement: number;
+    },
+    category: string,
+    liftName?: string
+): number {
+    switch (category) {
+        case 'olympic':
+            return liftName && /snatch/i.test(liftName) ? settings.snatchIncrement : settings.cleanAndJerkIncrement;
+        case 'powerlifting':
+            return settings.powerliftingIncrement;
+        default:
+            return settings.accessoryIncrement;
+    }
+}
 
 type ViewState = 'exercise' | 'rest';
 
@@ -150,6 +171,7 @@ export function ActiveSessionPage() {
                     targetSets: ex.programBlock?.sets ?? 3,
                     targetReps,
                     upToPercent: ex.programBlock?.upToPercent ?? null,
+                    upToRpe: ex.programBlock?.upToRpe ?? null,
                     oneRepMax: ex.oneRepMax ?? null,
                     sets: existingEx?.sets ?? [],
                     movements,
@@ -207,12 +229,34 @@ export function ActiveSessionPage() {
 
     const barWeight = settings?.barWeight ?? 20;
 
+    // Per-category increment for the current lift
+    const liftIncrement = useMemo(() => {
+        if (!settings || !currentExercise) return 2.5;
+        return getIncrement(settings, currentExercise.liftCategory, currentExercise.liftName);
+    }, [settings, currentExercise]);
+
     // Target weight for the current exercise (upToPercent of 1RM)
     const targetWeight = useMemo(() => {
         if (!currentExercise?.upToPercent || !currentExercise?.oneRepMax) return null;
         const raw = (currentExercise.oneRepMax * currentExercise.upToPercent) / 100;
         return Math.round(raw);
     }, [currentExercise?.upToPercent, currentExercise?.oneRepMax]);
+
+    // Look-ahead: find the next block targeting the same lift with a percentage target.
+    // Used to ramp unguided sets toward that target as a warmup progression.
+    const lookAheadTarget = useMemo(() => {
+        if (!localSession || !currentExercise) return null;
+        if (currentExercise.upToPercent) return null; // already has its own target
+        for (let i = currentIndex + 1; i < localSession.exercises.length; i++) {
+            const ex = localSession.exercises[i];
+            if (ex.liftId === currentExercise.liftId && ex.upToPercent && ex.oneRepMax) {
+                const raw = (ex.oneRepMax * ex.upToPercent) / 100;
+                const totalPositions = currentExercise.targetSets + ex.targetSets;
+                return { weight: Math.round(raw), totalPositions };
+            }
+        }
+        return null;
+    }, [localSession, currentIndex, currentExercise]);
 
     // Starting weight for this block: carry-over from previous block or bar weight.
     // Recalculated at the beginning of each block.
@@ -226,11 +270,11 @@ export function ActiveSessionPage() {
         if (currentExercise && prevExercise.liftCategory !== currentExercise.liftCategory) {
             return barWeight;
         }
-        const carry = prevLastSet.weight + 2; // minimum 2kg jump between blocks
+        const carry = prevLastSet.weight + liftIncrement;
         // If carry-over exceeds this block's target, start from bar instead
         if (targetWeight && carry >= targetWeight) return barWeight;
         return Math.round(carry);
-    }, [localSession, currentIndex, barWeight, targetWeight, currentExercise]);
+    }, [localSession, currentIndex, barWeight, targetWeight, currentExercise, liftIncrement]);
 
     // Planned weight for a given progression position (1-indexed).
     // Linear interpolation from blockStartWeight to targetWeight.
@@ -239,21 +283,26 @@ export function ActiveSessionPage() {
         (position: number) => {
             if (!currentExercise) return Math.round(blockStartWeight);
 
-            if (!targetWeight) {
-                // No 1RM data available — fall back to 2kg increments per set
-                return Math.round(blockStartWeight + (position - 1) * 2);
+            if (targetWeight) {
+                // Has own target — linear interpolation to target
+                if (targetWeight <= blockStartWeight) return Math.round(targetWeight);
+                const totalPositions = Math.max(1, currentExercise.targetSets - 1);
+                const progress = Math.min(position - 1, totalPositions) / totalPositions;
+                return Math.round(blockStartWeight + (targetWeight - blockStartWeight) * progress);
             }
 
-            if (targetWeight <= blockStartWeight) {
-                // Already at or above target — stay at target weight
-                return Math.round(targetWeight);
+            if (lookAheadTarget) {
+                // Ramp toward next block's target
+                if (lookAheadTarget.weight <= blockStartWeight) return Math.round(lookAheadTarget.weight);
+                const totalPositions = Math.max(1, lookAheadTarget.totalPositions - 1);
+                const progress = Math.min(position - 1, totalPositions) / totalPositions;
+                return Math.round(blockStartWeight + (lookAheadTarget.weight - blockStartWeight) * progress);
             }
 
-            const totalPositions = Math.max(1, currentExercise.targetSets - 1);
-            const progress = Math.min(position - 1, totalPositions) / totalPositions;
-            return Math.round(blockStartWeight + (targetWeight - blockStartWeight) * progress);
+            // No target — increment per set using preferred increment
+            return Math.round(blockStartWeight + (position - 1) * liftIncrement);
         },
-        [targetWeight, blockStartWeight, currentExercise]
+        [targetWeight, lookAheadTarget, blockStartWeight, currentExercise, liftIncrement]
     );
 
     // Input state
@@ -414,11 +463,7 @@ export function ActiveSessionPage() {
 
     // Loading state
     if (isLoading || !session || !localSession) {
-        return (
-            <div className="flex min-h-dvh items-center justify-center bg-background">
-                <Loader2 className="size-8 animate-spin text-primary" />
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     // Summary after finish
@@ -491,7 +536,7 @@ export function ActiveSessionPage() {
                             reps={reps}
                             weight={weight}
                             unit={unit}
-                            increment={2}
+                            increment={liftIncrement}
                             hideReps={isMultiMovement}
                             onRepsChange={setReps}
                             onWeightChange={setWeight}

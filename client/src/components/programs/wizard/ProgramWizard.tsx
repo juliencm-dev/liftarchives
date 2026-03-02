@@ -1,13 +1,17 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Loader2 } from 'lucide-react';
 import { WizardStepper } from './WizardStepper';
 import { StepInfo } from './StepInfo';
 import { StepDays } from './StepDays';
 import { StepExercises } from './StepExercises';
 import { StepReview } from './StepReview';
-import { wizardDataToPayload } from './transforms';
+import { wizardDataToPayload, programDraftToWizardData } from './transforms';
 import { useCreateProgram, useUpdateProgram } from '@/hooks/use-programs';
+import { useProgramExtract } from '@/hooks/use-program-extract';
+import { useAllLifts } from '@/hooks/use-lifts';
 
 export interface BlockMovement {
     id: string;
@@ -25,7 +29,9 @@ export interface ProgramBlock {
     upTo: boolean;
     upToPercent: string;
     upToRpe: string;
+    setDetails: { percent: string; rpe: string }[];
     notes: string;
+    warning: string;
 }
 
 export interface DayBlocks {
@@ -84,7 +90,27 @@ export function ProgramWizard({ onClose, initialData }: ProgramWizardProps) {
     const isEdit = !!initialData;
     const createProgram = useCreateProgram();
     const updateProgram = useUpdateProgram(initialData?.id ?? '');
+    const extractProgram = useProgramExtract();
+    const { data: allLifts } = useAllLifts();
     const isSaving = createProgram.isPending || updateProgram.isPending;
+
+    const handleImageExtract = (file: File) => {
+        extractProgram.mutate(file, {
+            onSuccess: (draft) => {
+                const liftMap = new Map((allLifts ?? []).map((l) => [l.id, l.name]));
+                const { days: newDays, weekBlocks: newWeekBlocks } = programDraftToWizardData(draft, liftMap);
+
+                if (draft.name) setName(draft.name);
+                if (draft.description) setDescription(draft.description);
+                setDays(newDays);
+                setWeekBlocks(newWeekBlocks);
+                setStep(2);
+            },
+            onError: (err) => {
+                toast.error(err.message);
+            },
+        });
+    };
 
     const canNext = () => {
         if (step === 0) return name.trim().length > 0;
@@ -171,42 +197,54 @@ export function ProgramWizard({ onClose, initialData }: ProgramWizardProps) {
 
     return (
         <div className="flex flex-col gap-6">
-            <WizardStepper currentStep={step} />
+            <WizardStepper currentStep={step} onStepClick={setStep} isEdit={isEdit} />
 
             <div className="min-h-75]">
-                {step === 0 && (
-                    <StepInfo
-                        name={name}
-                        description={description}
-                        durationWeeks={durationWeeks}
-                        onNameChange={setName}
-                        onDescriptionChange={setDescription}
-                        onDurationWeeksChange={handleDurationWeeksChange}
-                    />
+                {extractProgram.isPending ? (
+                    <LoadingScreen className="min-h-[50dvh]" />
+                ) : (
+                    <>
+                        {step === 0 && (
+                            <StepInfo
+                                name={name}
+                                description={description}
+                                durationWeeks={durationWeeks}
+                                onNameChange={setName}
+                                onDescriptionChange={setDescription}
+                                onDurationWeeksChange={handleDurationWeeksChange}
+                                onImageExtract={handleImageExtract}
+                                isExtracting={extractProgram.isPending}
+                            />
+                        )}
+                        {step === 1 && (
+                            <StepDays
+                                days={days}
+                                onDaysChange={setDays}
+                                dayBlocks={week1DayBlocks}
+                                onDayBlocksChange={handleDayBlocksChange}
+                            />
+                        )}
+                        {step === 2 && (
+                            <StepExercises days={days} weekBlocks={weekBlocks} onWeekBlocksChange={setWeekBlocks} />
+                        )}
+                        {step === 3 && (
+                            <StepReview name={name} description={description} days={days} weekBlocks={weekBlocks} />
+                        )}
+                    </>
                 )}
-                {step === 1 && (
-                    <StepDays
-                        days={days}
-                        onDaysChange={setDays}
-                        dayBlocks={week1DayBlocks}
-                        onDayBlocksChange={handleDayBlocksChange}
-                    />
-                )}
-                {step === 2 && <StepExercises days={days} weekBlocks={weekBlocks} onWeekBlocksChange={setWeekBlocks} />}
-                {step === 3 && <StepReview name={name} description={description} days={days} weekBlocks={weekBlocks} />}
             </div>
 
             <div className="flex items-center justify-between border-t border-border/40 pt-4">
                 <Button
                     variant="ghost"
                     onClick={() => (step === 0 ? onClose() : setStep(step - 1))}
-                    disabled={isSaving}
+                    disabled={isSaving || extractProgram.isPending}
                 >
                     {step === 0 ? 'Cancel' : 'Back'}
                 </Button>
 
                 {step < 3 ? (
-                    <Button onClick={() => setStep(step + 1)} disabled={!canNext()}>
+                    <Button onClick={() => setStep(step + 1)} disabled={!canNext() || extractProgram.isPending}>
                         Next
                     </Button>
                 ) : (

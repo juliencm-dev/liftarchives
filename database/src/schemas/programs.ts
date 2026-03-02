@@ -1,19 +1,16 @@
 import {
-  pgTable,
+  sqliteTable,
   text,
   integer,
-  boolean,
-  doublePrecision,
-  date,
-  timestamp,
+  real,
   index,
-  unique,
-} from "drizzle-orm/pg-core";
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { user } from "./auth";
 import { lifts } from "./lifts";
-import { programAssignmentStatusEnum } from "./enums";
 
-export const programs = pgTable(
+export const programs = sqliteTable(
   "programs",
   {
     id: text("id").primaryKey(),
@@ -23,16 +20,16 @@ export const programs = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     durationWeeks: integer("duration_weeks").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("programs_created_by_id_idx").on(table.createdById)],
 );
 
-export const programWeeks = pgTable(
+export const programWeeks = sqliteTable(
   "program_weeks",
   {
     id: text("id").primaryKey(),
@@ -42,16 +39,16 @@ export const programWeeks = pgTable(
     weekNumber: integer("week_number").notNull(),
     name: text("name"),
     notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("program_weeks_program_id_idx").on(table.programId)],
 );
 
-export const programDays = pgTable(
+export const programDays = sqliteTable(
   "program_days",
   {
     id: text("id").primaryKey(),
@@ -61,16 +58,16 @@ export const programDays = pgTable(
     dayNumber: integer("day_number").notNull(),
     name: text("name"),
     notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("program_days_week_id_idx").on(table.weekId)],
 );
 
-export const programBlocks = pgTable(
+export const programBlocks = sqliteTable(
   "program_blocks",
   {
     id: text("id").primaryKey(),
@@ -80,16 +77,17 @@ export const programBlocks = pgTable(
     displayOrder: integer("display_order").notNull(),
     sets: integer("sets").notNull().default(1),
     reps: integer("reps").notNull().default(1),
-    upTo: boolean("up_to").notNull().default(false),
-    upToPercent: doublePrecision("up_to_percent"),
-    upToRpe: doublePrecision("up_to_rpe"),
+    upTo: integer("up_to", { mode: "boolean" }).notNull().default(false),
+    upToPercent: real("up_to_percent"),
+    upToRpe: real("up_to_rpe"),
+    setDetails: text("set_details", { mode: "json" }).$type<{ percent?: number; rpe?: number }[] | null>(),
     notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   },
   (table) => [index("program_blocks_day_id_idx").on(table.dayId)],
 );
 
-export const programBlockMovements = pgTable(
+export const programBlockMovements = sqliteTable(
   "program_block_movements",
   {
     id: text("id").primaryKey(),
@@ -101,7 +99,7 @@ export const programBlockMovements = pgTable(
       .references(() => lifts.id, { onDelete: "restrict" }),
     displayOrder: integer("display_order").notNull(),
     reps: integer("reps").notNull().default(1),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   },
   (table) => [
     index("program_block_movements_block_id_idx").on(table.blockId),
@@ -109,7 +107,7 @@ export const programBlockMovements = pgTable(
   ],
 );
 
-export const programAssignments = pgTable(
+export const programAssignments = sqliteTable(
   "program_assignments",
   {
     id: text("id").primaryKey(),
@@ -119,17 +117,20 @@ export const programAssignments = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    assignedAt: timestamp("assigned_at").defaultNow().notNull(),
-    startDate: date("start_date"),
-    status: programAssignmentStatusEnum("status").default("active").notNull(),
+    assignedById: text("assigned_by_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    assignedAt: integer("assigned_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    startDate: text("start_date"),
+    status: text("status").default("active").notNull(),
     currentWeekNumber: integer("current_week_number").notNull().default(1),
     currentCycle: integer("current_cycle").notNull().default(1),
-    currentWeekStartedAt: timestamp("current_week_started_at")
-      .defaultNow()
+    currentWeekStartedAt: integer("current_week_started_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .notNull(),
   },
   (table) => [
-    unique("program_assignments_program_user_uniq").on(
+    uniqueIndex("program_assignments_program_user_uniq").on(
       table.programId,
       table.userId,
     ),

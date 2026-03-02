@@ -12,6 +12,13 @@ import type { DbClient } from "./types";
 
 type ProgramAssignmentRow = typeof programAssignments.$inferSelect;
 
+// D1 does not support BEGIN/COMMIT transactions.
+// We use db.batch() for atomic multi-statement operations instead.
+// The type assertion is needed because Drizzle's batch() expects a readonly
+// tuple with >=2 items, but we build dynamic arrays.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyBatchItem = any;
+
 export async function getUserPrograms(dbClient: DbClient, userId: string) {
   return dbClient.query.programs.findMany({
     where: eq(programs.createdById, userId),
@@ -55,38 +62,48 @@ export async function getProgramById(dbClient: DbClient, programId: string) {
   });
 }
 
-async function insertDayBlocks(
-  tx: Parameters<Parameters<DbClient["transaction"]>[0]>[0],
+/** Collects insert statements for a day's blocks and movements (for batch). */
+function collectDayBlockStatements(
+  dbClient: DbClient,
   dayId: string,
   day: CreateProgramData["weeks"][number]["days"][number],
-) {
+): AnyBatchItem[] {
+  const stmts: AnyBatchItem[] = [];
+
   for (let blockIdx = 0; blockIdx < day.blocks.length; blockIdx++) {
     const block = day.blocks[blockIdx];
     const blockId = crypto.randomUUID();
 
-    await tx.insert(programBlocks).values({
-      id: blockId,
-      dayId,
-      displayOrder: blockIdx + 1,
-      sets: block.sets,
-      reps: block.reps,
-      upTo: block.upTo ?? false,
-      upToPercent: block.upToPercent,
-      upToRpe: block.upToRpe,
-      notes: block.notes,
-    });
+    stmts.push(
+      dbClient.insert(programBlocks).values({
+        id: blockId,
+        dayId,
+        displayOrder: blockIdx + 1,
+        sets: block.sets,
+        reps: block.reps,
+        upTo: block.upTo ?? false,
+        upToPercent: block.upToPercent,
+        upToRpe: block.upToRpe,
+        setDetails: block.setDetails ?? null,
+        notes: block.notes,
+      }),
+    );
 
     for (let movIdx = 0; movIdx < block.movements.length; movIdx++) {
       const movement = block.movements[movIdx];
-      await tx.insert(programBlockMovements).values({
-        id: crypto.randomUUID(),
-        blockId,
-        liftId: movement.liftId,
-        displayOrder: movIdx + 1,
-        reps: movement.reps,
-      });
+      stmts.push(
+        dbClient.insert(programBlockMovements).values({
+          id: crypto.randomUUID(),
+          blockId,
+          liftId: movement.liftId,
+          displayOrder: movIdx + 1,
+          reps: movement.reps,
+        }),
+      );
     }
   }
+
+  return stmts;
 }
 
 export async function createProgram(
@@ -95,40 +112,47 @@ export async function createProgram(
   data: CreateProgramData,
 ) {
   const newProgramId = crypto.randomUUID();
+  const stmts: AnyBatchItem[] = [];
 
-  await dbClient.transaction(async (tx) => {
-    await tx.insert(programs).values({
+  stmts.push(
+    dbClient.insert(programs).values({
       id: newProgramId,
       createdById: userId,
       name: data.name,
       description: data.description,
       durationWeeks: data.weeks.length,
-    });
+    }),
+  );
 
-    for (let weekIdx = 0; weekIdx < data.weeks.length; weekIdx++) {
-      const week = data.weeks[weekIdx];
-      const weekId = crypto.randomUUID();
-      await tx.insert(programWeeks).values({
+  for (let weekIdx = 0; weekIdx < data.weeks.length; weekIdx++) {
+    const week = data.weeks[weekIdx];
+    const weekId = crypto.randomUUID();
+    stmts.push(
+      dbClient.insert(programWeeks).values({
         id: weekId,
         programId: newProgramId,
         weekNumber: weekIdx + 1,
         name: week.name,
-      });
+      }),
+    );
 
-      for (let i = 0; i < week.days.length; i++) {
-        const day = week.days[i];
-        const dayId = crypto.randomUUID();
-        await tx.insert(programDays).values({
+    for (let i = 0; i < week.days.length; i++) {
+      const day = week.days[i];
+      const dayId = crypto.randomUUID();
+      stmts.push(
+        dbClient.insert(programDays).values({
           id: dayId,
           weekId,
           dayNumber: i + 1,
           name: day.name,
-        });
+        }),
+      );
 
-        await insertDayBlocks(tx, dayId, day);
-      }
+      stmts.push(...collectDayBlockStatements(dbClient, dayId, day));
     }
-  });
+  }
+
+  await (dbClient.batch as (s: AnyBatchItem[]) => Promise<unknown[]>)(stmts);
 
   return getProgramById(dbClient, newProgramId);
 }
@@ -147,47 +171,57 @@ export async function updateProgram(
 
   if (!existing) return null;
 
-  await dbClient.transaction(async (tx) => {
-    // Update program metadata
-    await tx
+  const stmts: AnyBatchItem[] = [];
+
+  // Update program metadata
+  stmts.push(
+    dbClient
       .update(programs)
       .set({
         name: data.name,
         description: data.description,
         durationWeeks: data.weeks.length,
       })
-      .where(eq(programs.id, programId));
+      .where(eq(programs.id, programId)),
+  );
 
-    // Delete existing weeks (cascade deletes days, blocks, movements)
-    for (const week of existing.weeks) {
-      await tx.delete(programWeeks).where(eq(programWeeks.id, week.id));
-    }
+  // Delete existing weeks (cascade deletes days, blocks, movements)
+  for (const week of existing.weeks) {
+    stmts.push(
+      dbClient.delete(programWeeks).where(eq(programWeeks.id, week.id)),
+    );
+  }
 
-    // Re-insert full tree with all weeks
-    for (let weekIdx = 0; weekIdx < data.weeks.length; weekIdx++) {
-      const week = data.weeks[weekIdx];
-      const weekId = crypto.randomUUID();
-      await tx.insert(programWeeks).values({
+  // Re-insert full tree with all weeks
+  for (let weekIdx = 0; weekIdx < data.weeks.length; weekIdx++) {
+    const week = data.weeks[weekIdx];
+    const weekId = crypto.randomUUID();
+    stmts.push(
+      dbClient.insert(programWeeks).values({
         id: weekId,
         programId,
         weekNumber: weekIdx + 1,
         name: week.name,
-      });
+      }),
+    );
 
-      for (let i = 0; i < week.days.length; i++) {
-        const day = week.days[i];
-        const dayId = crypto.randomUUID();
-        await tx.insert(programDays).values({
+    for (let i = 0; i < week.days.length; i++) {
+      const day = week.days[i];
+      const dayId = crypto.randomUUID();
+      stmts.push(
+        dbClient.insert(programDays).values({
           id: dayId,
           weekId,
           dayNumber: i + 1,
           name: day.name,
-        });
+        }),
+      );
 
-        await insertDayBlocks(tx, dayId, day);
-      }
+      stmts.push(...collectDayBlockStatements(dbClient, dayId, day));
     }
-  });
+  }
+
+  await (dbClient.batch as (s: AnyBatchItem[]) => Promise<unknown[]>)(stmts);
 
   return getProgramById(dbClient, programId);
 }
@@ -249,36 +283,50 @@ export async function assignProgram(
   programId: string,
   startDate?: string,
 ) {
-  return dbClient.transaction(async (tx) => {
-    // Deactivate any existing active assignment
-    const existing = await tx.query.programAssignments.findFirst({
-      where: and(
-        eq(programAssignments.userId, userId),
-        eq(programAssignments.status, "active"),
-      ),
-    });
+  // Verify the program belongs to this user
+  const program = await dbClient.query.programs.findFirst({
+    where: and(eq(programs.id, programId), eq(programs.createdById, userId)),
+    columns: { id: true },
+  });
+  if (!program) return null;
 
-    if (existing) {
-      await tx
+  // Deactivate any existing active assignment
+  const existing = await dbClient.query.programAssignments.findFirst({
+    where: and(
+      eq(programAssignments.userId, userId),
+      eq(programAssignments.status, "active"),
+    ),
+  });
+
+  const stmts: AnyBatchItem[] = [];
+
+  if (existing) {
+    stmts.push(
+      dbClient
         .update(programAssignments)
         .set({ status: "completed" })
-        .where(eq(programAssignments.id, existing.id));
-    }
+        .where(eq(programAssignments.id, existing.id)),
+    );
+  }
 
-    // Delete any existing assignment for this specific program+user combo
-    await tx
+  // Delete any existing assignment for this specific program+user combo
+  stmts.push(
+    dbClient
       .delete(programAssignments)
       .where(
         and(
           eq(programAssignments.userId, userId),
           eq(programAssignments.programId, programId),
         ),
-      );
+      ),
+  );
 
-    const [assignment] = await tx
+  const newAssignmentId = crypto.randomUUID();
+  stmts.push(
+    dbClient
       .insert(programAssignments)
       .values({
-        id: crypto.randomUUID(),
+        id: newAssignmentId,
         programId,
         userId,
         startDate: startDate || null,
@@ -286,10 +334,83 @@ export async function assignProgram(
         currentWeekNumber: 1,
         currentCycle: 1,
         currentWeekStartedAt: new Date(),
-      })
-      .returning();
+      }),
+  );
 
-    return assignment;
+  await (dbClient.batch as (s: AnyBatchItem[]) => Promise<unknown[]>)(stmts);
+
+  // Read back the inserted assignment
+  return dbClient.query.programAssignments.findFirst({
+    where: eq(programAssignments.id, newAssignmentId),
+  });
+}
+
+export async function assignProgramToLifter(
+  dbClient: DbClient,
+  coachId: string,
+  programId: string,
+  lifterId: string,
+  startDate?: string,
+) {
+  // Verify the program belongs to the coach
+  const program = await dbClient.query.programs.findFirst({
+    where: and(eq(programs.id, programId), eq(programs.createdById, coachId)),
+    columns: { id: true },
+  });
+  if (!program) return null;
+
+  // Deactivate any existing active assignment for the lifter
+  const existing = await dbClient.query.programAssignments.findFirst({
+    where: and(
+      eq(programAssignments.userId, lifterId),
+      eq(programAssignments.status, "active"),
+    ),
+  });
+
+  const stmts: AnyBatchItem[] = [];
+
+  if (existing) {
+    stmts.push(
+      dbClient
+        .update(programAssignments)
+        .set({ status: "completed" })
+        .where(eq(programAssignments.id, existing.id)),
+    );
+  }
+
+  // Delete any existing assignment for this specific program+lifter combo
+  stmts.push(
+    dbClient
+      .delete(programAssignments)
+      .where(
+        and(
+          eq(programAssignments.userId, lifterId),
+          eq(programAssignments.programId, programId),
+        ),
+      ),
+  );
+
+  const newAssignmentId = crypto.randomUUID();
+  stmts.push(
+    dbClient
+      .insert(programAssignments)
+      .values({
+        id: newAssignmentId,
+        programId,
+        userId: lifterId,
+        assignedById: coachId,
+        startDate: startDate || null,
+        status: "active",
+        currentWeekNumber: 1,
+        currentCycle: 1,
+        currentWeekStartedAt: new Date(),
+      }),
+  );
+
+  await (dbClient.batch as (s: AnyBatchItem[]) => Promise<unknown[]>)(stmts);
+
+  return dbClient.query.programAssignments.findFirst({
+    where: eq(programAssignments.id, newAssignmentId),
   });
 }
 

@@ -1,7 +1,6 @@
 import { BackToDashboard } from '@/components/layout/BackToDashboard';
-import { AccountInfoCard, LifterProfileCard, CoachProfileCard, ChangePasswordCard } from '@/components/forms/profile';
+import { AccountInfoCard, LifterProfileCard, CoachProfileCard } from '@/components/forms/profile';
 import { ChangeCompetitionProfile } from '@/components/forms/profile/competition-profile-card';
-import { TrainingSettingsCard } from '@/components/forms/profile/training-settings-card';
 
 export function ProfilePage() {
     return (
@@ -12,9 +11,7 @@ export function ProfilePage() {
                     <BackToDashboard />
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Profile</h1>
-                <p className="text-sm text-muted-foreground">
-                    Manage your account settings, personal details, and preferences.
-                </p>
+                <p className="text-sm text-muted-foreground">Manage your personal details and lifting profile.</p>
             </div>
 
             <div className="mt-6 flex flex-col gap-6">
@@ -22,13 +19,9 @@ export function ProfilePage() {
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     <LifterProfileCard />
-                    <div className="flex flex-col gap-3">
-                        <ChangeCompetitionProfile />
-                        <ChangePasswordCard />
-                    </div>
+                    <ChangeCompetitionProfile />
                 </div>
 
-                <TrainingSettingsCard />
                 <CoachProfileCard />
             </div>
         </div>

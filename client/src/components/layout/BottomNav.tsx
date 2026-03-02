@@ -3,8 +3,8 @@ import { Home, Calculator, TrendingUp, CalendarDays, History } from 'lucide-reac
 
 export function BottomNav() {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
-            <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 pb-4 backdrop-blur-xl md:hidden">
+            <div className="mx-auto flex h-14 max-w-lg items-center justify-around px-2">
                 {/* Home */}
                 <Link
                     to="/dashboard"
@@ -12,7 +12,7 @@ export function BottomNav() {
                     activeProps={{ className: 'text-primary' }}
                 >
                     <Home className="size-5" />
-                    <span className="text-[10px] font-medium">Home</span>
+                    <span className="text-[10px] font-medium">Dashboard</span>
                 </Link>
 
                 {/* Calculator */}
@@ -56,8 +56,6 @@ export function BottomNav() {
                     <span className="text-[10px] font-medium">Programs</span>
                 </Link>
             </div>
-            {/* Safe area padding for iOS */}
-            <div className="h-[env(safe-area-inset-bottom)]" />
         </nav>
     );
 }

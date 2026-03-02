@@ -1,44 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
-import { ProgramDto } from '@liftarchives/shared';
+import { programsQueryOptions, programQueryOptions, activeProgramQueryOptions } from '@/lib/queries';
 import type { CreateProgramData, UpdateProgramData, AssignProgramData } from '@liftarchives/shared';
 
 export function usePrograms() {
-    return useQuery({
-        queryKey: ['programs'],
-        queryFn: async () => {
-            const res = await client.api.programs.$get();
-            if (!res.ok) throw new Error('Failed to fetch programs');
-            const data = await res.json();
-            return ProgramDto.fromServerList(data.programs);
-        },
-    });
+    return useQuery(programsQueryOptions);
 }
 
 export function useProgram(id: string | undefined) {
     return useQuery({
-        queryKey: ['programs', id],
+        ...programQueryOptions(id!),
         enabled: !!id,
-        queryFn: async () => {
-            const res = await client.api.programs[':id'].$get({
-                param: { id: id! },
-            });
-            if (!res.ok) throw new Error('Failed to fetch program');
-            const data = await res.json();
-            return ProgramDto.fromServer(data.program);
-        },
     });
 }
 
 export function useActiveProgram() {
-    return useQuery({
-        queryKey: ['programs', 'active'],
-        queryFn: async () => {
-            const res = await client.api.programs.active.$get();
-            if (!res.ok) throw new Error('Failed to fetch active program');
-            return res.json();
-        },
-    });
+    return useQuery(activeProgramQueryOptions);
 }
 
 export function useCreateProgram() {

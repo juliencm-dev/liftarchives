@@ -15,23 +15,38 @@ const steps: Step[] = [
 
 interface WizardStepperProps {
     currentStep: number;
+    onStepClick?: (step: number) => void;
+    isEdit?: boolean;
 }
 
-export function WizardStepper({ currentStep }: WizardStepperProps) {
+export function WizardStepper({ currentStep, onStepClick, isEdit }: WizardStepperProps) {
     // currentStep is 0-indexed, step.number is 1-indexed
     const displayStep = currentStep + 1;
 
     return (
-        <nav aria-label="Program creation steps" className="mx-auto w-full max-w-md px-4">
-            <ol className="flex items-center justify-between">
+        <nav
+            aria-label="Program creation steps"
+            className="sticky top-[6.5rem] z-20 -mx-4 shrink-0 bg-background px-4 py-3 md:top-16 lg:-mx-6 lg:px-6"
+        >
+            <ol className="mx-auto flex max-w-md items-center justify-between">
                 {steps.map((step, index) => {
-                    const isComplete = displayStep > step.number;
+                    const isComplete = isEdit ? displayStep !== step.number : displayStep > step.number;
                     const isCurrent = displayStep === step.number;
-                    const isUpcoming = displayStep < step.number;
+                    const isUpcoming = isEdit ? false : displayStep < step.number;
+                    const canClick = !isCurrent && (isComplete || isEdit) && onStepClick;
 
                     return (
                         <li key={step.number} className="flex items-center">
-                            <div className="flex flex-col items-center gap-2">
+                            <button
+                                type="button"
+                                disabled={!canClick}
+                                onClick={() => canClick && onStepClick(step.number - 1)}
+                                className={cn(
+                                    'flex flex-col items-center gap-2',
+                                    canClick && 'cursor-pointer',
+                                    !canClick && 'cursor-default'
+                                )}
+                            >
                                 <div
                                     className={cn(
                                         'flex size-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all',
@@ -53,17 +68,19 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                                 >
                                     {step.label}
                                 </span>
-                            </div>
+                            </button>
 
                             {index < steps.length - 1 && (
                                 <div
                                     className={cn(
                                         'mx-2 mb-6 h-px w-12 sm:w-16',
-                                        displayStep > step.number + 1
+                                        isEdit
                                             ? 'bg-primary/50'
-                                            : displayStep > step.number
-                                              ? 'bg-primary/30'
-                                              : 'bg-border'
+                                            : displayStep > step.number + 1
+                                              ? 'bg-primary/50'
+                                              : displayStep > step.number
+                                                ? 'bg-primary/30'
+                                                : 'bg-border'
                                     )}
                                 />
                             )}

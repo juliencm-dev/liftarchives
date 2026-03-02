@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAllLifts, useCreateLift } from '@/hooks/use-lifts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -28,17 +28,24 @@ export function ExercisePicker({ open, onClose, onSelect, stayOpen = false }: Ex
     const [newParentLiftId, setNewParentLiftId] = useState<string>('');
 
     // Core lifts available as parents for custom lifts
-    const coreLifts = (lifts || []).filter((l) => l.isCore);
+    const coreLifts = useMemo(() => (lifts || []).filter((l) => l.isCore), [lifts]);
 
-    const filtered = (lifts || []).filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
+    const filtered = useMemo(
+        () => (lifts || []).filter((l) => l.name.toLowerCase().includes(search.toLowerCase())),
+        [lifts, search]
+    );
 
-    const grouped = CATEGORIES.reduce(
-        (acc, cat) => {
-            const items = filtered.filter((l) => l.category === cat);
-            if (items.length > 0) acc[cat] = items;
-            return acc;
-        },
-        {} as Record<string, typeof filtered>
+    const grouped = useMemo(
+        () =>
+            CATEGORIES.reduce(
+                (acc, cat) => {
+                    const items = filtered.filter((l) => l.category === cat);
+                    if (items.length > 0) acc[cat] = items;
+                    return acc;
+                },
+                {} as Record<string, typeof filtered>
+            ),
+        [filtered]
     );
 
     const handleCreate = async () => {

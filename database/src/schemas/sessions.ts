@@ -1,20 +1,17 @@
 import {
-  pgTable,
+  sqliteTable,
   text,
   integer,
-  doublePrecision,
-  date,
-  boolean,
-  timestamp,
+  real,
   index,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { user } from "./auth";
 import { lifts } from "./lifts";
 import { programDays } from "./programs";
-import { setTypeEnum, setFeedbackEnum } from "./enums";
 import { programBlocks } from "./programs";
 
-export const trainingSessions = pgTable(
+export const trainingSessions = sqliteTable(
   "training_sessions",
   {
     id: text("id").primaryKey(),
@@ -24,16 +21,16 @@ export const trainingSessions = pgTable(
     programDayId: text("program_day_id").references(() => programDays.id, {
       onDelete: "set null",
     }),
-    date: date("date").notNull(),
+    date: text("date").notNull(),
     title: text("title"),
     notes: text("notes"),
     durationMinutes: integer("duration_minutes"),
-    startedAt: timestamp("started_at"),
-    completedAt: timestamp("completed_at"),
-    isSharedWithCoach: boolean("is_shared_with_coach").default(false).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    startedAt: integer("started_at", { mode: "timestamp" }),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+    isSharedWithCoach: integer("is_shared_with_coach", { mode: "boolean" }).default(false).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
@@ -43,7 +40,7 @@ export const trainingSessions = pgTable(
   ],
 );
 
-export const sessionExercises = pgTable(
+export const sessionExercises = sqliteTable(
   "session_exercises",
   {
     id: text("id").primaryKey(),
@@ -59,9 +56,9 @@ export const sessionExercises = pgTable(
     ),
     order: integer("order").notNull(),
     notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
@@ -71,7 +68,7 @@ export const sessionExercises = pgTable(
   ],
 );
 
-export const sessionSets = pgTable(
+export const sessionSets = sqliteTable(
   "session_sets",
   {
     id: text("id").primaryKey(),
@@ -79,18 +76,18 @@ export const sessionSets = pgTable(
       .notNull()
       .references(() => sessionExercises.id, { onDelete: "cascade" }),
     setNumber: integer("set_number").notNull(),
-    weight: doublePrecision("weight").notNull(),
+    weight: real("weight").notNull(),
     reps: integer("reps").notNull(),
-    rpe: doublePrecision("rpe"),
-    percentageOf1rm: doublePrecision("percentage_of_1rm"),
+    rpe: real("rpe"),
+    percentageOf1rm: real("percentage_of_1rm"),
     tempo: text("tempo"),
     restSeconds: integer("rest_seconds"),
-    setType: setTypeEnum("set_type").notNull(),
-    feedback: setFeedbackEnum("feedback"),
+    setType: text("set_type").notNull(),
+    feedback: text("feedback"),
     notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
@@ -99,7 +96,7 @@ export const sessionSets = pgTable(
   ],
 );
 
-export const exerciseMedia = pgTable(
+export const exerciseMedia = sqliteTable(
   "exercise_media",
   {
     id: text("id").primaryKey(),
@@ -114,8 +111,8 @@ export const exerciseMedia = pgTable(
     description: text("description"),
     fileType: text("file_type"),
     fileSize: integer("file_size"),
-    isPrivate: boolean("is_private").default(true).notNull(),
-    uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+    isPrivate: integer("is_private", { mode: "boolean" }).default(true).notNull(),
+    uploadedAt: integer("uploaded_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   },
   (table) => [
     index("exercise_media_session_exercise_id_idx").on(

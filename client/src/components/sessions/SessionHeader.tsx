@@ -23,7 +23,7 @@ export function SessionHeader({
     onBack,
 }: SessionHeaderProps) {
     return (
-        <header className="sticky top-0 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md">
+        <header className="sticky top-0 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md pt-[env(safe-area-inset-top)]">
             <div className="relative flex items-center px-4 py-3">
                 <Button
                     variant="ghost"

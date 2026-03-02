@@ -1,26 +1,42 @@
-import "dotenv/config";
-import "@/env";
-
 import { Hono } from "hono";
 import { auth } from "@/auth";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
+import { bodyLimit } from "hono/body-limit";
 
-import { authRateLimit, unauthRateLimit } from "@/middleware/rate-limit-config";
+import { setD1 } from "@liftarchives/database";
+import { setKV } from "@/middleware/rate-limit";
+import { authRateLimit, unauthRateLimit, apiRateLimit, aiRateLimit } from "@/middleware/rate-limit-config";
 import { profileRoutes } from "@/routes/profile";
 import { liftsRoutes } from "@/routes/lifts";
 import { programRoutes } from "@/routes/programs";
 import { sessionRoutes } from "@/routes/sessions";
-import { db, isAccountLocked, lockAccountByEmail } from "@liftarchives/database";
-import {
-  recordFailure,
-  clearFailures,
-  markLocked,
-  isLockedInMemory,
-  MAX_FAILURES,
-} from "@/hooks/auth/signin";
+import { agentRoutes } from "@/routes/agent";
+import { avatarRoutes } from "@/routes/avatar";
+import { coachRoutes, inviteRoutes } from "@/routes/coach";
+import { clubRoutes } from "@/routes/clubs";
 
 const app = new Hono();
+
+// Bridge CF Workers env vars + D1 binding
+// Must run before any middleware that accesses env
+let envBridged = false;
+app.use("*", async (c, next) => {
+  if (!envBridged && c.env) {
+    for (const [key, val] of Object.entries(c.env)) {
+      if (typeof val === "string") process.env[key] = val;
+    }
+    envBridged = true;
+  }
+  if ((c.env as any)?.DB) {
+    setD1((c.env as any).DB);
+  }
+  if ((c.env as any)?.CACHE) {
+    setKV((c.env as any).CACHE);
+  }
+  await next();
+});
 
 app.use(
   "*",
@@ -28,11 +44,13 @@ app.use(
     origin: (origin) => {
       if (!origin) return null;
 
-      const frontendUrl =
-        process.env.NODE_ENV === "production"
-          ? process.env.FRONTEND_URL!
-          : "http://localhost:3000";
-      if (origin === frontendUrl) return origin;
+      const allowed = [
+        process.env.FRONTEND_URL,
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+      ].filter(Boolean);
+
+      if (allowed.includes(origin)) return origin;
 
       return null;
     },
@@ -44,69 +62,34 @@ app.use(
   }),
 );
 app.use("*", logger());
+app.use("*", secureHeaders());
 
-// Reject request bodies larger than 1 MB
-app.use("*", async (c, next) => {
-  const contentLength = c.req.header("content-length");
-  if (contentLength && parseInt(contentLength, 10) > 1_000_000) {
-    return c.json({ message: "Payload too large" }, 413);
-  }
+// Prevent browsers from caching API responses
+app.use("/api/*", async (c, next) => {
   await next();
+  c.header("Cache-Control", "no-store");
+});
+app.use("*", async (c, next) => {
+  const limit = c.req.path.startsWith("/api/agent")
+    ? 10 * 1024 * 1024
+    : 1_000_000;
+  return bodyLimit({ maxSize: limit })(c, next);
 });
 
 app.use("/api/auth/*", authRateLimit);
 app.on(["POST", "GET"], "/api/auth/*", async (c) => {
-  const url = new URL(c.req.url);
-  const isSignIn =
-    c.req.method === "POST" && url.pathname === "/api/auth/sign-in/email";
-
-  if (!isSignIn) {
-    return auth.handler(c.req.raw);
-  }
-
-  // Clone the request so we can read the body without consuming it
-  const cloned = c.req.raw.clone();
-  let email: string | undefined;
-  try {
-    const body = (await cloned.json()) as { email?: string };
-    email = body?.email?.toLowerCase();
-  } catch {
-    // If body parsing fails, let better-auth handle it
-    return auth.handler(c.req.raw);
-  }
-
-  if (!email) {
-    return auth.handler(c.req.raw);
-  }
-
-  // Fast-path: check in-memory lock
-  if (isLockedInMemory(email)) {
-    return c.json({ message: "Account is locked. Please reset your password." }, 403);
-  }
-
-  // Check DB lock status
-  if (await isAccountLocked(db, email)) {
-    markLocked(email);
-    return c.json({ message: "Account is locked. Please reset your password." }, 403);
-  }
-
-  // Forward to better-auth
-  const response = await auth.handler(c.req.raw);
-  const status = response.status;
-
-  if (status >= 200 && status < 300) {
-    clearFailures(email);
-  } else {
-    const count = recordFailure(email);
-    if (count >= MAX_FAILURES) {
-      await lockAccountByEmail(db, email);
-      markLocked(email);
-      console.log(`[Auth] Account locked for ${email} after ${count} failed attempts.`);
-    }
-  }
-
-  return response;
+  return auth.handler(c.req.raw);
 });
+
+app.use("/api/profile/*", apiRateLimit);
+app.use("/api/lifts/*", apiRateLimit);
+app.use("/api/programs/*", apiRateLimit);
+app.use("/api/sessions/*", apiRateLimit);
+app.use("/api/avatar/*", apiRateLimit);
+app.use("/api/clubs/*", apiRateLimit);
+app.use("/api/coach/*", apiRateLimit);
+app.use("/api/invites/*", apiRateLimit);
+app.use("/api/agent/*", aiRateLimit);
 
 const routes = app
   .get("/api/health", unauthRateLimit, (c) => {
@@ -115,7 +98,12 @@ const routes = app
   .route("/api/profile", profileRoutes)
   .route("/api/lifts", liftsRoutes)
   .route("/api/programs", programRoutes)
-  .route("/api/sessions", sessionRoutes);
+  .route("/api/sessions", sessionRoutes)
+  .route("/api/agent", agentRoutes)
+  .route("/api/avatar", avatarRoutes)
+  .route("/api/clubs", clubRoutes)
+  .route("/api/coach", coachRoutes)
+  .route("/api/invites", inviteRoutes);
 
 // Global error handler
 app.onError((err, c) => {

@@ -9,4 +9,7 @@ export * from "./schemas/lifts";
 export * from "./schemas/programs";
 export * from "./schemas/sessions";
 export * from "./schemas/settings";
+export * from "./schemas/coach";
+export * from "./schemas/clubs";
+export * from "./schemas/agent";
 export * from "./dto";

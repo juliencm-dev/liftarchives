@@ -8,72 +8,100 @@ import { sendEmail, getFrontendUrl } from "@/emails/send";
 import { VerifyEmail } from "@/emails/verify-email";
 import { ResetPassword } from "@/emails/reset-password";
 
-export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-  }),
-  trustedOrigins:
-    process.env.NODE_ENV === "production"
-      ? [process.env.FRONTEND_URL!]
-      : ["http://localhost:3000", "http://127.0.0.1:3000"],
-  hooks: {
-    after: finalizeSignUp,
-  },
-  user: {
-    additionalFields: {
-      firstName: {
-        type: "string",
-        required: false,
-      },
-      lastName: {
-        type: "string",
-        required: false,
-      },
-      locked: {
-        type: "boolean",
-        required: false,
-      },
-      plan: {
-        type: "string",
-        required: false,
+type Auth = ReturnType<typeof betterAuth>;
+let _auth: Auth | null = null;
+
+function createAuth(): Auth {
+  return betterAuth({
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+    }),
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60,
       },
     },
-  },
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-    minPasswordLength: 8,
-    maxPasswordLength: 128,
-    password: {
-      hash: hashPassword,
-      verify: verifyPassword,
+    advanced: {
+      cookiePrefix: "la",
+      defaultCookieAttributes: {
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,
+      },
     },
-    sendResetPassword: async ({ user, token }) => {
-      const resetUrl = `${getFrontendUrl()}/reset-password?token=${token}`;
-      sendEmail({
-        to: user.email,
-        subject: "Reset your password",
-        react: ResetPassword({ userName: user.name ?? "", resetUrl }),
-      }).catch((err) =>
-        console.error("[Auth] Failed to send reset password email:", err),
-      );
+    trustedOrigins:
+      process.env.NODE_ENV === "production"
+        ? [process.env.FRONTEND_URL!]
+        : ["http://localhost:3000", "http://127.0.0.1:3000"],
+    hooks: {
+      after: finalizeSignUp,
     },
-    onPasswordReset: async ({ user }) => {
-      await unlockAccountById(db, user.id);
-      clearFailures(user.email);
-      console.log(`Password for user ${user.email} has been reset. Account unlocked.`);
+    user: {
+      additionalFields: {
+        firstName: {
+          type: "string",
+          required: false,
+        },
+        lastName: {
+          type: "string",
+          required: false,
+        },
+        locked: {
+          type: "boolean",
+          required: false,
+        },
+        plan: {
+          type: "string",
+          required: false,
+        },
+      },
     },
-  },
-  emailVerification: {
-    sendVerificationEmail: async ({ user, token }) => {
-      const verificationUrl = `${getFrontendUrl()}/verify-email?token=${token}`;
-      sendEmail({
-        to: user.email,
-        subject: "Verify your email address",
-        react: VerifyEmail({ userName: user.name ?? "", verificationUrl }),
-      }).catch((err) =>
-        console.error("[Auth] Failed to send verification email:", err),
-      );
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
+      password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+      },
+      sendResetPassword: async ({ user, token }) => {
+        const resetUrl = `${getFrontendUrl()}/reset-password?token=${token}`;
+        await sendEmail({
+          to: user.email,
+          subject: "Reset your password",
+          react: ResetPassword({ userName: user.name ?? "", resetUrl }),
+        }).catch((err) =>
+          console.error("[Auth] Failed to send reset password email:", err),
+        );
+      },
+      onPasswordReset: async ({ user }) => {
+        await unlockAccountById(db, user.id);
+        clearFailures(user.email);
+        const masked = user.email.replace(/^(.)(.*)(@.*)$/, (_, first, middle, domain) => first + '*'.repeat(middle.length) + domain);
+        console.log(`Password for user ${masked} has been reset. Account unlocked.`);
+      },
     },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, token }) => {
+        const verificationUrl = `${getFrontendUrl()}/verify-email?token=${token}`;
+        await sendEmail({
+          to: user.email,
+          subject: "Verify your email address",
+          react: VerifyEmail({ userName: user.name ?? "", verificationUrl }),
+        }).catch((err) =>
+          console.error("[Auth] Failed to send verification email:", err),
+        );
+      },
+    },
+  });
+}
+
+export const auth: Auth = new Proxy({} as Auth, {
+  get(_, prop) {
+    if (!_auth) _auth = createAuth();
+    const val = (_auth as any)[prop];
+    return typeof val === "function" ? val.bind(_auth) : val;
   },
 });

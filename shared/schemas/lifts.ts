@@ -11,7 +11,7 @@ export const AddPersonalRecordSchema = z.object({
 export type AddPersonalRecordData = z.infer<typeof AddPersonalRecordSchema>;
 
 export const CreateLiftSchema = z.object({
-  name: z.string().min(1, "Lift name is required"),
+  name: z.string().min(1, "Lift name is required").max(200),
   category: z.enum(["olympic", "powerlifting", "accessory"]),
   description: z.string().max(500).optional(),
   parentLiftId: z.string().optional(),

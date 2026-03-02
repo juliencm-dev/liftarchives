@@ -34,7 +34,7 @@ export function SignUpForm() {
                     name: value.name,
                     email: value.email,
                     password: value.password,
-                    callbackURL: 'http://localhost:3000/signin',
+                    callbackURL: '/signin',
                 } as any);
 
                 if (error) {

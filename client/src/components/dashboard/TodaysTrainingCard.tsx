@@ -8,23 +8,13 @@ import { useStartSession } from '@/hooks/use-sessions';
 import { ExerciseBlock } from '@/components/programs/ExerciseBlock';
 import { useNavigate } from '@tanstack/react-router';
 import { clearLocalSession } from '@/lib/session-store';
-import type { ProgramBlockResponse } from '@liftarchives/shared';
+import { useActiveProgram } from '@/hooks/use-programs';
 
-interface UpNextDay {
-    id: string;
-    dayNumber: number;
-    name: string | null;
-    isCompleted: boolean;
-    blocks: ProgramBlockResponse[];
-}
+type ActiveProgramData = NonNullable<ReturnType<typeof useActiveProgram>['data']>;
+type CurrentWeek = ActiveProgramData['currentWeek'];
 
 interface UpNextCardProps {
-    currentWeek: {
-        weekNumber: number;
-        totalWeeks: number;
-        cycle: number;
-        days: UpNextDay[];
-    } | null;
+    currentWeek: CurrentWeek;
     upNextDayId: string | null;
     hasActiveAssignment: boolean;
 }

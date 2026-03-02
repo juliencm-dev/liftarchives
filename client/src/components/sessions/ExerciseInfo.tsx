@@ -1,4 +1,5 @@
 import type { LocalExerciseData } from '@/lib/session-store';
+import { useIntensityMode } from '@/hooks/use-training-settings';
 
 interface ExerciseInfoProps {
     exercise: LocalExerciseData;
@@ -7,7 +8,8 @@ interface ExerciseInfoProps {
 }
 
 export function ExerciseInfo({ exercise, activeMovementName }: ExerciseInfoProps) {
-    const { liftName, targetSets, targetReps, upToPercent, movements } = exercise;
+    const intensityMode = useIntensityMode();
+    const { liftName, targetSets, targetReps, upToPercent, upToRpe, movements } = exercise;
     const isComplex = movements.length > 1;
 
     // Build the reps display string
@@ -22,8 +24,15 @@ export function ExerciseInfo({ exercise, activeMovementName }: ExerciseInfoProps
         repsDisplay = `${targetSets}x${targetReps}`;
     }
 
-    // Build the intensity string
-    const intensityLabel = upToPercent ? `up to ${upToPercent}%` : null;
+    // Build the intensity string — prioritize the active mode, fall back to the other
+    let intensityLabel: string | null = null;
+    if (intensityMode === 'percent') {
+        if (upToPercent) intensityLabel = `up to ${upToPercent}%`;
+        else if (upToRpe) intensityLabel = `up to RPE ${upToRpe}`;
+    } else {
+        if (upToRpe) intensityLabel = `up to RPE ${upToRpe}`;
+        else if (upToPercent) intensityLabel = `up to ${upToPercent}%`;
+    }
 
     // For complex blocks, show the active movement name; otherwise the lift name
     const displayName = isComplex && activeMovementName ? activeMovementName : liftName;

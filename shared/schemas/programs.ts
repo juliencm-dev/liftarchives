@@ -9,6 +9,11 @@ export const BlockMovementSchema = z.object({
   reps: z.number().int().min(1).default(1),
 });
 
+export const SetDetailSchema = z.object({
+  percent: z.number().min(1).max(100).optional(),
+  rpe: z.number().min(1).max(10).optional(),
+});
+
 export const ProgramBlockSchema = z.object({
   sets: z.number().int().min(1).default(1),
   reps: z.number().int().min(1).default(1),
@@ -16,21 +21,22 @@ export const ProgramBlockSchema = z.object({
   upTo: z.boolean().default(false),
   upToPercent: z.number().min(1).max(100).optional(),
   upToRpe: z.number().min(1).max(10).optional(),
+  setDetails: z.array(SetDetailSchema).optional(),
   notes: z.string().max(500).optional(),
 });
 
 export const ProgramDaySchema = z.object({
-  name: z.string().optional(),
+  name: z.string().max(200).optional(),
   blocks: z.array(ProgramBlockSchema),
 });
 
 export const ProgramWeekInputSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().max(200).optional(),
   days: z.array(ProgramDaySchema).min(1, "At least one day is required"),
 });
 
 export const CreateProgramSchema = z.object({
-  name: z.string().min(1, "Program name is required"),
+  name: z.string().min(1, "Program name is required").max(200),
   description: z.string().max(1000).optional(),
   weeks: z
     .array(ProgramWeekInputSchema)
@@ -38,7 +44,7 @@ export const CreateProgramSchema = z.object({
 });
 
 export const UpdateProgramSchema = z.object({
-  name: z.string().min(1, "Program name is required"),
+  name: z.string().min(1, "Program name is required").max(200),
   description: z.string().max(1000).optional(),
   weeks: z
     .array(ProgramWeekInputSchema)
@@ -62,6 +68,7 @@ export type ProgramWeekInputData = z.infer<typeof ProgramWeekInputSchema>;
 export type ProgramDayData = z.infer<typeof ProgramDaySchema>;
 export type ProgramBlockData = z.infer<typeof ProgramBlockSchema>;
 export type BlockMovementData = z.infer<typeof BlockMovementSchema>;
+export type SetDetailData = z.infer<typeof SetDetailSchema>;
 
 // ---------------------------------------------------------------------------
 // Response schemas — single source of truth for what the server returns
@@ -102,6 +109,7 @@ export const ProgramBlockResponseSchema = z.object({
   upTo: z.boolean(),
   upToPercent: z.number().nullable(),
   upToRpe: z.number().nullable(),
+  setDetails: z.array(SetDetailSchema).nullable(),
   notes: z.string().nullable(),
   movements: z.array(BlockMovementResponseSchema),
 });

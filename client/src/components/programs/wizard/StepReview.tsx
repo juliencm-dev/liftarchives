@@ -32,6 +32,13 @@ function toDayResponse(
             upTo: b.upTo,
             upToPercent: b.upToPercent ? parseFloat(b.upToPercent) : null,
             upToRpe: b.upToRpe ? parseFloat(b.upToRpe) : null,
+            setDetails:
+                b.setDetails.length > 0
+                    ? b.setDetails.map((sd) => ({
+                          percent: sd.percent ? Number(sd.percent) : undefined,
+                          rpe: sd.rpe ? Number(sd.rpe) : undefined,
+                      }))
+                    : null,
             notes: b.notes || null,
             movements: b.movements.map((m, mi) => ({
                 id: m.id,

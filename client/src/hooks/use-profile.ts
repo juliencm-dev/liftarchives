@@ -1,23 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
 import { updateUser, changePassword } from '@/lib/auth';
+import { lifterProfileQueryOptions, coachProfileQueryOptions, competitionProfileQueryOptions } from '@/lib/queries';
 import type { LifterProfileData, UpdateCoachProfileData } from '@liftarchives/shared';
 
 export function useLifterProfile() {
-    return useQuery({
-        queryKey: ['lifterProfile'],
-        queryFn: async () => {
-            const res = await client.api.profile.lifter.$get();
-            if (!res.ok) throw new Error('Failed to fetch lifter profile');
-            const data = await res.json();
-            return data.profile;
-        },
-    });
+    return useQuery(lifterProfileQueryOptions);
 }
 
 export function useUnit(): 'kg' | 'lb' {
     const { data } = useLifterProfile();
-    return data?.liftUnit ?? 'kg';
+    return (data?.liftUnit as 'kg' | 'lb') ?? 'kg';
 }
 
 export function useCreateLifterProfile() {
@@ -49,15 +42,7 @@ export function useUpdateLifterProfile() {
 }
 
 export function useCoachProfile() {
-    return useQuery({
-        queryKey: ['coachProfile'],
-        queryFn: async () => {
-            const res = await client.api.profile.coach.$get();
-            if (!res.ok) throw new Error('Failed to fetch coach profile');
-            const data = await res.json();
-            return data.profile;
-        },
-    });
+    return useQuery(coachProfileQueryOptions);
 }
 
 export function useUpdateCoachProfile() {
@@ -75,15 +60,7 @@ export function useUpdateCoachProfile() {
 }
 
 export function useCompetitionProfile() {
-    return useQuery({
-        queryKey: ['competitionProfile'],
-        queryFn: async () => {
-            const res = await client.api.profile.competition.$get();
-            if (!res.ok) throw new Error('Failed to fetch competition profile');
-            const data = await res.json();
-            return data.profile;
-        },
-    });
+    return useQuery(competitionProfileQueryOptions);
 }
 
 export function useUpdateAccount() {

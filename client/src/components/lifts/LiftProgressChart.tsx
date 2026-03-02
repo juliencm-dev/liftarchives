@@ -49,12 +49,17 @@ export function LiftProgressChart({ liftName, records }: LiftProgressChartProps)
     const unit = useUnit();
     const chartData = useMemo<ChartDataPoint[]>(() => {
         return records
-            .map((r) => ({
-                date: r.date,
-                weight: displayWeight(r.reps === 1 ? r.weight : (r.estimatedOneRepMax ?? r.weight), unit),
-                label: new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            }))
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            .map((r) => {
+                const ts = new Date(r.date).getTime();
+                return {
+                    date: r.date,
+                    weight: displayWeight(r.reps === 1 ? r.weight : (r.estimatedOneRepMax ?? r.weight), unit),
+                    label: new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    _ts: ts,
+                };
+            })
+            .sort((a, b) => a._ts - b._ts)
+            .map(({ _ts, ...point }) => point);
     }, [records, unit]);
 
     const hasData = chartData.length > 0;

@@ -1,8 +1,9 @@
-import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { user } from "./auth";
 import { trainingSessions } from "./sessions";
 
-export const sessionComments = pgTable(
+export const sessionComments = sqliteTable(
   "session_comments",
   {
     id: text("id").primaryKey(),
@@ -13,9 +14,9 @@ export const sessionComments = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },

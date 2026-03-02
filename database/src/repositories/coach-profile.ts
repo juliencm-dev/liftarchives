@@ -2,6 +2,18 @@ import { eq } from "drizzle-orm";
 import { coachProfile } from "../schemas";
 import type { DbClient } from "./types";
 
+export async function createCoachProfile(
+  dbClient: DbClient,
+  userId: string,
+  data: { bio?: string },
+) {
+  const [result] = await dbClient
+    .insert(coachProfile)
+    .values({ userId, bio: data.bio ?? null })
+    .returning();
+  return result;
+}
+
 export async function getCoachProfile(dbClient: DbClient, userId: string) {
   return dbClient.query.coachProfile.findFirst({
     where: eq(coachProfile.userId, userId),

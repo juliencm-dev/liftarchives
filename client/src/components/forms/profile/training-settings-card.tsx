@@ -6,26 +6,31 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Settings, Check } from 'lucide-react';
 import { useTrainingSettings, useUpdateTrainingSettings } from '@/hooks/use-training-settings';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export function TrainingSettingsCard() {
     const { data: settings, isLoading } = useTrainingSettings();
     const updateSettings = useUpdateTrainingSettings();
 
     const [barWeight, setBarWeight] = useState('20');
-    const [olympicIncrement, setOlympicIncrement] = useState('1');
+    const [snatchIncrement, setSnatchIncrement] = useState('5');
+    const [cleanAndJerkIncrement, setCleanAndJerkIncrement] = useState('10');
     const [powerliftingIncrement, setPowerliftingIncrement] = useState('2.5');
     const [accessoryIncrement, setAccessoryIncrement] = useState('2.5');
     const [defaultRestSeconds, setDefaultRestSeconds] = useState('120');
     const [defaultBlockRestSeconds, setDefaultBlockRestSeconds] = useState('180');
+    const [intensityMode, setIntensityMode] = useState<'percent' | 'rpe'>('percent');
 
     useEffect(() => {
         if (settings) {
             setBarWeight(String(settings.barWeight));
-            setOlympicIncrement(String(settings.olympicIncrement));
+            setSnatchIncrement(String(settings.snatchIncrement));
+            setCleanAndJerkIncrement(String(settings.cleanAndJerkIncrement));
             setPowerliftingIncrement(String(settings.powerliftingIncrement));
             setAccessoryIncrement(String(settings.accessoryIncrement));
             setDefaultRestSeconds(String(settings.defaultRestSeconds));
             setDefaultBlockRestSeconds(String(settings.defaultBlockRestSeconds));
+            setIntensityMode(settings.intensityMode === 'rpe' ? 'rpe' : 'percent');
         }
     }, [settings]);
 
@@ -33,11 +38,13 @@ export function TrainingSettingsCard() {
         updateSettings.mutate(
             {
                 barWeight: parseFloat(barWeight),
-                olympicIncrement: parseFloat(olympicIncrement),
+                snatchIncrement: parseFloat(snatchIncrement),
+                cleanAndJerkIncrement: parseFloat(cleanAndJerkIncrement),
                 powerliftingIncrement: parseFloat(powerliftingIncrement),
                 accessoryIncrement: parseFloat(accessoryIncrement),
                 defaultRestSeconds: parseInt(defaultRestSeconds, 10),
                 defaultBlockRestSeconds: parseInt(defaultBlockRestSeconds, 10),
+                intensityMode,
             },
             {
                 onSuccess: () => {
@@ -78,11 +85,21 @@ export function TrainingSettingsCard() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label>Olympic Increment (kg)</Label>
+                        <Label>Snatch Increment (kg)</Label>
                         <Input
                             type="number"
-                            value={olympicIncrement}
-                            onChange={(e) => setOlympicIncrement(e.target.value)}
+                            value={snatchIncrement}
+                            onChange={(e) => setSnatchIncrement(e.target.value)}
+                            min={0.25}
+                            step={0.25}
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label>Clean & Jerk Increment (kg)</Label>
+                        <Input
+                            type="number"
+                            value={cleanAndJerkIncrement}
+                            onChange={(e) => setCleanAndJerkIncrement(e.target.value)}
                             min={0.25}
                             step={0.25}
                         />
@@ -126,6 +143,35 @@ export function TrainingSettingsCard() {
                             min={0}
                             step={15}
                         />
+                    </div>
+                </div>
+                <div className="mt-4 space-y-1.5">
+                    <Label>Intensity Mode</Label>
+                    <div className="inline-flex rounded-lg border border-border bg-secondary p-0.5">
+                        <button
+                            type="button"
+                            onClick={() => setIntensityMode('percent')}
+                            className={cn(
+                                'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                                intensityMode === 'percent'
+                                    ? 'bg-card text-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            Percentage (%)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIntensityMode('rpe')}
+                            className={cn(
+                                'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                                intensityMode === 'rpe'
+                                    ? 'bg-card text-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            RPE
+                        </button>
                     </div>
                 </div>
                 <Button className="mt-4 gap-2" onClick={handleSave} disabled={updateSettings.isPending}>

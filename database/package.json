@@ -14,12 +14,10 @@
   },
   "dependencies": {
     "@liftarchives/shared": "workspace:*",
-    "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.45.1",
-    "pg": "^8.16.3"
+    "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
-    "@types/pg": "^8.16.0",
+    "better-sqlite3": "^12.6.2",
     "drizzle-kit": "^0.31.8"
   }
 }

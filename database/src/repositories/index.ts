@@ -10,9 +10,20 @@ export {
   updateLifterProfile,
 } from "./lifter-profile";
 export {
+  createCoachProfile,
   getCoachProfile,
   updateCoachProfile,
 } from "./coach-profile";
+export {
+  getCoachLifters,
+  getLifterCoach,
+  inviteLifter,
+  getPendingInvitesForCoach,
+  getPendingInvitesForLifter,
+  acceptInvite,
+  declineInvite,
+  removeLifter,
+} from "./coach-lifters";
 export {
   getCoreLifts,
   getAllLifts,
@@ -39,6 +50,7 @@ export {
   assignProgram,
   unassignProgram,
   advanceWeekIfComplete,
+  assignProgramToLifter,
 } from "./programs";
 export {
   startSession,
@@ -63,3 +75,14 @@ export {
   getTrainingSettings,
   upsertTrainingSettings,
 } from "./training-settings";
+export {
+  createClub,
+  getClubById,
+  updateClub,
+  deleteClub,
+  getUserClubs,
+  getClubMembers,
+  addClubMember,
+  removeClubMember,
+  isClubMember,
+} from "./clubs";

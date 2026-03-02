@@ -7,6 +7,7 @@ import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard';
 import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { TodaysTrainingCard } from '@/components/dashboard/TodaysTrainingCard';
 import { ActiveSessionBanner } from '@/components/sessions/ActiveSessionBanner';
+import { CoachInviteBanner } from '@/components/dashboard/CoachInviteBanner';
 import { Link } from '@tanstack/react-router';
 import { Activity, CalendarDays, Target, TrendingUp } from 'lucide-react';
 
@@ -31,6 +32,9 @@ export function DashboardPage() {
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">Here's your training overview</p>
             </div>
+
+            {/* Coach invite notifications */}
+            <CoachInviteBanner />
 
             {/* Active session resume banner */}
             <ActiveSessionBanner />

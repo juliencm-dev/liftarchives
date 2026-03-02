@@ -27,6 +27,7 @@ export interface LocalExerciseData {
     targetSets: number;
     targetReps: number;
     upToPercent: number | null;
+    upToRpe: number | null;
     oneRepMax: number | null; // 1RM of parent lift (olympic) or self
     sets: LocalSet[];
     movements: LocalMovement[];

@@ -1,11 +1,8 @@
-import { pgTable, text, timestamp, index, unique } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { user } from "./auth";
-import {
-  clubMembershipRoleEnum,
-  clubMembershipStatusEnum,
-} from "./enums";
 
-export const clubs = pgTable(
+export const clubs = sqliteTable(
   "clubs",
   {
     id: text("id").primaryKey(),
@@ -16,16 +13,16 @@ export const clubs = pgTable(
     location: text("location"),
     description: text("description"),
     imageUrl: text("image_url"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("clubs_owner_id_idx").on(table.ownerId)],
 );
 
-export const clubMemberships = pgTable(
+export const clubMemberships = sqliteTable(
   "club_memberships",
   {
     id: text("id").primaryKey(),
@@ -35,12 +32,12 @@ export const clubMemberships = pgTable(
     clubId: text("club_id")
       .notNull()
       .references(() => clubs.id, { onDelete: "cascade" }),
-    role: clubMembershipRoleEnum("role").notNull(),
-    status: clubMembershipStatusEnum("status").default("active").notNull(),
-    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+    role: text("role").notNull(),
+    status: text("status").default("active").notNull(),
+    joinedAt: integer("joined_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   },
   (table) => [
-    unique("club_memberships_user_club_uniq").on(table.userId, table.clubId),
+    uniqueIndex("club_memberships_user_club_uniq").on(table.userId, table.clubId),
     index("club_memberships_user_id_idx").on(table.userId),
     index("club_memberships_club_id_idx").on(table.clubId),
   ],
