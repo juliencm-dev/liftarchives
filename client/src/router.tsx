@@ -6,6 +6,7 @@ import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { MobileScrollHeader } from '@/components/layout/MobileScrollHeader';
 import {
     currentUserQueryOptions,
     recentRecordsQueryOptions,
@@ -70,6 +71,10 @@ const CoachLifterDetailPage = lazy(() =>
 );
 const ClubsPage = lazy(() => import('@/pages/clubs').then((m) => ({ default: m.ClubsPage })));
 const ClubDetailPage = lazy(() => import('@/pages/club-detail').then((m) => ({ default: m.ClubDetailPage })));
+const MorePage = lazy(() => import('@/pages/more').then((m) => ({ default: m.MorePage })));
+const BillingPage = lazy(() => import('@/pages/billing').then((m) => ({ default: m.BillingPage })));
+const PrivacyPage = lazy(() => import('@/pages/privacy').then((m) => ({ default: m.PrivacyPage })));
+const DeleteAccountPage = lazy(() => import('@/pages/delete-account').then((m) => ({ default: m.DeleteAccountPage })));
 
 function PageSuspense({ children }: { children: React.ReactNode }) {
     return (
@@ -169,7 +174,8 @@ const _appLayout = createRoute({
     component: () => (
         <div className="flex min-h-dvh w-full flex-col">
             <AppHeader />
-            <main className="flex-1 overflow-x-clip pb-[calc(env(safe-area-inset-bottom))] md:pb-0">
+            <MobileScrollHeader />
+            <main className="flex-1 overflow-x-clip pb-16 md:pb-0">
                 <Outlet />
             </main>
             <BottomNav />
@@ -453,6 +459,49 @@ const clubDetailRoute = createRoute({
     ),
 });
 
+const moreRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/more',
+    loader: ({ context }) => {
+        context.queryClient.ensureQueryData(coachProfileQueryOptions);
+    },
+    component: () => (
+        <PageSuspense>
+            <MorePage />
+        </PageSuspense>
+    ),
+});
+
+const billingRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/billing',
+    component: () => (
+        <PageSuspense>
+            <BillingPage />
+        </PageSuspense>
+    ),
+});
+
+const privacyRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/privacy',
+    component: () => (
+        <PageSuspense>
+            <PrivacyPage />
+        </PageSuspense>
+    ),
+});
+
+const deleteAccountRoute = createRoute({
+    getParentRoute: () => _appLayout,
+    path: '/delete-account',
+    component: () => (
+        <PageSuspense>
+            <DeleteAccountPage />
+        </PageSuspense>
+    ),
+});
+
 const sessionDetailRoute = createRoute({
     getParentRoute: () => _appLayout,
     path: '/training/sessions/$sessionId',
@@ -491,6 +540,10 @@ const routeTree = _root.addChildren([
         coachLifterDetailRoute,
         clubsRoute,
         clubDetailRoute,
+        moreRoute,
+        billingRoute,
+        privacyRoute,
+        deleteAccountRoute,
     ]),
     _sessionLayout.addChildren([activeSessionRoute]),
 ]);

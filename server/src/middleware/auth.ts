@@ -9,6 +9,7 @@ export type SessionUser = {
   image: string | null;
   createdAt: Date;
   updatedAt: Date;
+  plan: string;
 };
 
 type AuthEnv = {
@@ -27,5 +28,13 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
   }
 
   c.set("user", session.user as SessionUser);
+  await next();
+});
+
+export const requirePro = createMiddleware<AuthEnv>(async (c, next) => {
+  const user = c.get("user");
+  if (user.plan !== "pro") {
+    return c.json({ message: "Pro plan required" }, 403);
+  }
   await next();
 });

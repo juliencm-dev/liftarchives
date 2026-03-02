@@ -26,7 +26,7 @@ export function AppHeader() {
     };
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border/50 bg-background pt-10 md:pt-0">
+        <header className="sticky top-0 z-50 hidden border-b border-border/50 bg-background md:block">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
                 <Link to="/dashboard" className="flex items-center gap-3 group">
                     <div className="flex size-8 items-center justify-center rounded-lg bg-primary/15 group-hover:scale-110 transition-transform md:size-9">

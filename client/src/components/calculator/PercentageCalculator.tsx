@@ -140,7 +140,7 @@ function RepMaxEstimator({ unit }: { unit: 'kg' | 'lb' }) {
 /** Standalone calculator content — used by both the page and the dialog */
 export function PercentageCalculatorContent() {
     const [maxWeight, setMaxWeight] = useState('');
-    const [selectedLiftId, setSelectedLiftId] = useState<string | null>(null);
+    const [selectedLiftId, setSelectedLiftId] = useState('');
     const [noPR, setNoPR] = useState(false);
     const unit = useUnit();
     const { data: lifts = [] } = useLifts();
@@ -167,7 +167,7 @@ export function PercentageCalculatorContent() {
             {/* Select a lift */}
             {lifts.length > 0 && (
                 <div className="flex flex-col gap-2">
-                    <Select onValueChange={handleLiftSelect} value={selectedLiftId ?? undefined}>
+                    <Select onValueChange={handleLiftSelect} value={selectedLiftId}>
                         <SelectTrigger className="text-sm">
                             <SelectValue placeholder="Select a lift" />
                         </SelectTrigger>

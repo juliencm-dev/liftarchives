@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useUserClubs, useCreateClub } from '@/hooks/use-clubs';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Building2, Plus, Users, Loader2, MapPin } from 'lucide-react';
 
 export function ClubsPage() {
@@ -44,14 +45,13 @@ export function ClubsPage() {
             <BackToDashboard />
 
             <div className="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Clubs</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">Join or create clubs to train together</p>
-                </div>
-                <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
-                    <Plus className="size-4" />
-                    <span className="hidden sm:inline">New Club</span>
-                </Button>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Clubs</h1>
+                {clubs && clubs.length > 0 && (
+                    <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
+                        <Plus className="size-4" />
+                        <span className="hidden sm:inline">New Club</span>
+                    </Button>
+                )}
             </div>
 
             {showForm && (
@@ -111,17 +111,12 @@ export function ClubsPage() {
                     <Loader2 className="size-8 animate-spin text-primary" />
                 </div>
             ) : !clubs || clubs.length === 0 ? (
-                <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                        <Building2 className="mb-4 size-12 text-muted-foreground/50" />
-                        <p className="text-lg font-medium text-foreground">No clubs yet</p>
-                        <p className="mt-1 text-sm text-muted-foreground">Create a club to start training together</p>
-                        <Button className="mt-4 gap-2" onClick={() => setShowForm(true)}>
-                            <Plus className="size-4" />
-                            Create Club
-                        </Button>
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={Building2}
+                    heading="No clubs yet"
+                    subheading="Create a club to start training together"
+                    action={{ label: 'Create Club', icon: Plus, onClick: () => setShowForm(true) }}
+                />
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {clubs.map((club) => (

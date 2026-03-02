@@ -72,14 +72,13 @@ export function ProgramsPage() {
             <BackToDashboard />
 
             <div className="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Programs</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">Create and manage your training programs</p>
-                </div>
-                <Button className="gap-2" onClick={() => setWizardOpen(true)}>
-                    <Plus className="size-4" />
-                    <span className="hidden sm:inline">New Program</span>
-                </Button>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Programs</h1>
+                {programs && programs.length > 0 && (
+                    <Button className="gap-2" onClick={() => setWizardOpen(true)}>
+                        <Plus className="size-4" />
+                        <span className="hidden sm:inline">New Program</span>
+                    </Button>
+                )}
             </div>
 
             {isLoading ? (

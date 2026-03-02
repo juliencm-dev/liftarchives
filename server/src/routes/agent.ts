@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { authMiddleware, type SessionUser } from "@/middleware/auth";
+import { authMiddleware, requirePro, type SessionUser } from "@/middleware/auth";
 import { extractProgramFromImage, type LiftCatalogEntry } from "@liftarchives/agent";
 import { db, getAllAvailableLifts } from "@liftarchives/database";
 
@@ -19,6 +19,7 @@ type Env = {
 
 const agentRoutes = new Hono<Env>()
   .use("*", authMiddleware)
+  .use("*", requirePro)
   .post("/extract", async (c) => {
     const contentType = c.req.header("content-type") ?? "";
     if (!contentType.includes("multipart/form-data")) {

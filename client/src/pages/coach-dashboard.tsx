@@ -40,7 +40,6 @@ export function CoachDashboardPage() {
 
             <div className="mb-6">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">Coach Dashboard</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Manage your lifters and track their progress</p>
             </div>
 
             {/* Stats */}

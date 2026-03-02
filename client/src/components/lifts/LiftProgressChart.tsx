@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useUnit } from '@/hooks/use-profile';
 import { displayWeight } from '@/lib/units';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
@@ -140,15 +141,16 @@ export function LiftProgressChart({ liftName, records }: LiftProgressChartProps)
                         </ResponsiveContainer>
                     </div>
                 ) : (
-                    <div className="flex h-48 flex-col items-center justify-center gap-2 sm:h-64">
-                        <BarChart3 className="size-10 text-muted-foreground/30" />
-                        <p className="text-sm font-medium text-muted-foreground">No records yet</p>
-                        <p className="text-xs text-muted-foreground/70">
-                            {liftName
+                    <EmptyState
+                        icon={BarChart3}
+                        heading="No records yet"
+                        subheading={
+                            liftName
                                 ? `Add a PR to ${liftName} to see progression`
-                                : 'Select a lift and add records to see progression'}
-                        </p>
-                    </div>
+                                : 'Select a lift and add records to see progression'
+                        }
+                        className="h-48 py-0 sm:h-64"
+                    />
                 )}
             </CardContent>
         </Card>

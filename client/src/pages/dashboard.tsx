@@ -27,10 +27,12 @@ export function DashboardPage() {
         <div className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-6 lg:px-6 lg:py-8">
             {/* Welcome */}
             <div className="mb-8">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                <p className="font-mono text-sm text-muted-foreground">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     Welcome back, <span className="text-primary">{firstName}</span>
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">Here's your training overview</p>
             </div>
 
             {/* Coach invite notifications */}
@@ -62,7 +64,7 @@ export function DashboardPage() {
                 >
                     <Link to="/training">
                         <Activity className="size-4" />
-                        Session History
+                        History
                     </Link>
                 </Button>
                 <Button variant="outline" className="h-11 flex-1 gap-2 rounded-xl" asChild>

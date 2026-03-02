@@ -80,12 +80,7 @@ export function LiftsPage() {
                 <div className="hidden md:block">
                     <BackToDashboard />
                 </div>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Lifts</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Track your personal records and monitor lift progression over time.
-                    </p>
-                </div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Lifts</h1>
             </div>
 
             {/* Progression Chart - Full width */}

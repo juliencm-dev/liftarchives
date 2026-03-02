@@ -11,7 +11,6 @@ export function ProfilePage() {
                     <BackToDashboard />
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Profile</h1>
-                <p className="text-sm text-muted-foreground">Manage your personal details and lifting profile.</p>
             </div>
 
             <div className="mt-6 flex flex-col gap-6">

@@ -1,4 +1,3 @@
-import { Settings } from 'lucide-react';
 import { BackToDashboard } from '@/components/layout/BackToDashboard';
 import { ChangePasswordCard } from '@/components/forms/profile';
 import { TrainingSettingsCard } from '@/components/forms/profile/training-settings-card';
@@ -11,11 +10,7 @@ export function SettingsPage() {
                 <div className="hidden md:block">
                     <BackToDashboard />
                 </div>
-                <div className="flex items-center gap-2">
-                    <Settings className="size-6 text-foreground sm:size-7" />
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Settings</h1>
-                </div>
-                <p className="text-sm text-muted-foreground">Manage your password and training preferences.</p>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Settings</h1>
             </div>
 
             <div className="mt-6 flex flex-col gap-6">
